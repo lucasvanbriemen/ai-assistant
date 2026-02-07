@@ -29,25 +29,15 @@
             role: m.role,
             content: m.content,
             })),
-        });
+    });
 
-    if (response.success) {
-        messages.push({
-            role: 'assistant',
-            content: response.message,
-            timestamp: new Date()
-        });
+    messages.push({
+        role: 'assistant',
+        content: response.message,
+        timestamp: new Date()
+    });
 
-        messages = messages;
-    } else {
-        error = response.error || 'Failed to get response';
-        messages.push({
-            role: 'error',
-            content: error,
-            timestamp: new Date(),
-        });
-    }
-
+    messages = messages;
 
     loading = false;
     scrollToBottom();
