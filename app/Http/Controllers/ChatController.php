@@ -10,8 +10,7 @@ use Illuminate\Http\JsonResponse;
 class ChatController extends Controller
 {
     public function __construct(
-        private AIService $aiService,
-        private PluginList $registry,
+        private AIService $aiService
     ) {}
 
     /**
@@ -20,13 +19,13 @@ class ChatController extends Controller
     public function getTools(): JsonResponse
     {
         return response()->json([
-            'tools' => $this->registry->getAllTools(),
+            'tools' => PluginList::getAllTools(),
             'plugins' => array_map(function ($plugin) {
                 return [
                     'name' => $plugin->getName(),
                     'description' => $plugin->getDescription(),
                 ];
-            }, $this->registry->getPlugins()),
+            }, PluginList::$plugins),
         ]);
     }
 

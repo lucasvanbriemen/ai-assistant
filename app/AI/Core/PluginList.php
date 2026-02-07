@@ -11,7 +11,7 @@ class PluginList
     /**
      * @var array<PluginInterface>
      */
-    private array $plugins = [];
+    public static array $plugins = [];
 
     /**
      * @var array<string, PluginInterface> Map of tool names to plugins
@@ -21,12 +21,12 @@ class PluginList
     public function __construct()
     {
         // Initialize plugins
-        $this->plugins = [
+        self::$plugins = [
             new EmailPlugin(),
         ];
 
         // Build the tool to plugin map
-        foreach ($this->plugins as $plugin) {
+        foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 $this->toolPluginMap[$tool->name] = $plugin;
             }
@@ -40,7 +40,7 @@ class PluginList
      */
     public function getPlugins(): array
     {
-        return array_values($this->plugins);
+        return array_values(self::$plugins);
     }
 
     /**
@@ -48,7 +48,7 @@ class PluginList
      */
     public function getPlugin(string $name): ?PluginInterface
     {
-        return $this->plugins[$name] ?? null;
+        return self::$plugins[$name] ?? null;
     }
 
     /**
@@ -57,7 +57,7 @@ class PluginList
     public function getToolsInOpenAIFormat(): array
     {
         $tools = [];
-        foreach ($this->plugins as $plugin) {
+        foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 $tools[] = [
                     'type' => 'function',
@@ -79,10 +79,10 @@ class PluginList
     /**
      * Get all available tools in a generic format
      */
-    public function getAllTools(): array
+    public static function getAllTools(): array
     {
         $tools = [];
-        foreach ($this->plugins as $plugin) {
+        foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 $tools[] = [
                     'name' => $tool->name,
