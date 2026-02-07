@@ -32,13 +32,7 @@ abstract class PluginInterface
     /**
      * Make an API request to a configured endpoint
      */
-    protected function apiRequest(
-        string $endpoint,
-        string $method = 'GET',
-        array $pathParams = [],
-        array $queryParams = [],
-        array $body = []
-    ): array {
+    protected function apiRequest(string $endpoint, string $method = 'GET', array $pathParams = [], array $queryParams = [], array $body = []): array {
         $url = $this->apiConfig->getEndpointUrl($endpoint, $pathParams);
 
         $request = Http::withHeaders($this->apiConfig->getHeaders())
