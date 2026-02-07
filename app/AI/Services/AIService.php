@@ -60,7 +60,6 @@ class AIService
             ]),
             'tools_used' => [],
         ];
-       
     }
 
     private static function processOpenAIToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): array
