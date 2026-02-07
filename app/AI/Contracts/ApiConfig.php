@@ -7,11 +7,16 @@ namespace App\AI\Contracts;
  */
 class ApiConfig
 {
-    public function __construct(
-        public string $baseUrl,
-        public array $endpoints = [],
-        public array $headers = []
-    ) {}
+    public string $baseUrl;
+    public array $endpoints;
+    public array $headers;
+
+    public function __construct($baseUrl, $endpoints = [], $headers = []) 
+    {
+        $this->baseUrl = $baseUrl;
+        $this->endpoints = $endpoints;
+        $this->headers = $headers;
+    }
 
     /**
      * Get a complete endpoint URL
