@@ -36,42 +36,35 @@ abstract class ApiBasedPlugin implements PluginInterface
         array $queryParams = [],
         array $body = []
     ): array {
-        try {
-            $url = $this->apiConfig->getEndpointUrl($endpoint, $pathParams);
+        $url = $this->apiConfig->getEndpointUrl($endpoint, $pathParams);
 
-            $request = Http::withHeaders($this->apiConfig->getHeaders())
-                ->timeout(30); // 30 second timeout per API call
+        $request = Http::withHeaders($this->apiConfig->getHeaders())
+            ->timeout(30); // 30 second timeout per API call
 
-            if (!empty($queryParams)) {
-                $request = $request->withQueryParameters($queryParams);
-            }
+        if (!empty($queryParams)) {
+            $request = $request->withQueryParameters($queryParams);
+        }
 
-            $response = match (strtoupper($method)) {
-                'GET' => $request->get($url),
-                'POST' => $request->post($url, $body),
-                'PUT' => $request->put($url, $body),
-                'PATCH' => $request->patch($url, $body),
-                'DELETE' => $request->delete($url),
-                default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
-            };
+        $response = match (strtoupper($method)) {
+            'GET' => $request->get($url),
+            'POST' => $request->post($url, $body),
+            'PUT' => $request->put($url, $body),
+            'PATCH' => $request->patch($url, $body),
+            'DELETE' => $request->delete($url),
+            default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
+        };
 
-            if ($response->failed()) {
-                return [
-                    'success' => false,
-                    'error' => "API request failed: {$response->status()} - {$response->body()}",
-                ];
-            }
-
-            return [
-                'success' => true,
-                'data' => $response->json(),
-                'status' => $response->status(),
-            ];
-        } catch (\Exception $e) {
+        if ($response->failed()) {
             return [
                 'success' => false,
-                'error' => "API request error: {$e->getMessage()}",
+                'error' => "API request failed: {$response->status()} - {$response->body()}",
             ];
         }
+
+        return [
+            'success' => true,
+            'data' => $response->json(),
+            'status' => $response->status(),
+        ];
     }
 }
