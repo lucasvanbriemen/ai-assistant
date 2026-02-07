@@ -31,17 +31,17 @@ class EmailPlugin extends ApiBasedPlugin
         );
     }
 
-    public function getName(): string
+    public function getName()
     {
         return 'email';
     }
 
-    public function getDescription(): string
+    public function getDescription()
     {
         return 'Get Information from emails, searching emails and reading them';
     }
 
-    public function getTools(): array
+    public function getTools()
     {
         return [
             new ToolDefinition(
@@ -98,7 +98,7 @@ class EmailPlugin extends ApiBasedPlugin
         ];
     }
 
-    public function executeTool(string $toolName, array $parameters): ToolResult
+    public function executeTool(string $toolName, array $parameters)
     {
         return match ($toolName) {
             'search_emails' => $this->searchEmails($parameters),
