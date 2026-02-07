@@ -37,19 +37,12 @@ class AIService
         // Build messages for the API
         $messages = $this->buildMessages($message, $conversationHistory);
 
-        // Get available tools
-        $tools = $this->registry->getToolsInOpenAIFormat();
-
         $requestData = [
             'model' => $this->model,
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
         ];
-
-        if (!empty($tools)) {
-            $requestData['tools'] = $tools;
-        }
 
         try {
             $response = Http::withToken($this->apiKey)
