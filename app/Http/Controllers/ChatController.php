@@ -24,16 +24,7 @@ class ChatController extends Controller
 
         $message = $validated['message'];
         $history = $validated['history'] ?? [];
-
-        // Call AI service
         $response = $this->aiService->chat($message, $history);
-
-        if (!$response['success']) {
-            return response()->json([
-                'success' => false,
-                'error' => $response['error'],
-            ], 400);
-        }
 
         return response()->json([
             'success' => true,
