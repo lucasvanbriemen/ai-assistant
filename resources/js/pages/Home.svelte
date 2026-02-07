@@ -80,29 +80,15 @@
 
 <div class="messages" bind:this={messagesContainer}>
 {#each messages as message, i (i)}
-    <div class="message message-{message.role}">
-    <div class="message-content">
-        {#if message.role === 'user'}
-        <div class="message-text">{message.content}</div>
-        {:else if message.role === 'error'}
-        <div class="message-text error">{message.content}</div>
-        {:else}
-        <div class="message-text">{message.content}</div>
-        {/if}
-    </div>
-    <div class="message-time">
-        {#if message.timestamp}
+    {message.content}
+    {#if message.timestamp}
         {message.timestamp.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
         })}
-        {/if}
-    </div>
-    </div>
+    {/if}
 {/each}
-
-
 </div>
 
-<textarea bind:value={input} placeholder="Ask me anything..." onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
+<textarea bind:value={input} onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
 <button onclick={sendMessage} disabled={!input.trim() || loading} class="btn-send" >{loading ? 'Sending...' : 'Send'}</button>
