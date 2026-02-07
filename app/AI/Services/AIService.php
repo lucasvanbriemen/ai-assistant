@@ -8,14 +8,12 @@ use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    private PluginList $registry;
     private string $apiKey;
     private string $model;
     private string $baseUrl;
 
-    public function __construct(PluginList $registry)
+    public function __construct()
     {
-        $this->registry = $registry;
         $this->apiKey = config('ai.openai.api_key');
         $this->model = config('ai.openai.model');
         $this->baseUrl = config('ai.openai.base_url');
@@ -30,7 +28,7 @@ class AIService
         $messages = $this->buildMessages($message, $conversationHistory);
 
         // Get available tools
-        $tools = $this->registry->getToolsInOpenAIFormat();
+        $tools = PluginList::getToolsInOpenAIFormat();
 
         $requestData = [
             'model' => $this->model,
@@ -105,7 +103,7 @@ class AIService
 
             $toolsUsed[] = ['name' => $toolName, 'parameters' => $parameters];
 
-            $result = $this->registry->executeTool($toolName, $parameters);
+            $result = PluginList::executeTool($toolName, $parameters);
 
             $toolResults[] = [
                 'tool_call_id' => $toolCall['id'],
@@ -126,7 +124,7 @@ class AIService
 
         // Get final response from AI
         // Get available tools again in case more tool calls are needed
-        $tools = $this->registry->getToolsInOpenAIFormat();
+        $tools = PluginList::getToolsInOpenAIFormat();
 
         try {
             $requestData = [

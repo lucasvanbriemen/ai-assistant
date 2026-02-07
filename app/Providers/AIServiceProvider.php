@@ -14,7 +14,7 @@ class AIServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(AIService::class, function () {
-            return new AIService($this->app->make(PluginList::class));
+            return new AIService();
         });
     }
 

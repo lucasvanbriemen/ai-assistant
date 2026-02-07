@@ -54,7 +54,7 @@ class PluginList
     /**
      * Get all available tools in OpenAI format
      */
-    public function getToolsInOpenAIFormat(): array
+    public static function getToolsInOpenAIFormat(): array
     {
         $tools = [];
         foreach (self::$plugins as $plugin) {
@@ -97,9 +97,9 @@ class PluginList
     /**
      * Execute a tool
      */
-    public function executeTool(string $toolName, array $parameters): ToolResult
+    public static function executeTool(string $toolName, array $parameters): ToolResult
     {
-        $plugin = $this->toolPluginMap[$toolName] ?? null;
+        $plugin = self::$toolPluginMap[$toolName] ?? null;
 
         if (!$plugin) {
             return ToolResult::failure("Tool '{$toolName}' not found");
