@@ -5,8 +5,9 @@ namespace App\AI\Plugins;
 use App\AI\Contracts\ToolDefinition;
 use App\AI\Contracts\ToolResult;
 use App\AI\Contracts\ApiConfig;
+use App\AI\Contracts\PluginInterface;
 
-class EmailPlugin extends ApiBasedPlugin
+class EmailPlugin extends PluginInterface
 {
     public function __construct()
     {
