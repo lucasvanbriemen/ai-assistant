@@ -6,11 +6,7 @@
     const userMessage = input.trim();
     input = '';
 
-    messages.push({
-      role: 'user',
-      content: userMessage,
-      timestamp: new Date(),
-    });
+    messages.push({role: 'user', content: userMessage, timestamp: new Date(),});
 
     const response = await api.post('/api/chat/send', {
         message: userMessage,
@@ -22,12 +18,7 @@
         })),
     });
 
-    messages.push({
-        role: 'assistant',
-        content: response.message,
-        timestamp: new Date()
-    });
-
+    messages.push({role: 'assistant', content: response.message, timestamp: new Date()});
     messages = messages;
   }
 
