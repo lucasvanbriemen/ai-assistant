@@ -9,17 +9,9 @@ use App\AI\Contracts\ApiConfig;
 class EmailPlugin extends ApiBasedPlugin
 {
     private array $emails = [];
-    private bool $useApi;
-
     public function __construct()
     {
-        $this->useApi = env('EMAIL_PLUGIN_USE_API', true);
         parent::__construct();
-
-        // Load mock emails as fallback if not using API
-        if (!$this->useApi) {
-            $this->loadMockEmails();
-        }
     }
 
     /**
@@ -177,60 +169,7 @@ class EmailPlugin extends ApiBasedPlugin
 
     private function searchEmails(array $params): ToolResult
     {
-        if ($this->useApi) {
-            return $this->searchEmailsViaApi($params);
-        }
-
-        $results = [];
-
-        foreach ($this->emails as $email) {
-            $matches = true;
-
-            // Filter by keyword (search in subject and body)
-            if (!empty($params['keyword'])) {
-                $keyword = strtolower($params['keyword']);
-                $subjectMatch = stripos($email['subject'], $params['keyword']) !== false;
-                $bodyMatch = stripos($email['body'], $params['keyword']) !== false;
-                $matches = $matches && ($subjectMatch || $bodyMatch);
-            }
-
-            // Filter by sender
-            if (!empty($params['sender'])) {
-                $matches = $matches && (stripos($email['sender'], $params['sender']) !== false);
-            }
-
-            // Filter by date range
-            if (!empty($params['from_date'])) {
-                $matches = $matches && ($email['date'] >= $params['from_date']);
-            }
-            if (!empty($params['to_date'])) {
-                $matches = $matches && ($email['date'] <= $params['to_date']);
-            }
-
-            // Filter by unread status
-            if (!empty($params['unread_only']) && $params['unread_only'] === true) {
-                $matches = $matches && ($email['read'] === false);
-            }
-
-            if ($matches) {
-                $results[] = [
-                    'id' => $email['id'],
-                    'subject' => $email['subject'],
-                    'sender' => $email['sender'],
-                    'date' => $email['date'],
-                    'preview' => substr($email['body'], 0, 200) . '...',
-                    'unread' => !$email['read'],
-                ];
-            }
-        }
-
-        // Respect the limit parameter (default 50, max 100)
-        $limit = isset($params['limit']) ? min((int)$params['limit'], 100) : 50;
-
-        return ToolResult::success([
-            'count' => count($results),
-            'emails' => array_slice($results, 0, $limit),
-        ]);
+        return $this->searchEmailsViaApi($params);
     }
 
     private function searchEmailsViaApi(array $params): ToolResult
@@ -257,28 +196,7 @@ class EmailPlugin extends ApiBasedPlugin
 
     private function readEmail(array $params): ToolResult
     {
-        if ($this->useApi) {
-            return $this->readEmailViaApi($params);
-        }
-
-        $emailId = $params['email_id'];
-
-        foreach ($this->emails as $email) {
-            if ($email['id'] === $emailId) {
-                // Mark as read
-                $email['read'] = true;
-
-                return ToolResult::success([
-                    'id' => $email['id'],
-                    'subject' => $email['subject'],
-                    'sender' => $email['sender'],
-                    'date' => $email['date'],
-                    'body' => $email['body'],
-                ]);
-            }
-        }
-
-        return ToolResult::failure("Email with ID '{$emailId}' not found");
+        return $this->readEmailViaApi($params);
     }
 
     private function readEmailViaApi(array $params): ToolResult
@@ -294,12 +212,7 @@ class EmailPlugin extends ApiBasedPlugin
 
     private function getUnreadCount(array $params): ToolResult
     {
-        if ($this->useApi) {
-            return $this->getUnreadCountViaApi($params);
-        }
-
-        $count = count(array_filter($this->emails, fn($e) => !$e['read']));
-        return ToolResult::success(['unread_count' => $count]);
+        return $this->getUnreadCountViaApi($params);
     }
 
     private function getUnreadCountViaApi(array $params): ToolResult
@@ -315,23 +228,7 @@ class EmailPlugin extends ApiBasedPlugin
 
     private function sendEmail(array $params): ToolResult
     {
-        if ($this->useApi) {
-            return $this->sendEmailViaApi($params);
-        }
-
-        // Mock sending email
-        $newEmail = [
-            'id' => 'email_sent_' . time(),
-            'to' => $params['to'],
-            'subject' => $params['subject'],
-            'body' => $params['body'],
-            'sent_date' => date('Y-m-d H:i:s'),
-        ];
-
-        return ToolResult::success([
-            'message' => 'Email sent successfully',
-            'email' => $newEmail,
-        ]);
+        return $this->sendEmailViaApi($params);
     }
 
     private function sendEmailViaApi(array $params): ToolResult
