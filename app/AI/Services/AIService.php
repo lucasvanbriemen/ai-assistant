@@ -14,25 +14,15 @@ class AIService
     public function __construct()
     {
         $this->provider = config('ai.provider', 'openai');
-
-        if ($this->provider === 'openai') {
-            $this->apiKey = config('ai.openai.api_key');
-            $this->model = config('ai.openai.model');
-            $this->baseUrl = config('ai.openai.base_url');
-        }
+        $this->apiKey = config('ai.openai.api_key');
+        $this->model = config('ai.openai.model');
+        $this->baseUrl = config('ai.openai.base_url');
     }
 
     /**
      * Send a message and get a response, optionally executing tools
      */
     public function chat(string $message, array $conversationHistory = []): array
-    {
-        if ($this->provider === 'openai') {
-            return $this->chatWithOpenAI($message, $conversationHistory);
-        }
-    }
-
-    private function chatWithOpenAI(string $message, array $conversationHistory): array
     {
         // Build messages for the API
         $messages = $this->buildMessages($message, $conversationHistory);
