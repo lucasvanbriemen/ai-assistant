@@ -63,20 +63,6 @@ class PluginRegistry
     }
 
     /**
-     * Get all available tools in Anthropic format
-     */
-    public function getToolsInAnthropicFormat(): array
-    {
-        $tools = [];
-        foreach ($this->plugins as $plugin) {
-            foreach ($plugin->getTools() as $tool) {
-                $tools[] = $tool->toAnthropicFormat();
-            }
-        }
-        return $tools;
-    }
-
-    /**
      * Get all available tools in a generic format
      */
     public function getAllTools(): array

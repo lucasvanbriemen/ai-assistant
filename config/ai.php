@@ -9,12 +9,6 @@ return [
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
     ],
 
-    'anthropic' => [
-        'api_key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('ANTHROPIC_MODEL', 'claude-3-5-sonnet-20241022'),
-        'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
-    ],
-
     // System prompt for the AI chatbot
     'system_prompt' => 'You are a helpful AI assistant with access to the user\'s email, calendar, and other personal data. Help the user by answering their questions and performing tasks using the available tools. Be friendly, concise, and proactive in suggesting how you can help.',
 

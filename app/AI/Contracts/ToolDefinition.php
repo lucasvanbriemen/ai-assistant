@@ -29,20 +29,4 @@ class ToolDefinition
             ],
         ];
     }
-
-    /**
-     * Convert to Anthropic tool format
-     */
-    public function toAnthropicFormat(): array
-    {
-        return [
-            'name' => $this->name,
-            'description' => $this->description,
-            'input_schema' => [
-                'type' => 'object',
-                'properties' => $this->parameters['properties'] ?? [],
-                'required' => $this->parameters['required'] ?? [],
-            ],
-        ];
-    }
 }
