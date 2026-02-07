@@ -50,6 +50,14 @@ class AIService
     {
         $messages = [];
 
+        $systemPrompt = config('ai.system_prompt');
+        if ($systemPrompt) {
+            $messages[] = [
+                'role' => 'system',
+                'content' => $systemPrompt,
+            ];
+        }
+
         $historyToInclude = array_slice($conversationHistory, -(config('ai.max_history') * 2));
         foreach ($historyToInclude as $entry) {
             if (isset($entry['role']) && isset($entry['content'])) {
