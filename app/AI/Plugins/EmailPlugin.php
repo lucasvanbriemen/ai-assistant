@@ -38,7 +38,7 @@ class EmailPlugin extends ApiBasedPlugin
 
     public function getDescription(): string
     {
-        return 'Access and manage emails in your inbox';
+        return 'Get Information from emails, searching emails and reading them';
     }
 
     public function getTools(): array
@@ -95,17 +95,6 @@ class EmailPlugin extends ApiBasedPlugin
                 ],
                 category: 'read'
             ),
-
-            new ToolDefinition(
-                name: 'get_unread_count',
-                description: 'Get the number of unread emails',
-                parameters: [
-                    'type' => 'object',
-                    'properties' => (object)[],
-                    'required' => [],
-                ],
-                category: 'info'
-            ),
         ];
     }
 
@@ -114,8 +103,6 @@ class EmailPlugin extends ApiBasedPlugin
         return match ($toolName) {
             'search_emails' => $this->searchEmails($parameters),
             'read_email' => $this->readEmail($parameters),
-            'get_unread_count' => $this->getUnreadCount($parameters),
-            'send_email' => $this->sendEmail($parameters),
             default => ToolResult::failure("Tool '{$toolName}' not found in EmailPlugin"),
         };
     }
@@ -155,38 +142,6 @@ class EmailPlugin extends ApiBasedPlugin
     private function readEmailViaApi(array $params): ToolResult
     {
         $response = $this->apiRequest('read', 'GET', ['id' => $params['email_id']]);
-
-        if (!$response['success']) {
-            return ToolResult::failure($response['error']);
-        }
-
-        return ToolResult::success($response['data']);
-    }
-
-    private function getUnreadCount(array $params): ToolResult
-    {
-        return $this->getUnreadCountViaApi($params);
-    }
-
-    private function getUnreadCountViaApi(array $params): ToolResult
-    {
-        $response = $this->apiRequest('unread_count', 'GET');
-
-        if (!$response['success']) {
-            return ToolResult::failure($response['error']);
-        }
-
-        return ToolResult::success($response['data']);
-    }
-
-    private function sendEmail(array $params): ToolResult
-    {
-        return $this->sendEmailViaApi($params);
-    }
-
-    private function sendEmailViaApi(array $params): ToolResult
-    {
-        $response = $this->apiRequest('send', 'POST', [], [], $params);
 
         if (!$response['success']) {
             return ToolResult::failure($response['error']);
