@@ -34,40 +34,32 @@ class AIService
             'max_tokens' => config('ai.max_tokens'),
         ];
 
-        try {
-            $response = Http::withToken($this->apiKey)
-                ->post("{$this->baseUrl}/chat/completions", $requestData)
-                ->json();
+        $response = Http::withToken($this->apiKey)
+            ->post("{$this->baseUrl}/chat/completions", $requestData)
+            ->json();
 
-            if (isset($response['error'])) {
-                return [
-                    'success' => false,
-                    'error' => $response['error']['message'] ?? 'API error',
-                    'history' => $conversationHistory,
-                ];
-            }
-
-            // Check if the assistant wants to call tools
-            $assistantMessage = $response['choices'][0]['message'];
-
-            // Regular response
-            $finalResponse = $assistantMessage['content'] ?? '';
-
-            return [
-                'success' => true,
-                'message' => $finalResponse,
-                'history' => array_merge($conversationHistory, [
-                    ['role' => 'user', 'content' => $message],
-                    ['role' => 'assistant', 'content' => $finalResponse],
-                ])
-            ];
-        } catch (\Exception $e) {
+        if (isset($response['error'])) {
             return [
                 'success' => false,
-                'error' => 'Failed to communicate with OpenAI: ' . $e->getMessage(),
+                'error' => $response['error']['message'] ?? 'API error',
                 'history' => $conversationHistory,
             ];
         }
+
+        // Check if the assistant wants to call tools
+        $assistantMessage = $response['choices'][0]['message']['content']
+
+        // Regular response
+        $finalResponse = $assistantMessage['content'] ?? '';
+
+        return [
+            'success' => true,
+            'message' => $finalResponse,
+            'history' => array_merge($conversationHistory, [
+                ['role' => 'user', 'content' => $message],
+                ['role' => 'assistant', 'content' => $finalResponse],
+            ])
+        ];
     }
 
     private function buildMessages(string $message, array $conversationHistory): array
