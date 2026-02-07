@@ -19,10 +19,6 @@ class ApiConfig
      */
     public function getEndpointUrl(string $endpoint, array $params = []): string
     {
-        if (!isset($this->endpoints[$endpoint])) {
-            throw new \InvalidArgumentException("Endpoint '{$endpoint}' not configured");
-        }
-
         $path = $this->endpoints[$endpoint];
 
         // Replace URL parameters like {id} with actual values
