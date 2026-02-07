@@ -2,7 +2,6 @@
   let messages = $state([]);
   let input = $state('');
   let loading = $state(false);
-  let error = $state('');
   let messagesContainer = $state();
 
   async function sendMessage() {
@@ -10,7 +9,6 @@
 
     const userMessage = input.trim();
     input = '';
-    error = '';
 
     messages.push({
       role: 'user',
@@ -54,7 +52,6 @@
   function clearChat() {
     messages = [];
     input = '';
-    error = '';
   }
 
   function handleKeydown(e) {
