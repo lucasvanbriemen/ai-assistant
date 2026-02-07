@@ -19,7 +19,7 @@ class PluginList
 
         foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
-                $this->pluginToolMap[$tool->name] = $plugin;
+                $this->pluginToolMap[$tool['name']] = $plugin;
             }
         }
     }
@@ -36,12 +36,12 @@ class PluginList
                 $tools[] = [
                     'type' => 'function',
                     'function' => [
-                        'name' => $tool->name,
-                        'description' => $tool->description,
+                        'name' => $tool['name'],
+                        'description' => $tool['description'],
                         'parameters' => [
                             'type' => 'object',
-                            'properties' => $tool->parameters['properties'] ?? [],
-                            'required' => $tool->parameters['required'] ?? [],
+                            'properties' => $tool['parameters']['properties'] ?? [],
+                            'required' => $tool['parameters']['required'] ?? [],
                         ],
                     ],
                 ];
@@ -64,7 +64,7 @@ class PluginList
         // Validate parameters
         $tool = null;
         foreach ($plugin->getTools() as $t) {
-            if ($t->name === $toolName) {
+            if ($t['name'] === $toolName) {
                 $tool = $t;
                 break;
             }
@@ -75,7 +75,7 @@ class PluginList
         }
 
         // Validate parameters against schema
-        $errors = ParameterValidator::validate($parameters, $tool->parameters);
+        $errors = ParameterValidator::validate($parameters, $tool['parameters']);
         if (!empty($errors)) {
             return ToolResult::failure('Parameter validation failed: ' . json_encode($errors));
         }

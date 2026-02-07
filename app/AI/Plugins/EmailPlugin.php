@@ -2,7 +2,6 @@
 
 namespace App\AI\Plugins;
 
-use App\AI\Contracts\ToolDefinition;
 use App\AI\Contracts\ToolResult;
 use App\AI\Contracts\ApiConfig;
 use App\AI\Contracts\PluginInterface;
@@ -39,10 +38,10 @@ class EmailPlugin extends PluginInterface
     public function getTools()
     {
         return [
-            new ToolDefinition(
-                name: 'search_emails',
-                description: 'Search emails by keyword, sender, date range, or read status',
-                parameters: [
+            [
+                'name' => 'search_emails',
+                'description' => 'Search emails by keyword, sender, date range, or read status',
+                'parameters' => [
                     'type' => 'object',
                     'properties' => [
                         'keyword' => [
@@ -72,13 +71,12 @@ class EmailPlugin extends PluginInterface
                     ],
                     'required' => [],
                 ],
-                category: 'search'
-            ),
+            ],
 
-            new ToolDefinition(
-                name: 'read_email',
-                description: 'Get the full content of an email by ID',
-                parameters: [
+            [
+                'name' => 'read_email',
+                'description' => 'Get the full content of an email by ID',
+                'parameters' => [
                     'type' => 'object',
                     'properties' => [
                         'email_id' => [
@@ -88,8 +86,7 @@ class EmailPlugin extends PluginInterface
                     ],
                     'required' => ['email_id'],
                 ],
-                category: 'read'
-            ),
+            ],
         ];
     }
 
