@@ -13,12 +13,10 @@ class PluginList
 
     public function __construct()
     {
-        // Initialize plugins
         self::$plugins = [
             new EmailPlugin(),
         ];
 
-        // Build the tool to plugin map
         foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 $this->pluginToolMap[$tool->name] = $plugin;
@@ -26,23 +24,6 @@ class PluginList
         }
     }
 
-    /**
-     * Get all registered plugins
-     *
-     * @return array<PluginInterface>
-     */
-    public function getPlugins(): array
-    {
-        return array_values(self::$plugins);
-    }
-
-    /**
-     * Get a plugin by name
-     */
-    public function getPlugin(string $name): ?PluginInterface
-    {
-        return self::$plugins[$name] ?? null;
-    }
 
     /**
      * Get all available tools in OpenAI format
