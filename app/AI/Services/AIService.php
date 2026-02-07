@@ -41,39 +41,32 @@ class AIService
             $requestData['tools'] = $tools;
         }
 
-        try {
-            $response = Http::withToken(self::$apiKey)
-                ->timeout(60)
-                ->post(self::$baseUrl."/chat/completions", $requestData)
-                ->json();
+        $response = Http::withToken(self::$apiKey)
+            ->timeout(60)
+            ->post(self::$baseUrl."/chat/completions", $requestData)
+            ->json();
 
-            // Check if the assistant wants to call tools
-            $assistantMessage = $response['choices'][0]['message'];
+        // Check if the assistant wants to call tools
+        $assistantMessage = $response['choices'][0]['message'];
 
-            if (isset($assistantMessage['tool_calls'])) {
-                // Process tool calls (regardless of whether there's also text content)
-                return self::processOpenAIToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
-            }
-
-            // Regular response (no tool calls)
-            $finalResponse = $assistantMessage['content'] ?? '';
-
-            return [
-                'success' => true,
-                'message' => $finalResponse,
-                'history' => array_merge($conversationHistory, [
-                    ['role' => 'user', 'content' => $message],
-                    ['role' => 'assistant', 'content' => $finalResponse],
-                ]),
-                'tools_used' => [],
-            ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'error' => 'Failed to communicate with OpenAI: ' . $e->getMessage(),
-                'history' => $conversationHistory,
-            ];
+        if (isset($assistantMessage['tool_calls'])) {
+            // Process tool calls (regardless of whether there's also text content)
+            return self::processOpenAIToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
         }
+
+        // Regular response (no tool calls)
+        $finalResponse = $assistantMessage['content'] ?? '';
+
+        return [
+            'success' => true,
+            'message' => $finalResponse,
+            'history' => array_merge($conversationHistory, [
+                ['role' => 'user', 'content' => $message],
+                ['role' => 'assistant', 'content' => $finalResponse],
+            ]),
+            'tools_used' => [],
+        ];
+       
     }
 
     private static function processOpenAIToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): array
@@ -126,58 +119,51 @@ class AIService
         // Get available tools again in case more tool calls are needed
         $tools = PluginList::getToolsInOpenAIFormat();
 
-        try {
-            $requestData = [
-                'model' => self::$model,
-                'messages' => $messages,
-                'temperature' => 0.7,
-                'max_tokens' => config('ai.max_tokens'),
-            ];
+        $requestData = [
+            'model' => self::$model,
+            'messages' => $messages,
+            'temperature' => 0.7,
+            'max_tokens' => config('ai.max_tokens'),
+        ];
 
-            if (!empty($tools)) {
-                $requestData['tools'] = $tools;
-            }
+        if (!empty($tools)) {
+            $requestData['tools'] = $tools;
+        }
 
-            $response = Http::withToken(self::$apiKey)
-                ->timeout(60)
-                ->post(self::$baseUrl."/chat/completions", $requestData)
-                ->json();
+        $response = Http::withToken(self::$apiKey)
+            ->timeout(60)
+            ->post(self::$baseUrl."/chat/completions", $requestData)
+            ->json();
 
-            if (isset($response['error'])) {
-                return [
-                    'success' => false,
-                    'error' => $response['error']['message'] ?? 'API error',
-                    'history' => $conversationHistory,
-                ];
-            }
-
-            $assistantMessage = $response['choices'][0]['message'];
-
-            // Check if the final response also includes tool calls
-            if (isset($assistantMessage['tool_calls'])) {
-                // Process additional tool calls recursively
-                return self::processOpenAIToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
-            }
-
-            $finalResponse = $assistantMessage['content'] ?? '';
-
-            return [
-                'success' => true,
-                'message' => $finalResponse,
-                'history' => array_merge($conversationHistory, [
-                    ['role' => 'user', 'content' => $userMessage],
-                    ['role' => 'assistant', 'content' => $finalResponse],
-                ]),
-                'tools_used' => $toolsUsed,
-            ];
-        } catch (\Exception $e) {
+        if (isset($response['error'])) {
             return [
                 'success' => false,
-                'error' => 'Failed to get final response: ' . $e->getMessage(),
+                'error' => $response['error']['message'] ?? 'API error',
                 'history' => $conversationHistory,
             ];
         }
+
+        $assistantMessage = $response['choices'][0]['message'];
+
+        // Check if the final response also includes tool calls
+        if (isset($assistantMessage['tool_calls'])) {
+            // Process additional tool calls recursively
+            return self::processOpenAIToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
+        }
+
+        $finalResponse = $assistantMessage['content'] ?? '';
+
+        return [
+            'success' => true,
+            'message' => $finalResponse,
+            'history' => array_merge($conversationHistory, [
+                ['role' => 'user', 'content' => $userMessage],
+                ['role' => 'assistant', 'content' => $finalResponse],
+            ]),
+            'tools_used' => $toolsUsed,
+        ];
     }
+
     private static function buildMessages(string $message, array $conversationHistory): array
     {
         $messages = [];
