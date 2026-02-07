@@ -47,7 +47,7 @@ class AIService
         }
 
         // Check if the assistant wants to call tools
-        $assistantMessage = $response['choices'][0]['message']['content']
+        $assistantMessage = $response['choices'][0]['message']['content'];
 
         // Regular response
         $finalResponse = $assistantMessage['content'] ?? '';
@@ -64,13 +64,9 @@ class AIService
 
     private function buildMessages(string $message, array $conversationHistory): array
     {
-        // Start with system prompt for Anthropic, or include in messages for OpenAI
         $messages = [];
 
-        // Add conversation history (limited by config)
-        $maxHistory = config('ai.max_history', 20);
-        $historyToInclude = array_slice($conversationHistory, -($maxHistory * 2));
-
+        $historyToInclude = array_slice($conversationHistory, -(config('ai.max_history') * 2));
         foreach ($historyToInclude as $entry) {
             if (isset($entry['role']) && isset($entry['content'])) {
                 $messages[] = $entry;
