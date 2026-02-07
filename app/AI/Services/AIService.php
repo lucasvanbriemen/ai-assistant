@@ -57,6 +57,7 @@ class AIService
 
         try {
             $response = Http::withToken($this->apiKey)
+                ->timeout(60)
                 ->post("{$this->baseUrl}/chat/completions", $requestData)
                 ->json();
 
@@ -71,12 +72,12 @@ class AIService
             // Check if the assistant wants to call tools
             $assistantMessage = $response['choices'][0]['message'];
 
-            if ($assistantMessage['content'] === null && isset($assistantMessage['tool_calls'])) {
-                // Process tool calls
+            if (isset($assistantMessage['tool_calls'])) {
+                // Process tool calls (regardless of whether there's also text content)
                 return $this->processOpenAIToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
             }
 
-            // Regular response
+            // Regular response (no tool calls)
             $finalResponse = $assistantMessage['content'] ?? '';
 
             return [
@@ -103,11 +104,18 @@ class AIService
         $toolsUsed = [];
 
         // Add assistant message with tool calls
-        $messages[] = [
+        // Get the original assistant message which may have content + tool_calls
+        $originalAssistantMessage = end($previousMessages);
+        $assistantMessage = [
             'role' => 'assistant',
-            'content' => null,
             'tool_calls' => $toolCalls,
         ];
+        // Preserve original content if it exists (reasoning/explanation)
+        if (isset($originalAssistantMessage['content']) && $originalAssistantMessage['content'] !== null) {
+            $assistantMessage['content'] = $originalAssistantMessage['content'];
+        }
+
+        $messages[] = $assistantMessage;
 
         // Execute each tool call
         $toolResults = [];
@@ -137,14 +145,24 @@ class AIService
         }
 
         // Get final response from AI
+        // Get available tools again in case more tool calls are needed
+        $tools = $this->registry->getToolsInOpenAIFormat();
+
         try {
+            $requestData = [
+                'model' => $this->model,
+                'messages' => $messages,
+                'temperature' => 0.7,
+                'max_tokens' => config('ai.max_tokens'),
+            ];
+
+            if (!empty($tools)) {
+                $requestData['tools'] = $tools;
+            }
+
             $response = Http::withToken($this->apiKey)
-                ->post("{$this->baseUrl}/chat/completions", [
-                    'model' => $this->model,
-                    'messages' => $messages,
-                    'temperature' => 0.7,
-                    'max_tokens' => config('ai.max_tokens'),
-                ])
+                ->timeout(60)
+                ->post("{$this->baseUrl}/chat/completions", $requestData)
                 ->json();
 
             if (isset($response['error'])) {
@@ -155,7 +173,15 @@ class AIService
                 ];
             }
 
-            $finalResponse = $response['choices'][0]['message']['content'] ?? '';
+            $assistantMessage = $response['choices'][0]['message'];
+
+            // Check if the final response also includes tool calls
+            if (isset($assistantMessage['tool_calls'])) {
+                // Process additional tool calls recursively
+                return $this->processOpenAIToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
+            }
+
+            $finalResponse = $assistantMessage['content'] ?? '';
 
             return [
                 'success' => true,

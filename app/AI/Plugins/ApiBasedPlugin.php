@@ -39,7 +39,8 @@ abstract class ApiBasedPlugin implements PluginInterface
         try {
             $url = $this->apiConfig->getEndpointUrl($endpoint, $pathParams);
 
-            $request = Http::withHeaders($this->apiConfig->getHeaders());
+            $request = Http::withHeaders($this->apiConfig->getHeaders())
+                ->timeout(30); // 30 second timeout per API call
 
             if (!empty($queryParams)) {
                 $request = $request->withQueryParameters($queryParams);

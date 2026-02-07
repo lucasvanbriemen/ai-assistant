@@ -22,7 +22,8 @@ This document defines the expected request and response formats for the Email AP
   "sender": "optional - filter by sender email address",
   "from_date": "optional - YYYY-MM-DD format",
   "to_date": "optional - YYYY-MM-DD format",
-  "unread_only": "optional - boolean, only return unread emails"
+  "unread_only": "optional - boolean, only return unread emails",
+  "limit": "optional - maximum number of results to return (default: 50, max: 100)"
 }
 ```
 
@@ -101,6 +102,51 @@ Authorization: Bearer {EMAIL_API_AUTH_TOKEN}
 ```json
 {
   "error": "Email with ID 'email_unique_id_1' not found"
+}
+```
+
+---
+
+### 3. Extract Email Information
+**Tool**: `extract_email_info` (Internal tool - reads email and extracts structured fields)
+
+**Parameters**:
+```json
+{
+  "email_id": "required - the email ID to extract information from",
+  "fields": ["required - array of field names to extract", "e.g., ['movie_title', 'date', 'time', 'location', 'confirmation_number']"]
+}
+```
+
+**Supported Fields**:
+- `movie_title`, `film_title` - Extract movie/film titles from email
+- `date`, `event_date` - Extract event dates
+- `time`, `event_time` - Extract event times
+- `location`, `venue` - Extract locations/venues
+- `seat`, `seats` - Extract seat information
+- `confirmation_number`, `booking_number`, `reservation_number` - Extract confirmation/booking numbers
+- Any custom field name (will attempt to find it in the email)
+
+**Example Request** (via AI):
+When the AI detects it needs movie information, it will call:
+```json
+{
+  "email_id": "email_123",
+  "fields": ["movie_title", "date", "time", "location"]
+}
+```
+
+**Expected Response**:
+```json
+{
+  "success": true,
+  "email_id": "email_123",
+  "extracted_fields": {
+    "movie_title": "Avatar: The Way of Water",
+    "date": "31 January 2026",
+    "time": "22:00",
+    "location": "Pathé De Kuip - Rotterdam"
+  }
 }
 ```
 
