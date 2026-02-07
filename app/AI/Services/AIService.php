@@ -46,15 +46,14 @@ class AIService
             ];
         }
 
-        $assistantMessage = $response['choices'][0]['message']['content'];
-        $finalResponse = $assistantMessage['content'] ?? '';
+        $assistantMessage = $response['choices'][0]['message']['content'] ?? '';
 
         return [
             'success' => true,
-            'message' => $finalResponse,
+            'message' => $assistantMessage,
             'history' => array_merge($conversationHistory, [
                 ['role' => 'user', 'content' => $message],
-                ['role' => 'assistant', 'content' => $finalResponse],
+                ['role' => 'assistant', 'content' => $assistantMessage],
             ])
         ];
     }
