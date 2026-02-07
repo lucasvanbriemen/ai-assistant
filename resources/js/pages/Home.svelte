@@ -32,6 +32,10 @@
 <h1>Welcome to Your App</h1>
 <p>This is the home page with API integration.</p>
 
+<nav>
+    <a href="/chat">Go to AI Chatbot</a>
+</nav>
+
 <button onclick={increment}>
     Clicked {count} times
 </button>
@@ -50,6 +54,25 @@
 <style>
     h1 {
         color: #333;
+    }
+
+    nav {
+        margin: 2rem 0;
+    }
+
+    nav a {
+        display: inline-block;
+        background-color: #28a745;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    nav a:hover {
+        background-color: #218838;
     }
 
     button {

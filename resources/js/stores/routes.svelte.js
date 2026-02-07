@@ -1,5 +1,6 @@
-import Home from '../pages/Home.svelte';
 import About from '../pages/About.svelte';
+import Chat from '../pages/Chat.svelte';
+import Home from '../pages/Home.svelte';
 
 export const ROUTES = {
   home: {
@@ -11,6 +12,11 @@ export const ROUTES = {
     path: '/about',
     component: About,
     name: 'About',
+  },
+  chat: {
+    path: '/chat',
+    component: Chat,
+    name: 'Chat',
   },
 };
 
