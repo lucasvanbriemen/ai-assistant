@@ -1,20 +1,8 @@
-import About from '../pages/About.svelte';
-import Chat from '../pages/Chat.svelte';
-import Home from '../pages/Home.svelte';
+import Chat from '../pages/Home.svelte';
 
 export const ROUTES = {
   home: {
     path: '/',
-    component: Home,
-    name: 'Home',
-  },
-  about: {
-    path: '/about',
-    component: About,
-    name: 'About',
-  },
-  chat: {
-    path: '/chat',
     component: Chat,
     name: 'Chat',
   },
