@@ -75,56 +75,34 @@
   }
 </script>
 
-<div class="chatbot">
-  <div class="chatbot-header">
-    <h2>AI Chatbot</h2>
-    <button onclick={clearChat} class="btn-small">Clear Chat</button>
-  </div>
+<h2>AI Chatbot</h2>
+<button onclick="{clearChat}">Clear Chat</button>
 
-  {#if messages.length === 0}
-    <div class="chatbot-empty">
-      <p>Welcome! I can help you search emails, manage your calendar, and more.</p>
+<div class="messages" bind:this={messagesContainer}>
+{#each messages as message, i (i)}
+    <div class="message message-{message.role}">
+    <div class="message-content">
+        {#if message.role === 'user'}
+        <div class="message-text">{message.content}</div>
+        {:else if message.role === 'error'}
+        <div class="message-text error">{message.content}</div>
+        {:else}
+        <div class="message-text">{message.content}</div>
+        {/if}
     </div>
-  {/if}
+    <div class="message-time">
+        {#if message.timestamp}
+        {message.timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+        })}
+        {/if}
+    </div>
+    </div>
+{/each}
 
-  <div class="messages" bind:this={messagesContainer}>
-    {#each messages as message, i (i)}
-      <div class="message message-{message.role}">
-        <div class="message-content">
-          {#if message.role === 'user'}
-            <div class="message-text">{message.content}</div>
-          {:else if message.role === 'error'}
-            <div class="message-text error">{message.content}</div>
-          {:else}
-            <div class="message-text">{message.content}</div>
-          {/if}
-        </div>
-        <div class="message-time">
-          {#if message.timestamp}
-            {message.timestamp.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          {/if}
-        </div>
-      </div>
-    {/each}
 
-    {#if loading}
-      <div class="message message-assistant">
-        <div class="message-content">
-          <div class="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  <div class="input-area">
-    <textarea bind:value={input} placeholder="Ask me anything..." onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
-    <button onclick={sendMessage} disabled={!input.trim() || loading} class="btn-send" >{loading ? 'Sending...' : 'Send'}</button>
-  </div>
 </div>
+
+<textarea bind:value={input} placeholder="Ask me anything..." onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
+<button onclick={sendMessage} disabled={!input.trim() || loading} class="btn-send" >{loading ? 'Sending...' : 'Send'}</button>
