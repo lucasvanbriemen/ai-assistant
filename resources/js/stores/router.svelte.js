@@ -2,7 +2,7 @@ import Home from '../pages/Home.svelte';
 import page from 'page';
 
 const routes = {
-    '/': Home
+    '/': Home,
 };
 
 export const router = $state({
