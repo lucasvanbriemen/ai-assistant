@@ -8,19 +8,24 @@ use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    private string $apiKey;
-    private string $model;
-    private string $baseUrl;
+    private static string $apiKey;
+    private static string $model;
+    private static string $baseUrl;
+    private static bool $initialized = false;
 
-    public function __construct()
+    private static function ensureInitialized(): void
     {
-        $this->apiKey = config('ai.openai.api_key');
-        $this->model = config('ai.openai.model');
-        $this->baseUrl = config('ai.openai.base_url');
+        if (!self::$initialized) {
+            self::$apiKey = config('ai.openai.api_key');
+            self::$model = config('ai.openai.model');
+            self::$baseUrl = config('ai.openai.base_url');
+            self::$initialized = true;
+        }
     }
 
     public static function send(string $message, array $conversationHistory = []): array
     {
+        self::ensureInitialized();
         $messages = self::buildMessages($message, $conversationHistory);
         $tools = PluginList::getToolsInOpenAIFormat();
 
@@ -36,7 +41,7 @@ class AIService
         }
 
         $response = Http::withToken(self::$apiKey)
-            ->timeout(60)
+            ->timeout(120)
             ->post(self::$baseUrl."/chat/completions", $requestData)
             ->json();
 
@@ -124,7 +129,7 @@ class AIService
         }
 
         $response = Http::withToken(self::$apiKey)
-            ->timeout(60)
+            ->timeout(120)
             ->post(self::$baseUrl."/chat/completions", $requestData)
             ->json();
 

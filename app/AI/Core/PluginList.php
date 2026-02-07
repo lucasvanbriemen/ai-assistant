@@ -9,19 +9,26 @@ use App\AI\Plugins\EmailPlugin;
 class PluginList
 {
     public static array $plugins = [];
-    private array $pluginToolMap = [];
+    private static array $pluginToolMap = [];
+    private static bool $initialized = false;
 
-    public function __construct()
+    private static function initialize(): void
     {
+        if (self::$initialized) {
+            return;
+        }
+
         self::$plugins = [
             new EmailPlugin(),
         ];
 
         foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
-                $this->pluginToolMap[$tool['name']] = $plugin;
+                self::$pluginToolMap[$tool['name']] = $plugin;
             }
         }
+
+        self::$initialized = true;
     }
 
     /**
@@ -29,6 +36,7 @@ class PluginList
      */
     public static function getToolsInOpenAIFormat(): array
     {
+        self::initialize();
         $tools = [];
         foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
@@ -51,6 +59,7 @@ class PluginList
 
     public static function executeTool(string $toolName, array $parameters): ToolResult
     {
+        self::initialize();
         $plugin = self::$pluginToolMap[$toolName] ?? null;
 
         if (!$plugin) {
