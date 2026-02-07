@@ -1,10 +1,10 @@
-import Chat from '../pages/Home.svelte';
+import Home from '../pages/Home.svelte';
 
 export const ROUTES = {
   home: {
     path: '/',
-    component: Chat,
-    name: 'Chat',
+    component: Home,
+    name: 'Home',
   },
 };
 
