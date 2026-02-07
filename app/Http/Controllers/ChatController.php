@@ -44,7 +44,7 @@ class ChatController extends Controller
 
         $message = $validated['message'];
         $history = $validated['history'] ?? [];
-        $response = AIService::chat($message, $history);
+        $response = AIService::send($message, $history);
 
         return response()->json([
             'success' => true,

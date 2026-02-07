@@ -22,7 +22,7 @@ class AIService
     /**
      * Send a message and get a response, optionally executing tools
      */
-    public static function chat(string $message, array $conversationHistory = []): array
+    public static function send(string $message, array $conversationHistory = []): array
     {
         // Build messages for the API
         $messages = self::buildMessages($message, $conversationHistory);
