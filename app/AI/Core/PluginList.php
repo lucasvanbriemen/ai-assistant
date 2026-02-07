@@ -4,9 +4,13 @@ namespace App\AI\Core;
 
 use App\AI\Contracts\PluginInterface;
 use App\AI\Contracts\ToolResult;
+use App\AI\Plugins\EmailPlugin;
 
 class PluginList
 {
+    /**
+     * @var array<PluginInterface>
+     */
     private array $plugins = [];
 
     /**
@@ -14,16 +18,18 @@ class PluginList
      */
     private array $toolPluginMap = [];
 
-    /**
-     * Register a plugin
-     */
-    public function add(PluginInterface $plugin): void
+    public function __construct()
     {
-        $this->plugins[$plugin->getName()] = $plugin;
+        // Initialize plugins
+        $this->plugins = [
+            new EmailPlugin(),
+        ];
 
-        // Map all tools from this plugin
-        foreach ($plugin->getTools() as $tool) {
-            $this->toolPluginMap[$tool->name] = $plugin;
+        // Build the tool to plugin map
+        foreach ($this->plugins as $plugin) {
+            foreach ($plugin->getTools() as $tool) {
+                $this->toolPluginMap[$tool->name] = $plugin;
+            }
         }
     }
 
