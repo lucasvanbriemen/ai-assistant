@@ -56,7 +56,18 @@ class PluginRegistry
         $tools = [];
         foreach ($this->plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
-                $tools[] = $tool->toOpenAIFormat();
+                $tools[] = [
+                    'type' => 'function',
+                    'function' => [
+                        'name' => $tool->name,
+                        'description' => $tool->description,
+                        'parameters' => [
+                            'type' => 'object',
+                            'properties' => $tool->parameters['properties'] ?? [],
+                            'required' => $tool->parameters['required'] ?? [],
+                        ],
+                    ],
+                ];
             }
         }
         return $tools;
