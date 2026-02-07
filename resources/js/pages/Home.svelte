@@ -22,11 +22,6 @@
     messages = messages;
   }
 
-  function clearChat() {
-    messages = [];
-    input = '';
-  }
-
   function handleKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -34,8 +29,6 @@
     }
   }
 </script>
-
-<button onclick="{clearChat}">Clear Chat</button>
 
 <div class="messages" bind:this={messagesContainer}>
 {#each messages as message, i (i)}
