@@ -21,13 +21,8 @@ class ChatController extends Controller
         // - Extracting information from multiple emails
         set_time_limit(300); // 5 minutes
 
-        $validated = $request->validate([
-            'message' => 'required|string|max:2000',
-            'history' => 'nullable|array',
-        ]);
-
-        $message = $validated['message'];
-        $history = $validated['history'] ?? [];
+        $message = $request->input('message');
+        $history = $request->input('history', []);
         $response = AIService::send($message, $history);
 
         return response()->json([
