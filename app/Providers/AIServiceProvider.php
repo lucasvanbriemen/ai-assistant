@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\AI\Core\PluginRegistry;
+use App\AI\Core\PluginList;
 use App\AI\Plugins\EmailPlugin;
 use App\AI\Services\AIService;
 use Illuminate\Support\ServiceProvider;
@@ -14,17 +14,17 @@ class AIServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(PluginRegistry::class, function () {
-            $registry = new PluginRegistry();
+        $this->app->singleton(PluginList::class, function () {
+            $plugins = new PluginList();
 
             // Register all plugins
-            $registry->register(new EmailPlugin());
+            $plugins->add(new EmailPlugin());
 
-            return $registry;
+            return $plugins;
         });
 
         $this->app->singleton(AIService::class, function () {
-            return new AIService($this->app->make(PluginRegistry::class));
+            return new AIService($this->app->make(PluginList::class));
         });
     }
 

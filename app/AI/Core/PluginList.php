@@ -5,11 +5,8 @@ namespace App\AI\Core;
 use App\AI\Contracts\PluginInterface;
 use App\AI\Contracts\ToolResult;
 
-class PluginRegistry
+class PluginList
 {
-    /**
-     * @var array<PluginInterface>
-     */
     private array $plugins = [];
 
     /**
@@ -20,7 +17,7 @@ class PluginRegistry
     /**
      * Register a plugin
      */
-    public function register(PluginInterface $plugin): void
+    public function add(PluginInterface $plugin): void
     {
         $this->plugins[$plugin->getName()] = $plugin;
 
