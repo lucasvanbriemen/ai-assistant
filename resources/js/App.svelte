@@ -4,7 +4,7 @@
     import { getAllRoutes } from './stores/routes.svelte.js';
     import api from './lib/api.js';
 
-    let routes = [];
+    let routes = $state([]);
 
     onMount(() => {
         routes = getAllRoutes();
