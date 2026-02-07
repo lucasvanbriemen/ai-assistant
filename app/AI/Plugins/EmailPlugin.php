@@ -19,9 +19,7 @@ class EmailPlugin extends ApiBasedPlugin
             baseUrl: env('EMAIL_API_BASE_URL'),
             endpoints: [
                 'search' => '/api/emails/search',
-                'read' => '/api/emails/{id}',
-                'unread_count' => '/api/emails/unread/count',
-                'send' => '/api/emails/send',
+                'read' => '/api/emails/{id}'
             ],
             headers: [],
             authToken: env('EMAIL_API_AUTH_TOKEN', null),
