@@ -46,10 +46,7 @@ class AIService
             ];
         }
 
-        // Check if the assistant wants to call tools
         $assistantMessage = $response['choices'][0]['message']['content'];
-
-        // Regular response
         $finalResponse = $assistantMessage['content'] ?? '';
 
         return [
