@@ -18,9 +18,6 @@ class ApiConfig
         $this->headers = $headers;
     }
 
-    /**
-     * Get a complete endpoint URL
-     */
     public function getEndpointUrl(string $endpoint, array $params = []): string
     {
         $path = $this->endpoints[$endpoint];
@@ -40,7 +37,7 @@ class ApiConfig
             $this->headers
         );
 
-        if ($this->authToken) {
+        if (env('AGENT_TOKEN')) {
             $headers['Authorization'] = "Bearer ". env('AGENT_TOKEN');
         }
 

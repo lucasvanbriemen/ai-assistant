@@ -18,12 +18,9 @@ class AIService
     {
         $this->registry = $registry;
         $this->provider = config('ai.provider', 'openai');
-
-        if ($this->provider === 'openai') {
-            $this->apiKey = config('ai.openai.api_key');
-            $this->model = config('ai.openai.model');
-            $this->baseUrl = config('ai.openai.base_url');
-        }
+        $this->apiKey = config('ai.openai.api_key');
+        $this->model = config('ai.openai.model');
+        $this->baseUrl = config('ai.openai.base_url');
     }
 
     /**
