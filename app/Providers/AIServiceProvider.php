@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\AI\Core\PluginList;
 use App\AI\Services\AIService;
 use Illuminate\Support\ServiceProvider;
 
