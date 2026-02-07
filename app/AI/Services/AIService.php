@@ -2,19 +2,19 @@
 
 namespace App\AI\Services;
 
-use App\AI\Core\PluginRegistry;
+use App\AI\Core\PluginList;
 use App\AI\Contracts\ToolResult;
 use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    private PluginRegistry $registry;
+    private PluginList $registry;
     private string $provider;
     private string $apiKey;
     private string $model;
     private string $baseUrl;
 
-    public function __construct(PluginRegistry $registry)
+    public function __construct(PluginList $registry)
     {
         $this->registry = $registry;
         $this->provider = config('ai.provider', 'openai');
