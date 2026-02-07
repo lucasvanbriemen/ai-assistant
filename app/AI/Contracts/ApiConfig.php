@@ -10,8 +10,7 @@ class ApiConfig
     public function __construct(
         public string $baseUrl,
         public array $endpoints = [],
-        public array $headers = [],
-        public ?string $authToken = null,
+        public array $headers = []
     ) {}
 
     /**
