@@ -253,7 +253,7 @@ class EmailPlugin extends ApiBasedPlugin
 
         // First, read the full email
         $emailResult = $this->readEmail(['email_id' => $emailId]);
-        if (!$emailResult->isSuccess()) {
+        if (!$emailResult->success) {
             return $emailResult;
         }
 
