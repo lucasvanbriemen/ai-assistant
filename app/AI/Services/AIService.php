@@ -22,16 +22,16 @@ class AIService
     /**
      * Send a message and get a response, optionally executing tools
      */
-    public function chat(string $message, array $conversationHistory = []): array
+    public static function chat(string $message, array $conversationHistory = []): array
     {
         // Build messages for the API
-        $messages = $this->buildMessages($message, $conversationHistory);
+        $messages = self::buildMessages($message, $conversationHistory);
 
         // Get available tools
         $tools = PluginList::getToolsInOpenAIFormat();
 
         $requestData = [
-            'model' => $this->model,
+            'model' => self::$model,
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
@@ -42,9 +42,9 @@ class AIService
         }
 
         try {
-            $response = Http::withToken($this->apiKey)
+            $response = Http::withToken(self::$apiKey)
                 ->timeout(60)
-                ->post("{$this->baseUrl}/chat/completions", $requestData)
+                ->post(self::$baseUrl."/chat/completions", $requestData)
                 ->json();
 
             // Check if the assistant wants to call tools
@@ -52,7 +52,7 @@ class AIService
 
             if (isset($assistantMessage['tool_calls'])) {
                 // Process tool calls (regardless of whether there's also text content)
-                return $this->processOpenAIToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
+                return self::processOpenAIToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
             }
 
             // Regular response (no tool calls)
@@ -76,7 +76,7 @@ class AIService
         }
     }
 
-    private function processOpenAIToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): array
+    private static function processOpenAIToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): array
     {
         $messages = $previousMessages;
         $toolsUsed = [];
@@ -128,7 +128,7 @@ class AIService
 
         try {
             $requestData = [
-                'model' => $this->model,
+                'model' => self::$model,
                 'messages' => $messages,
                 'temperature' => 0.7,
                 'max_tokens' => config('ai.max_tokens'),
@@ -138,9 +138,9 @@ class AIService
                 $requestData['tools'] = $tools;
             }
 
-            $response = Http::withToken($this->apiKey)
+            $response = Http::withToken(self::$apiKey)
                 ->timeout(60)
-                ->post("{$this->baseUrl}/chat/completions", $requestData)
+                ->post(self::$baseUrl."/chat/completions", $requestData)
                 ->json();
 
             if (isset($response['error'])) {
@@ -156,7 +156,7 @@ class AIService
             // Check if the final response also includes tool calls
             if (isset($assistantMessage['tool_calls'])) {
                 // Process additional tool calls recursively
-                return $this->processOpenAIToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
+                return self::processOpenAIToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
             }
 
             $finalResponse = $assistantMessage['content'] ?? '';
@@ -178,7 +178,7 @@ class AIService
             ];
         }
     }
-    private function buildMessages(string $message, array $conversationHistory): array
+    private static function buildMessages(string $message, array $conversationHistory): array
     {
         $messages = [];
 

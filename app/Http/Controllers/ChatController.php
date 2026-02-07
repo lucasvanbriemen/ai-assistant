@@ -9,10 +9,6 @@ use Illuminate\Http\JsonResponse;
 
 class ChatController extends Controller
 {
-    public function __construct(
-        private AIService $aiService
-    ) {}
-
     /**
      * Get all available tools
      */
@@ -48,7 +44,7 @@ class ChatController extends Controller
 
         $message = $validated['message'];
         $history = $validated['history'] ?? [];
-        $response = $this->aiService->chat($message, $history);
+        $response = AIService::chat($message, $history);
 
         return response()->json([
             'success' => true,
