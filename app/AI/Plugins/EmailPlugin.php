@@ -13,7 +13,7 @@ class EmailPlugin extends ApiBasedPlugin
 
     public function __construct()
     {
-        $this->useApi = env('EMAIL_PLUGIN_USE_API', false);
+        $this->useApi = env('EMAIL_PLUGIN_USE_API', true);
         parent::__construct();
 
         // Load mock emails as fallback if not using API
