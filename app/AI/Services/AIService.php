@@ -176,8 +176,17 @@ class AIService
     }
     private function buildMessages(string $message, array $conversationHistory): array
     {
-        // Start with system prompt for Anthropic, or include in messages for OpenAI
         $messages = [];
+
+        // Add system prompt as the first message
+        $systemPrompt = config('ai.system_prompt', 'You are a helpful AI assistant.');
+        $today = date('l, F j, Y'); // e.g., "Friday, February 7, 2026"
+        $systemPrompt .= "\n\nCurrent date and time: {$today}. Use this to interpret relative dates like 'last Friday', 'tomorrow', 'next week', etc.";
+
+        $messages[] = [
+            'role' => 'system',
+            'content' => $systemPrompt,
+        ];
 
         // Add conversation history (limited by config)
         $maxHistory = config('ai.max_history', 20);
