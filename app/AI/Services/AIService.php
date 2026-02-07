@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    private string $provider;
     private string $apiKey;
     private string $model;
     private string $baseUrl;

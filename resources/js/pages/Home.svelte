@@ -1,12 +1,8 @@
 <script>
   let messages = $state([]);
   let input = $state('');
-  let loading = $state(false);
-  let messagesContainer = $state();
 
   async function sendMessage() {
-    if (!input.trim() || loading) return;
-
     const userMessage = input.trim();
     input = '';
 
@@ -15,9 +11,6 @@
       content: userMessage,
       timestamp: new Date(),
     });
-
-    loading = true;
-    scrollToBottom();
 
     const response = await api.post('/api/chat/send', {
         message: userMessage,
@@ -36,17 +29,6 @@
     });
 
     messages = messages;
-
-    loading = false;
-    scrollToBottom();
-  }
-
-  function scrollToBottom() {
-    setTimeout(() => {
-      if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }
-    }, 0);
   }
 
   function clearChat() {
@@ -80,5 +62,5 @@
 {/each}
 </div>
 
-<textarea bind:value={input} onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
-<button onclick={sendMessage} disabled={!input.trim() || loading}>{loading ? 'Sending...' : 'Send'}</button>
+<textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
+<button onclick={sendMessage} disabled={!input.trim()}>Send</button>
