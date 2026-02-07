@@ -44,7 +44,6 @@
   }
 </script>
 
-<h2>AI Chatbot</h2>
 <button onclick="{clearChat}">Clear Chat</button>
 
 <div class="messages" bind:this={messagesContainer}>
