@@ -21,8 +21,7 @@ class EmailPlugin extends ApiBasedPlugin
                 'search' => '/api/emails/search',
                 'read' => '/api/emails/{id}'
             ],
-            headers: [],
-            authToken: env('EMAIL_API_AUTH_TOKEN', null),
+            headers: []
         );
     }
 

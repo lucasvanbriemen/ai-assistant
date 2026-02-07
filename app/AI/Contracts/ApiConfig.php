@@ -29,9 +29,6 @@ class ApiConfig
         return rtrim($this->baseUrl, '/') . '/' . ltrim($path, '/');
     }
 
-    /**
-     * Get headers including auth if configured
-     */
     public function getHeaders(): array
     {
         $headers = array_merge(
@@ -40,7 +37,7 @@ class ApiConfig
         );
 
         if ($this->authToken) {
-            $headers['Authorization'] = "Bearer {$this->authToken}";
+            $headers['Authorization'] = "Bearer ". env('AGENT_TOKEN');
         }
 
         return $headers;
