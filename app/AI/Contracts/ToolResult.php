@@ -10,17 +10,11 @@ class ToolResult
         public ?string $error = null,
     ) {}
 
-    /**
-     * Create a successful result
-     */
     public static function success(mixed $data): self
     {
         return new self(success: true, data: $data);
     }
 
-    /**
-     * Create a failed result
-     */
     public static function failure(string $error): self
     {
         return new self(success: false, error: $error);
