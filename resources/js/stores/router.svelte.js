@@ -6,7 +6,7 @@ const routes = {
 };
 
 export const router = $state({
-    currentComponent: Chat,
+    currentComponent: Home,
     params: {},
 });
 
