@@ -128,14 +128,6 @@
             <div class="message-text error">{message.content}</div>
           {:else}
             <div class="message-text">{message.content}</div>
-            {#if message.toolsUsed && message.toolsUsed.length > 0}
-              <div class="tools-used">
-                Used tools:
-                {#each message.toolsUsed as tool}
-                  <span class="tool-badge">{tool.name}</span>
-                {/each}
-              </div>
-            {/if}
           {/if}
         </div>
         <div class="message-time">
@@ -163,20 +155,8 @@
   </div>
 
   <div class="input-area">
-    <textarea
-      bind:value={input}
-      placeholder="Ask me anything..."
-      onkeydown={handleKeydown}
-      disabled={loading}
-      rows="2"
-    ></textarea>
-    <button
-      onclick={sendMessage}
-      disabled={!input.trim() || loading}
-      class="btn-send"
-    >
-      {loading ? 'Sending...' : 'Send'}
-    </button>
+    <textarea bind:value={input} placeholder="Ask me anything..." onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
+    <button onclick={sendMessage} disabled={!input.trim() || loading} class="btn-send" >{loading ? 'Sending...' : 'Send'}</button>
   </div>
 </div>
 
