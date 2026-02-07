@@ -30,20 +30,18 @@
   }
 </script>
 
-<div class="messages" bind:this={messagesContainer}>
 {#each messages as message, i (i)}
-    {message.content}
-    <hr>
-    {#if message.timestamp}
-        {message.timestamp.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-        })}
-    {/if}
+  {message.content}
+  <hr>
+  {#if message.timestamp}
+      {message.timestamp.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+      })}
+  {/if}
 
-    <hr><hr><hr><hr>
+  <hr><hr><hr><hr>
 {/each}
-</div>
 
 <textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>
