@@ -19,15 +19,9 @@ class AIService
         $this->baseUrl = config('ai.openai.base_url');
     }
 
-    /**
-     * Send a message and get a response, optionally executing tools
-     */
     public static function send(string $message, array $conversationHistory = []): array
     {
-        // Build messages for the API
         $messages = self::buildMessages($message, $conversationHistory);
-
-        // Get available tools
         $tools = PluginList::getToolsInOpenAIFormat();
 
         $requestData = [

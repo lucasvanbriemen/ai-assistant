@@ -24,7 +24,6 @@ class PluginList
         }
     }
 
-
     /**
      * Get all available tools in OpenAI format
      */
@@ -50,9 +49,6 @@ class PluginList
         return $tools;
     }
 
-    /**
-     * Execute a tool
-     */
     public static function executeTool(string $toolName, array $parameters): ToolResult
     {
         $plugin = self::$pluginToolMap[$toolName] ?? null;

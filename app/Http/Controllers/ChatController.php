@@ -9,9 +9,6 @@ use Illuminate\Http\JsonResponse;
 
 class ChatController extends Controller
 {
-    /**
-     * Send a message and get a response
-     */
     public function sendMessage(Request $request): JsonResponse
     {
         // Increase execution time for complex queries that make multiple API calls
@@ -28,8 +25,7 @@ class ChatController extends Controller
         return response()->json([
             'success' => true,
             'message' => $response['message'],
-            'history' => $response['history'],
-            'tools_used' => $response['tools_used'] ?? [],
+            'history' => $response['history']
         ]);
     }
 }
