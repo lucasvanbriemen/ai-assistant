@@ -68,12 +68,15 @@
 <div class="messages" bind:this={messagesContainer}>
 {#each messages as message, i (i)}
     {message.content}
+    <hr>
     {#if message.timestamp}
         {message.timestamp.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
         })}
     {/if}
+
+    <hr><hr><hr><hr>
 {/each}
 </div>
 
