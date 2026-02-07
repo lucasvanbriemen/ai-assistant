@@ -85,8 +85,7 @@ class AIService
                 'history' => array_merge($conversationHistory, [
                     ['role' => 'user', 'content' => $message],
                     ['role' => 'assistant', 'content' => $finalResponse],
-                ]),
-                'tools_used' => [],
+                ])
             ];
         } catch (\Exception $e) {
             return [
@@ -163,8 +162,7 @@ class AIService
                 'history' => array_merge($conversationHistory, [
                     ['role' => 'user', 'content' => $userMessage],
                     ['role' => 'assistant', 'content' => $finalResponse],
-                ]),
-                'tools_used' => $toolsUsed,
+                ])
             ];
         } catch (\Exception $e) {
             return [

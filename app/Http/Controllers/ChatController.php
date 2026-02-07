@@ -57,7 +57,6 @@ class ChatController extends Controller
             'success' => true,
             'message' => $response['message'],
             'history' => $response['history'],
-            'tools_used' => $response['tools_used'] ?? [],
         ]);
     }
 }

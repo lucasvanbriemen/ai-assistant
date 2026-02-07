@@ -43,8 +43,7 @@
         messages.push({
           role: 'assistant',
           content: response.message,
-          timestamp: new Date(),
-          toolsUsed: response.tools_used || [],
+          timestamp: new Date()
         });
 
         messages = messages;
