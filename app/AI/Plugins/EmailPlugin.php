@@ -13,9 +13,6 @@ class EmailPlugin extends ApiBasedPlugin
         parent::__construct();
     }
 
-    /**
-     * Define the API configuration for the email plugin
-     */
     protected function getApiConfig(): ApiConfig
     {
         return new ApiConfig(
@@ -109,11 +106,6 @@ class EmailPlugin extends ApiBasedPlugin
 
     private function searchEmails(array $params): ToolResult
     {
-        return $this->searchEmailsViaApi($params);
-    }
-
-    private function searchEmailsViaApi(array $params): ToolResult
-    {
         // Set a default limit if not provided (default 50, max 100)
         if (!isset($params['limit'])) {
             $params['limit'] = 50;
@@ -135,11 +127,6 @@ class EmailPlugin extends ApiBasedPlugin
     }
 
     private function readEmail(array $params): ToolResult
-    {
-        return $this->readEmailViaApi($params);
-    }
-
-    private function readEmailViaApi(array $params): ToolResult
     {
         $response = $this->apiRequest('read', 'GET', ['id' => $params['email_id']]);
 
