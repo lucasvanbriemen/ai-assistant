@@ -2,17 +2,42 @@
 
 namespace App\AI\Plugins;
 
-use App\AI\Contracts\PluginInterface;
 use App\AI\Contracts\ToolDefinition;
 use App\AI\Contracts\ToolResult;
+use App\AI\Contracts\ApiConfig;
 
-class EmailPlugin implements PluginInterface
+class EmailPlugin extends ApiBasedPlugin
 {
     private array $emails = [];
+    private bool $useApi;
 
     public function __construct()
     {
-        $this->loadMockEmails();
+        $this->useApi = env('EMAIL_PLUGIN_USE_API', false);
+        parent::__construct();
+
+        // Load mock emails as fallback if not using API
+        if (!$this->useApi) {
+            $this->loadMockEmails();
+        }
+    }
+
+    /**
+     * Define the API configuration for the email plugin
+     */
+    protected function getApiConfig(): ApiConfig
+    {
+        return new ApiConfig(
+            baseUrl: env('EMAIL_API_BASE_URL', 'http://localhost:3000'),
+            endpoints: [
+                'search' => '/api/emails/search',
+                'read' => '/api/emails/{id}',
+                'unread_count' => '/api/emails/unread/count',
+                'send' => '/api/emails/send',
+            ],
+            headers: [],
+            authToken: env('EMAIL_API_AUTH_TOKEN', null),
+        );
     }
 
     public function getName(): string
@@ -126,6 +151,10 @@ class EmailPlugin implements PluginInterface
 
     private function searchEmails(array $params): ToolResult
     {
+        if ($this->useApi) {
+            return $this->searchEmailsViaApi($params);
+        }
+
         $results = [];
 
         foreach ($this->emails as $email) {
@@ -175,8 +204,27 @@ class EmailPlugin implements PluginInterface
         ]);
     }
 
+    private function searchEmailsViaApi(array $params): ToolResult
+    {
+        $response = $this->apiRequest('search', 'GET', [], $params);
+
+        if (!$response['success']) {
+            return ToolResult::failure($response['error']);
+        }
+
+        $data = $response['data'];
+        return ToolResult::success([
+            'count' => $data['count'] ?? 0,
+            'emails' => $data['emails'] ?? [],
+        ]);
+    }
+
     private function readEmail(array $params): ToolResult
     {
+        if ($this->useApi) {
+            return $this->readEmailViaApi($params);
+        }
+
         $emailId = $params['email_id'];
 
         foreach ($this->emails as $email) {
@@ -197,14 +245,44 @@ class EmailPlugin implements PluginInterface
         return ToolResult::failure("Email with ID '{$emailId}' not found");
     }
 
+    private function readEmailViaApi(array $params): ToolResult
+    {
+        $response = $this->apiRequest('read', 'GET', ['id' => $params['email_id']]);
+
+        if (!$response['success']) {
+            return ToolResult::failure($response['error']);
+        }
+
+        return ToolResult::success($response['data']);
+    }
+
     private function getUnreadCount(array $params): ToolResult
     {
+        if ($this->useApi) {
+            return $this->getUnreadCountViaApi($params);
+        }
+
         $count = count(array_filter($this->emails, fn($e) => !$e['read']));
         return ToolResult::success(['unread_count' => $count]);
     }
 
+    private function getUnreadCountViaApi(array $params): ToolResult
+    {
+        $response = $this->apiRequest('unread_count', 'GET');
+
+        if (!$response['success']) {
+            return ToolResult::failure($response['error']);
+        }
+
+        return ToolResult::success($response['data']);
+    }
+
     private function sendEmail(array $params): ToolResult
     {
+        if ($this->useApi) {
+            return $this->sendEmailViaApi($params);
+        }
+
         // Mock sending email
         $newEmail = [
             'id' => 'email_sent_' . time(),
@@ -218,6 +296,17 @@ class EmailPlugin implements PluginInterface
             'message' => 'Email sent successfully',
             'email' => $newEmail,
         ]);
+    }
+
+    private function sendEmailViaApi(array $params): ToolResult
+    {
+        $response = $this->apiRequest('send', 'POST', [], [], $params);
+
+        if (!$response['success']) {
+            return ToolResult::failure($response['error']);
+        }
+
+        return ToolResult::success($response['data']);
     }
 
     private function loadMockEmails(): void
