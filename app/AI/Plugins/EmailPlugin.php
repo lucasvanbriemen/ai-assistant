@@ -8,7 +8,6 @@ use App\AI\Contracts\ApiConfig;
 
 class EmailPlugin extends ApiBasedPlugin
 {
-    private array $emails = [];
     public function __construct()
     {
         parent::__construct();
@@ -20,7 +19,7 @@ class EmailPlugin extends ApiBasedPlugin
     protected function getApiConfig(): ApiConfig
     {
         return new ApiConfig(
-            baseUrl: env('EMAIL_API_BASE_URL', 'http://localhost:3000'),
+            baseUrl: env('EMAIL_API_BASE_URL'),
             endpoints: [
                 'search' => '/api/emails/search',
                 'read' => '/api/emails/{id}',
@@ -107,51 +106,6 @@ class EmailPlugin extends ApiBasedPlugin
                 ],
                 category: 'info'
             ),
-
-            new ToolDefinition(
-                name: 'send_email',
-                description: 'Send an email to a recipient',
-                parameters: [
-                    'type' => 'object',
-                    'properties' => [
-                        'to' => [
-                            'type' => 'string',
-                            'description' => 'Recipient email address',
-                        ],
-                        'subject' => [
-                            'type' => 'string',
-                            'description' => 'Email subject',
-                        ],
-                        'body' => [
-                            'type' => 'string',
-                            'description' => 'Email body content',
-                        ],
-                    ],
-                    'required' => ['to', 'subject', 'body'],
-                ],
-                category: 'send'
-            ),
-
-            new ToolDefinition(
-                name: 'extract_email_info',
-                description: 'Extract specific information from an email body (e.g., movie title, booking details, dates). Use this when you need detailed information from an email.',
-                parameters: [
-                    'type' => 'object',
-                    'properties' => [
-                        'email_id' => [
-                            'type' => 'string',
-                            'description' => 'The email ID to extract information from',
-                        ],
-                        'fields' => [
-                            'type' => 'array',
-                            'description' => 'List of fields to extract (e.g., ["movie_title", "date", "time", "location"])',
-                            'items' => ['type' => 'string'],
-                        ],
-                    ],
-                    'required' => ['email_id', 'fields'],
-                ],
-                category: 'extract'
-            ),
         ];
     }
 
@@ -162,7 +116,6 @@ class EmailPlugin extends ApiBasedPlugin
             'read_email' => $this->readEmail($parameters),
             'get_unread_count' => $this->getUnreadCount($parameters),
             'send_email' => $this->sendEmail($parameters),
-            'extract_email_info' => $this->extractEmailInfo($parameters),
             default => ToolResult::failure("Tool '{$toolName}' not found in EmailPlugin"),
         };
     }
@@ -240,102 +193,5 @@ class EmailPlugin extends ApiBasedPlugin
         }
 
         return ToolResult::success($response['data']);
-    }
-
-    private function extractEmailInfo(array $params): ToolResult
-    {
-        $emailId = $params['email_id'] ?? null;
-        $fields = $params['fields'] ?? [];
-
-        if (!$emailId || empty($fields)) {
-            return ToolResult::failure("email_id and fields are required");
-        }
-
-        // First, read the full email
-        $emailResult = $this->readEmail(['email_id' => $emailId]);
-        if (!$emailResult->success) {
-            return $emailResult;
-        }
-
-        $emailData = $emailResult->toArray();
-        $emailContent = $emailData['subject'] . "\n" . $emailData['body'];
-
-        // Extract information from the email
-        $extractedInfo = [];
-
-        foreach ($fields as $field) {
-            $extractedInfo[$field] = $this->extractField($field, $emailContent);
-        }
-
-        return ToolResult::success([
-            'email_id' => $emailId,
-            'extracted_fields' => $extractedInfo,
-        ]);
-    }
-
-    private function extractField(string $fieldName, string $emailContent): mixed
-    {
-        // Common field extractors using patterns
-        switch (strtolower($fieldName)) {
-            case 'movie_title':
-            case 'film_title':
-                // Look for movie/film titles
-                if (preg_match('/(?:movie|film|watching|showing|title)[\s:]*([^\n\r]+)/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                // Look for "Original Version" or similar
-                if (preg_match('/Original Version\s+([^\n\r]*)/i', $emailContent, $matches)) {
-                    return trim($matches[1]) ?: 'Original Version';
-                }
-                return null;
-
-            case 'date':
-            case 'event_date':
-                // Look for dates in various formats
-                if (preg_match('/(?:date|scheduled|on|at)[\s:]*(\d{1,2}\s+\w+\s+\d{4}|\d{4}-\d{2}-\d{2})/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                return null;
-
-            case 'time':
-            case 'event_time':
-                // Look for times
-                if (preg_match('/(?:time|at|@)[\s:]*(\d{1,2}:\d{2}(?:\s*(?:AM|PM|am|pm))?)/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                return null;
-
-            case 'location':
-            case 'venue':
-                // Look for locations
-                if (preg_match('/(?:location|venue|cinema|theater|theatre|address)[\s:]*([^\n\r]+)/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                return null;
-
-            case 'seat':
-            case 'seats':
-                // Look for seat information
-                if (preg_match('/(?:seat|row)[\s:]*([A-Z]?\d+[A-Z]?[\s,]*(?:and\s+)?[A-Z]?\d+[A-Z]?)?/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                return null;
-
-            case 'confirmation_number':
-            case 'booking_number':
-            case 'reservation_number':
-                // Look for confirmation/booking/reservation numbers
-                if (preg_match('/(?:confirmation|booking|reservation|order|ticket)\s+(?:number|no\.?|#)[\s:]*([A-Z0-9]+)/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                return null;
-
-            default:
-                // For unknown fields, return a summary of content that might contain the field name
-                if (preg_match('/' . preg_quote($fieldName) . '[^:\n]*:?\s*([^\n\r]+)/i', $emailContent, $matches)) {
-                    return trim($matches[1]);
-                }
-                return null;
-        }
     }
 }
