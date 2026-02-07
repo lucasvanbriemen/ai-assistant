@@ -8,15 +8,8 @@ use App\AI\Plugins\EmailPlugin;
 
 class PluginList
 {
-    /**
-     * @var array<PluginInterface>
-     */
     public static array $plugins = [];
-
-    /**
-     * @var array<string, PluginInterface> Map of tool names to plugins
-     */
-    private array $toolPluginMap = [];
+    private array $pluginToolMap = [];
 
     public function __construct()
     {
@@ -28,7 +21,7 @@ class PluginList
         // Build the tool to plugin map
         foreach (self::$plugins as $plugin) {
             foreach ($plugin->getTools() as $tool) {
-                $this->toolPluginMap[$tool->name] = $plugin;
+                $this->pluginToolMap[$tool->name] = $plugin;
             }
         }
     }
@@ -99,7 +92,7 @@ class PluginList
      */
     public static function executeTool(string $toolName, array $parameters): ToolResult
     {
-        $plugin = self::$toolPluginMap[$toolName] ?? null;
+        $plugin = self::$pluginToolMap[$toolName] ?? null;
 
         if (!$plugin) {
             return ToolResult::failure("Tool '{$toolName}' not found");
