@@ -38,14 +38,6 @@ class AIService
             ->post("{$this->baseUrl}/chat/completions", $requestData)
             ->json();
 
-        if (isset($response['error'])) {
-            return [
-                'success' => false,
-                'error' => $response['error']['message'] ?? 'API error',
-                'history' => $conversationHistory,
-            ];
-        }
-
         $assistantMessage = $response['choices'][0]['message']['content'] ?? '';
 
         return [
