@@ -1,6 +1,4 @@
 <script>
-  import api from '../lib/api.js';
-
   let messages = $state([]);
   let input = $state('');
   let loading = $state(false);
@@ -21,7 +19,6 @@
     input = '';
     error = '';
 
-    // Add user message to chat
     messages.push({
       role: 'user',
       content: userMessage,
@@ -43,7 +40,6 @@
       });
 
       if (response.success) {
-        // Add assistant message
         messages.push({
           role: 'assistant',
           content: response.message,
@@ -51,7 +47,6 @@
           toolsUsed: response.tools_used || [],
         });
 
-        // Update history
         messages = messages;
       } else {
         error = response.error || 'Failed to get response';
