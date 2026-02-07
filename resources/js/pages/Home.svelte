@@ -5,13 +5,6 @@
   let error = $state('');
   let messagesContainer = $state();
 
-  const examples = [
-    'Show me my unread emails',
-    'When did I get a confirmation mail for my holiday?',
-    'Create a calendar event for the cinema on Friday at 7pm',
-    'What events do I have next week?',
-  ];
-
   async function sendMessage() {
     if (!input.trim() || loading) return;
 
@@ -103,17 +96,6 @@
   {#if messages.length === 0}
     <div class="chatbot-empty">
       <p>Welcome! I can help you search emails, manage your calendar, and more.</p>
-      <p>Try asking:</p>
-      <div class="examples">
-        {#each examples as example}
-          <button
-            class="example-btn"
-            onclick={() => useExample(example)}
-          >
-            {example}
-          </button>
-        {/each}
-      </div>
     </div>
   {/if}
 
@@ -212,31 +194,6 @@
 
   .chatbot-empty p {
     margin: 10px 0;
-  }
-
-  .examples {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-    width: 100%;
-    max-width: 400px;
-  }
-
-  .example-btn {
-    padding: 12px;
-    text-align: left;
-    background: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-
-  .example-btn:hover {
-    background: #e0e0e0;
-    border-color: #ccc;
   }
 
   .messages {
