@@ -12,9 +12,6 @@ class ChatController extends Controller
         private AIService $aiService,
     ) {}
 
-    /**
-     * Send a message and get a response
-     */
     public function sendMessage(Request $request): JsonResponse
     {
         $validated = $request->validate([
