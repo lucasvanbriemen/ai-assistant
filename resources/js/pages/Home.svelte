@@ -91,4 +91,4 @@
 </div>
 
 <textarea bind:value={input} onkeydown={handleKeydown} disabled={loading} rows="2"></textarea>
-<button onclick={sendMessage} disabled={!input.trim() || loading} class="btn-send" >{loading ? 'Sending...' : 'Send'}</button>
+<button onclick={sendMessage} disabled={!input.trim() || loading}>{loading ? 'Sending...' : 'Send'}</button>
