@@ -51,24 +51,6 @@ class PluginList
     }
 
     /**
-     * Get all available tools in a generic format
-     */
-    public static function getAllTools(): array
-    {
-        $tools = [];
-        foreach (self::$plugins as $plugin) {
-            foreach ($plugin->getTools() as $tool) {
-                $tools[] = [
-                    'name' => $tool->name,
-                    'description' => $tool->description,
-                    'category' => $tool->category ?? $plugin->getName(),
-                ];
-            }
-        }
-        return $tools;
-    }
-
-    /**
      * Execute a tool
      */
     public static function executeTool(string $toolName, array $parameters): ToolResult

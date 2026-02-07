@@ -10,22 +10,6 @@ use Illuminate\Http\JsonResponse;
 class ChatController extends Controller
 {
     /**
-     * Get all available tools
-     */
-    public function getTools(): JsonResponse
-    {
-        return response()->json([
-            'tools' => PluginList::getAllTools(),
-            'plugins' => array_map(function ($plugin) {
-                return [
-                    'name' => $plugin->getName(),
-                    'description' => $plugin->getDescription(),
-                ];
-            }, PluginList::$plugins),
-        ]);
-    }
-
-    /**
      * Send a message and get a response
      */
     public function sendMessage(Request $request): JsonResponse
