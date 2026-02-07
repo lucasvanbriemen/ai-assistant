@@ -28,7 +28,7 @@
             .map(m => ({
             role: m.role,
             content: m.content,
-            })),
+        })),
     });
 
     messages.push({

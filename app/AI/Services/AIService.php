@@ -19,12 +19,8 @@ class AIService
         $this->baseUrl = config('ai.openai.base_url');
     }
 
-    /**
-     * Send a message and get a response, optionally executing tools
-     */
     public function chat(string $message, array $conversationHistory = []): array
     {
-        // Build messages for the API
         $messages = $this->buildMessages($message, $conversationHistory);
 
         $requestData = [
@@ -61,7 +57,6 @@ class AIService
             }
         }
 
-        // Add current message
         $messages[] = [
             'role' => 'user',
             'content' => $message,
