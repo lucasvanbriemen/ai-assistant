@@ -21,41 +21,33 @@
     loading = true;
     scrollToBottom();
 
-    try {
-      const response = await api.post('/api/chat/send', {
+    const response = await api.post('/api/chat/send', {
         message: userMessage,
         history: messages
-          .filter(m => m.role !== 'system' && m.role !== 'error')
-          .map(m => ({
+            .filter(m => m.role !== 'system' && m.role !== 'error')
+            .map(m => ({
             role: m.role,
             content: m.content,
-          })),
-      });
+            })),
+        });
 
-      if (response.success) {
+    if (response.success) {
         messages.push({
-          role: 'assistant',
-          content: response.message,
-          timestamp: new Date()
+            role: 'assistant',
+            content: response.message,
+            timestamp: new Date()
         });
 
         messages = messages;
-      } else {
+    } else {
         error = response.error || 'Failed to get response';
         messages.push({
-          role: 'error',
-          content: error,
-          timestamp: new Date(),
+            role: 'error',
+            content: error,
+            timestamp: new Date(),
         });
-      }
-    } catch (e) {
-      error = 'Network error: ' + e.message;
-      messages.push({
-        role: 'error',
-        content: error,
-        timestamp: new Date(),
-      });
     }
+
 
     loading = false;
     scrollToBottom();
@@ -80,10 +72,6 @@
       e.preventDefault();
       sendMessage();
     }
-  }
-
-  function useExample(example) {
-    input = example;
   }
 </script>
 
