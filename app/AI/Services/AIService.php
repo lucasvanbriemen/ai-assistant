@@ -31,13 +31,6 @@ class AIService
      */
     public function chat(string $message, array $conversationHistory = []): array
     {
-        if ($this->provider === 'openai') {
-            return $this->chatWithOpenAI($message, $conversationHistory);
-        }
-    }
-
-    private function chatWithOpenAI(string $message, array $conversationHistory): array
-    {
         // Build messages for the API
         $messages = $this->buildMessages($message, $conversationHistory);
 

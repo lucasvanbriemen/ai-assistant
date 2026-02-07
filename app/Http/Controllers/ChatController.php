@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\AI\Core\PluginRegistry;
+use App\AI\Core\PluginList;
 use App\AI\Services\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -11,7 +11,7 @@ class ChatController extends Controller
 {
     public function __construct(
         private AIService $aiService,
-        private PluginRegistry $registry,
+        private PluginList $registry,
     ) {}
 
     /**
