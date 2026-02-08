@@ -189,22 +189,23 @@ api.stream('/api/chat/stream',
 **Expected:** Streaming works on mobile
 **Verify:** UI responsive, text renders correctly
 
-### Test Case 11: Tool Call Detection & Fallback
+### Test Case 11: Tool Call Streaming
 **Input:** "What was my last email about?" or "Check my emails for urgent messages"
 **Expected:**
-- AI responds "one moment please" or similar
-- Streaming detects tool calls in response
-- Automatically falls back to sync endpoint
-- Full response with email content appears
+- Initial delay (tools being searched/executed)
+- AI response with email content appears and streams progressively
+- Full response with complete information (no truncation)
 **Verify:**
-- Console shows "Streaming failed, falling back to sync:" message
-- Tool execution completes successfully
-- Email results appear in response
-- No errors in console
+- Tool execution completes successfully (tools are actually searched)
+- Response content streams word-by-word to user
+- Email results appear in response with full details
+- No errors in console or server logs
+- Response is complete (not stuck on "checking..." message)
 
-**This tests the hybrid streaming strategy:**
-- Simple Q&A responses stream progressively
-- Tool-using responses fall back to sync for reliability
+**This tests unified streaming:**
+- Tool calls are detected and executed in the background
+- Final response streams smoothly after tool execution
+- User gets complete information without interruption
 
 ## Rollback Testing
 
@@ -243,8 +244,8 @@ api.stream('/api/chat/stream',
 
 - First byte latency < 500ms ✓
 - Text renders smoothly without pause ✓
-- Fallback works on network error ✓
-- Tool calls detected and fall back to sync ✓
+- Tool queries complete fully with streamed response ✓
+- Network error triggers graceful fallback ✓
 - No increase in error rates ✓
 - All test cases pass ✓
 
@@ -309,8 +310,9 @@ Before considering streaming implementation complete:
 - [ ] Multiple rapid sends are prevented
 - [ ] Fallback triggered on network error
 - [ ] Fallback also works (message appears)
-- [ ] Tool calls detected and fall back to sync
-- [ ] Email/tool queries complete fully
+- [ ] Tool queries stream final response smoothly
+- [ ] Email searches complete with full results
+- [ ] Multiple tool calls execute properly
 - [ ] Works in Chrome, Firefox, Safari
 - [ ] Works on mobile devices
 - [ ] No errors in console
@@ -370,7 +372,10 @@ curl -X POST http://localhost:8000/api/chat/stream \
   --no-buffer
 
 # 3. Open app in browser
-# 4. Send message and verify streaming UI
-# 5. Disable network and verify fallback
-# 6. All tests pass ✓
+# 4. Send simple message and verify streaming UI
+#    "What is 2+2?" should stream answer
+# 5. Send tool-using message and verify streaming
+#    "What was my last email?" should stream full response with email content
+# 6. Disable network and verify fallback works
+# 7. All tests pass ✓
 ```

@@ -135,20 +135,22 @@ Same response, no UI interruption
 
 ## Key Design Decisions
 
-### 1. Hybrid Streaming Strategy
-- **Streams:** Simple Q&A responses (no tool calls)
-- **Synchronous:** Tool-using responses remain non-streaming for reliability
-  - Tool calls are complex, need precise ordering
-  - Streaming tool results would complicate response handling
-  - Current approach maximizes UX while maintaining robustness
+### 1. Unified Streaming with Tool Support
+- **Streams All Responses:** Both simple Q&A and tool-using queries stream to the user
+- **Smart Tool Handling:** Detects tool needs upfront, executes tools, then streams final response
+  - Tool calls are executed with the same robust logic as the sync endpoint
+  - Users get the complete response streamed word-by-word after tools complete
+  - No fallback messages or interruptions - seamless experience
 
 **Implementation Details:**
-- AIStreamService now includes `tools` in the OpenAI request
-- Detects `tool_calls` in streaming SSE chunks
-- When tool calls detected, yields error event with `tool_calls_detected: true` flag
-- Frontend receives error event and automatically falls back to sync endpoint
-- Sync endpoint (AIService::send) properly executes all tools and returns complete response
-- User seamlessly gets full response without interruption
+- AIStreamService makes initial non-streaming request to check for tool calls
+- If `tool_calls` detected in response:
+  - Executes tools synchronously (reuses AIService logic)
+  - Gets final response from OpenAI
+  - Streams the final response word-by-word to user
+- If no tool calls:
+  - Streams the response immediately word-by-word
+- Result: All queries (simple or tool-using) stream smoothly to the user
 
 ### 2. Automatic Fallback
 - If streaming fails, frontend automatically uses sync endpoint
