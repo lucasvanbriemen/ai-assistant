@@ -28,15 +28,9 @@ export default {
   },
 
   stream(url, data, onChunk, onComplete, onError, onTool) {
-    const fullUrl = url.startsWith('/') ? currentDomain + url : url;
+    const fullUrl = currentDomain + url;
 
-    const handler = new StreamHandler(fullUrl, data, {
-      onChunk,
-      onComplete,
-      onError,
-      onTool,
-    });
-
+    const handler = new StreamHandler(fullUrl, data, {onChunk, onComplete, onError, onTool});
     handler.connect();
 
     return () => handler.abort(); // Return abort function

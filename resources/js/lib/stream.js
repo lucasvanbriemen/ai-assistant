@@ -18,10 +18,6 @@ export class StreamHandler {
             body: JSON.stringify(this.data),
         });
 
-        if (!response.ok) {
-            throw new Error(`Stream connection failed with status ${response.status}`);
-        }
-
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
