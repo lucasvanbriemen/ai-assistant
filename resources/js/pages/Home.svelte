@@ -2,7 +2,6 @@
   let messages = $state([]);
   let input = $state('');
   let isStreaming = $state(false);
-  let streamAbort = $state(null);
   let executingTools = $state([]);
 
   async function sendMessage() {
@@ -20,8 +19,7 @@
     isStreaming = true;
 
     try {
-      // Attempt streaming
-      streamAbort = api.stream(
+      api.stream(
         '/api/chat/stream',
         {
           message: userMessage,
@@ -48,34 +46,6 @@
         },
         // onError - fallback to synchronous
         async (error) => {
-          console.warn('Streaming failed, falling back to sync:', error);
-
-          try {
-            const response = await api.post('/api/chat/send', {
-              message: userMessage,
-              history: messages
-                .filter(m => m.role !== 'system' && m.role !== 'error' && !m.streaming)
-                .map(m => ({
-                  role: m.role,
-                  content: m.content,
-                })),
-            });
-
-            messages[placeholderIndex].content = response.message;
-            messages[placeholderIndex].streaming = false;
-            executingTools = [];
-            messages = messages;
-            isStreaming = false;
-            streamAbort = null;
-          } catch (syncError) {
-            console.error('Fallback sync error:', syncError);
-            messages[placeholderIndex].content = 'Error: Could not get response';
-            messages[placeholderIndex].streaming = false;
-            executingTools = [];
-            messages = messages;
-            isStreaming = false;
-            streamAbort = null;
-          }
         },
         // onTool
         (toolName, action) => {
