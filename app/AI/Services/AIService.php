@@ -10,7 +10,7 @@ class AIService
 {
 
     private const BASE_URL = 'https://api.openai.com/v1';
-    private const MODEL = 'gpt-4-turbo-preview';
+    private const MODEL = 'gpt-4o-mini';
 
 
     public static function send(string $message, array $conversationHistory = []): array
@@ -20,7 +20,7 @@ class AIService
         $requestData = [
             'model' => self::MODEL,
             'messages' => $messages,
-            'temperature' => 0.7,
+            'temperature' => 0.3,
             'max_tokens' => config('ai.max_tokens'),
             'tools' => PluginList::formatToolsForOpenAI(),
         ];
@@ -103,7 +103,7 @@ class AIService
         $requestData = [
             'model' => self::MODEL,
             'messages' => $messages,
-            'temperature' => 0.7,
+            'temperature' => 0.3,
             'max_tokens' => config('ai.max_tokens'),
             'tools' => PluginList::formatToolsForOpenAI(),
         ];
