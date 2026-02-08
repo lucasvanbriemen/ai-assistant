@@ -1,4 +1,5 @@
 import '@styles/app.scss';
+import '@styles/reset.scss';
 
 import App from './App.svelte';
 import api from './lib/api.js';
