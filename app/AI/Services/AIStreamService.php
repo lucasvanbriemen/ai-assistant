@@ -264,6 +264,19 @@ class AIStreamService
         return "event: {$event}\ndata: " . json_encode($data) . "\n\n";
     }
 
+    private static function readLine($stream): string
+    {
+        $line = '';
+        while (!$stream->eof()) {
+            $char = $stream->read(1);
+            if ($char === "\n") {
+                break;
+            }
+            $line .= $char;
+        }
+        return trim($line);
+    }
+
     private static function buildMessages(string $message, array $conversationHistory): array
     {
         $messages = [];
