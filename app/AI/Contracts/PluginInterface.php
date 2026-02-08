@@ -4,9 +4,6 @@ namespace App\AI\Contracts;
 
 use Illuminate\Support\Facades\Http;
 
-/**
- * Base class for API-based plugins
- */
 abstract class PluginInterface
 {
     protected ApiConfig $apiConfig;
