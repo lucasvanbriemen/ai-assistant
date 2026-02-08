@@ -142,6 +142,14 @@ Same response, no UI interruption
   - Streaming tool results would complicate response handling
   - Current approach maximizes UX while maintaining robustness
 
+**Implementation Details:**
+- AIStreamService now includes `tools` in the OpenAI request
+- Detects `tool_calls` in streaming SSE chunks
+- When tool calls detected, yields error event with `tool_calls_detected: true` flag
+- Frontend receives error event and automatically falls back to sync endpoint
+- Sync endpoint (AIService::send) properly executes all tools and returns complete response
+- User seamlessly gets full response without interruption
+
 ### 2. Automatic Fallback
 - If streaming fails, frontend automatically uses sync endpoint
 - User sees response either way (no data loss)

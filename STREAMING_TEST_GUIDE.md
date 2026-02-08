@@ -189,6 +189,23 @@ api.stream('/api/chat/stream',
 **Expected:** Streaming works on mobile
 **Verify:** UI responsive, text renders correctly
 
+### Test Case 11: Tool Call Detection & Fallback
+**Input:** "What was my last email about?" or "Check my emails for urgent messages"
+**Expected:**
+- AI responds "one moment please" or similar
+- Streaming detects tool calls in response
+- Automatically falls back to sync endpoint
+- Full response with email content appears
+**Verify:**
+- Console shows "Streaming failed, falling back to sync:" message
+- Tool execution completes successfully
+- Email results appear in response
+- No errors in console
+
+**This tests the hybrid streaming strategy:**
+- Simple Q&A responses stream progressively
+- Tool-using responses fall back to sync for reliability
+
 ## Rollback Testing
 
 ### If Issues Occur
@@ -227,6 +244,7 @@ api.stream('/api/chat/stream',
 - First byte latency < 500ms ✓
 - Text renders smoothly without pause ✓
 - Fallback works on network error ✓
+- Tool calls detected and fall back to sync ✓
 - No increase in error rates ✓
 - All test cases pass ✓
 
@@ -291,6 +309,8 @@ Before considering streaming implementation complete:
 - [ ] Multiple rapid sends are prevented
 - [ ] Fallback triggered on network error
 - [ ] Fallback also works (message appears)
+- [ ] Tool calls detected and fall back to sync
+- [ ] Email/tool queries complete fully
 - [ ] Works in Chrome, Firefox, Safari
 - [ ] Works on mobile devices
 - [ ] No errors in console
