@@ -4,6 +4,11 @@
 
   let { size = 280, animate = true } = $props();
 
+  // Animation speed controls (adjust these to change animation speeds)
+  const ELECTRON_ORBIT_SPEED_MULTIPLIER = 2.0; // Speed of electrons moving along their orbits
+  const SCENE_ROTATION_SPEED = 10.0; // Speed of entire atom/scene rotation
+  const NUCLEUS_ROTATION_SPEED = 2.0; // Speed of nucleus particles rotating around each other
+
   let container;
   let scene, camera, renderer;
   let nucleusGroup; // Group to hold all nucleus particles
@@ -196,13 +201,13 @@
     animationId = requestAnimationFrame(animateScene);
 
     // Rotate entire scene for 3D effect
-    scene.rotation.y += 0.002;
-    scene.rotation.x += 0.001;
+    scene.rotation.y += 0.002 * SCENE_ROTATION_SPEED;
+    scene.rotation.x += 0.001 * SCENE_ROTATION_SPEED;
 
     // Rotate the entire nucleus group so particles swap positions in 3D
-    nucleusGroup.rotation.x += 0.008;
-    nucleusGroup.rotation.y += 0.012;
-    nucleusGroup.rotation.z += 0.006;
+    nucleusGroup.rotation.x += 0.008 * NUCLEUS_ROTATION_SPEED;
+    nucleusGroup.rotation.y += 0.012 * NUCLEUS_ROTATION_SPEED;
+    nucleusGroup.rotation.z += 0.006 * NUCLEUS_ROTATION_SPEED;
 
     // Subtle pulse for each nucleus particle
     nucleusParticles.forEach((particle, index) => {
@@ -212,7 +217,7 @@
 
     // Animate electrons along their orbits (position only - no scaling/pulsing)
     electrons.forEach((electron) => {
-      electron.angle += electron.speed;
+      electron.angle += electron.speed * ELECTRON_ORBIT_SPEED_MULTIPLIER;
 
       // Calculate position on orbital path
       const x = Math.cos(electron.angle) * electron.radius;
@@ -229,7 +234,7 @@
 
     // Slowly rotate orbits
     orbits.forEach((orbit, index) => {
-      orbit.rotation.z += 0.001 * (index + 1);
+      orbit.rotation.z += 0.001 * (index + 1) * SCENE_ROTATION_SPEED;
     });
 
     renderer.render(scene, camera);
