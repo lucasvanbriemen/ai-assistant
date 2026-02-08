@@ -6,6 +6,7 @@
 
   let container;
   let scene, camera, renderer;
+  let nucleusGroup; // Group to hold all nucleus particles
   let nucleusParticles = []; // Multiple nucleus particles
   let electrons = [];
   let orbits = [];
@@ -58,47 +59,56 @@
     dirLight.position.set(5, 5, 5);
     scene.add(dirLight);
 
-    // Create multiple nucleus particles that orbit each other
-    const nucleusConfigs = [
-      { color: 0x8b5cf6, emissive: 0x6366f1, angle: 0, radius: 0.4 },
-      { color: 0x6366f1, emissive: 0x8b5cf6, angle: (Math.PI * 2) / 3, radius: 0.4 },
-      { color: 0x3b82f6, emissive: 0x6366f1, angle: (Math.PI * 4) / 3, radius: 0.4 }
+    // Create a group to hold all nucleus particles (allows rotation around common center)
+    nucleusGroup = new THREE.Group();
+    scene.add(nucleusGroup);
+
+    // Position nucleus particles in a 3D tetrahedral/pyramid arrangement
+    const nucleusPositions = [
+      { x: 0.35, y: 0.35, z: 0.35 },   // Top front right
+      { x: -0.35, y: -0.35, z: 0.35 }, // Bottom front left
+      { x: -0.35, y: 0.35, z: -0.35 }, // Top back left
+      { x: 0.35, y: -0.35, z: -0.35 }  // Bottom back right (4th particle - pyramid base)
     ];
 
-    nucleusConfigs.forEach(config => {
+    const nucleusColors = [
+      { color: 0x8b5cf6, emissive: 0x6366f1 },
+      { color: 0x6366f1, emissive: 0x8b5cf6 },
+      { color: 0x3b82f6, emissive: 0x6366f1 },
+      { color: 0x8b5cf6, emissive: 0x3b82f6 }
+    ];
+
+    nucleusPositions.forEach((pos, index) => {
       // Create nucleus particle with highly reflective material
-      const nucleusGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+      const nucleusGeometry = new THREE.SphereGeometry(0.35, 64, 64); // Higher segments for better reflections
       const nucleusMaterial = new THREE.MeshPhongMaterial({
-        color: config.color,
-        emissive: config.emissive,
-        emissiveIntensity: 1.2, // Reduced to allow more reflection visibility
-        shininess: 200, // Very high shininess for reflections
+        color: nucleusColors[index].color,
+        emissive: nucleusColors[index].emissive,
+        emissiveIntensity: 0.4, // Very low to see reflections better
+        shininess: 300, // Extremely high shininess
         transparent: true,
         opacity: 0.95,
-        specular: 0xffffff, // White specular for bright reflections
-        reflectivity: 1.0 // Maximum reflectivity
+        specular: 0xffffff,
+        reflectivity: 1.0
       });
       const nucleusParticle = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
 
+      // Position in 3D space
+      nucleusParticle.position.set(pos.x, pos.y, pos.z);
+
       // Add outer glow to each particle
-      const glowGeometry = new THREE.SphereGeometry(0.55, 32, 32);
+      const glowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
       const glowMaterial = new THREE.MeshBasicMaterial({
-        color: config.color,
+        color: nucleusColors[index].color,
         transparent: true,
-        opacity: 0.6
+        opacity: 0.4
       });
       const glow = new THREE.Mesh(glowGeometry, glowMaterial);
       nucleusParticle.add(glow);
 
-      // Store particle with initial angle, radius, and rotation speeds
-      nucleusParticles.push({
-        mesh: nucleusParticle,
-        angle: config.angle,
-        radius: config.radius,
-        rotationSpeed: { x: 0.02, y: 0.015, z: 0.01 } // Individual rotation speeds
-      });
-
-      scene.add(nucleusParticle);
+      // Add to group instead of scene
+      nucleusGroup.add(nucleusParticle);
+      nucleusParticles.push({ mesh: nucleusParticle });
     });
 
     // Create 3 orbital paths evenly spaced (bigger atom)
@@ -133,9 +143,9 @@
       });
       const electron = new THREE.Mesh(electronGeometry, electronMaterial);
 
-      // Stronger point light to better illuminate the nucleus
-      const electronLight = new THREE.PointLight(config.color, 3.0, 10);
-      electronLight.decay = 1.5;
+      // Very strong point light to create reflections on nucleus
+      const electronLight = new THREE.PointLight(config.color, 8.0, 15); // Much stronger
+      electronLight.decay = 1.0; // Less decay for longer range
       electron.add(electronLight);
 
       // Store electron with its orbit config
@@ -189,24 +199,14 @@
     scene.rotation.y += 0.002;
     scene.rotation.x += 0.001;
 
-    // Animate nucleus particles - both orbiting AND rotating (tumbling)
+    // Rotate the entire nucleus group so particles swap positions in 3D
+    nucleusGroup.rotation.x += 0.008;
+    nucleusGroup.rotation.y += 0.012;
+    nucleusGroup.rotation.z += 0.006;
+
+    // Subtle pulse for each nucleus particle
     nucleusParticles.forEach((particle, index) => {
-      particle.angle += 0.015; // Orbit speed
-
-      // Calculate position in 3D orbit (not just flat circle)
-      const x = Math.cos(particle.angle) * particle.radius;
-      const y = Math.sin(particle.angle) * particle.radius;
-      const z = Math.sin(particle.angle * 2) * 0.2; // Add some Z variation
-
-      particle.mesh.position.set(x, y, z);
-
-      // Make each particle rotate/tumble on its own axes
-      particle.mesh.rotation.x += particle.rotationSpeed.x;
-      particle.mesh.rotation.y += particle.rotationSpeed.y;
-      particle.mesh.rotation.z += particle.rotationSpeed.z;
-
-      // Subtle pulse for each particle
-      const pulse = Math.sin(Date.now() * 0.002 + particle.angle) * 0.05 + 1;
+      const pulse = Math.sin(Date.now() * 0.002 + index) * 0.06 + 1;
       particle.mesh.scale.set(pulse, pulse, pulse);
     });
 
