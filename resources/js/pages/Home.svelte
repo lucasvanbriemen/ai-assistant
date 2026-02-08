@@ -1,4 +1,6 @@
 <script>
+  import AtomLogo from '@/components/AtomLogo.svelte';
+
   let messages = $state([]);
   let input = $state('');
   let executingTools = $state([]);
@@ -52,6 +54,8 @@
     }
   }
 </script>
+
+<AtomLogo size={350} />
 
 {#each messages as message, i (i)}
   {message.content}

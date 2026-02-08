@@ -5,10 +5,12 @@ const routes = {
     '/': Home,
 };
 
-export const router = $state({
-    currentComponent: Home,
-    params: {},
-});
+class Router {
+    currentComponent = $state(Home);
+    params = $state({});
+}
+
+export const router = new Router();
 
 export function initRouter() {
     page('/', () => {
