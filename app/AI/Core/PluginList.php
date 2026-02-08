@@ -39,20 +39,24 @@ class PluginList
 
     public static function executeTool(string $toolName, array $parameters): ToolResult
     {
-        $plugin = null;
-        foreach (self::PLUGINS as $index_plugin) {
-            foreach ($index_plugin->getTools() as $tool) {
-                if ($tool['name'] === $toolName) {
-                    $plugin = $index_plugin;
-                    break 2;
-                }
-            }
-        }
+        $plugin = self::getPluginByToolName($toolName);
 
         try {
             return $plugin->executeTool($toolName, $parameters);
         } catch (\Exception $e) {
             return ToolResult::failure('Tool execution error: ' . $e->getMessage());
         }
+    }
+
+    private static function getPluginByToolName(string $toolName): ?PluginInterface
+    {
+        foreach (self::PLUGINS as $plugin) {
+            foreach ($plugin->getTools() as $tool) {
+                if ($tool['name'] === $toolName) {
+                    return $plugin;
+                }
+            }
+        }
+        return null;
     }
 }
