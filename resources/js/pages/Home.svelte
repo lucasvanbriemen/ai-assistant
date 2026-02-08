@@ -56,7 +56,7 @@
 </script>
 
 <div class="header">
-  <AtomLogo size={200} />
+  <AtomLogo size={350} />
   <h1>AI Assistant</h1>
 </div>
 
