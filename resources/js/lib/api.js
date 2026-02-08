@@ -1,3 +1,5 @@
+import { StreamHandler } from './stream.js';
+
 export default {
   defaultHeaders: {
     "Content-Type": "application/json",
@@ -23,6 +25,20 @@ export default {
 
   delete(url, headers = {}) {
     return this.makeRequest("DELETE", url, null, headers);
+  },
+
+  stream(url, data, onChunk, onComplete, onError) {
+    const fullUrl = url.startsWith('/') ? currentDomain + url : url;
+
+    const handler = new StreamHandler(fullUrl, data, {
+      onChunk,
+      onComplete,
+      onError,
+    });
+
+    handler.connect();
+
+    return () => handler.abort(); // Return abort function
   },
 
   makeRequest(method, url, data = null, headers = {}) {

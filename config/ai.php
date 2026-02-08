@@ -39,4 +39,11 @@ return [
 
     // Maximum tokens for response
     'max_tokens' => env('AI_MAX_TOKENS', 512),
+
+    // Streaming configuration
+    'streaming' => [
+        'enabled' => env('AI_STREAMING_ENABLED', false),
+        'timeout' => env('AI_STREAMING_TIMEOUT', 60),
+        'fallback_to_sync' => env('AI_STREAMING_FALLBACK', true),
+    ],
 ];
