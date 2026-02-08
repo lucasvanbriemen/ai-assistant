@@ -10,7 +10,7 @@ class AIService
     private const BASE_URL = 'https://api.openai.com/v1';
     private const MODEL = 'gpt-4o-mini';
 
-    public static function streamResponse(string $message, array $conversationHistory): \Generator
+    public static function send(string $message, array $conversationHistory): \Generator
     {
         $messages = self::buildMessages($message, $conversationHistory);
 
@@ -39,9 +39,6 @@ class AIService
                     yield $chunk;
                 }
             } else {
-                // No tool calls - stream the response from OpenAI
-                $fullMessage = $assistantMessage['content'] ?? '';
-
                 // Get streaming response for text-only queries
                 $streamRequestData = array_merge($requestData, ['stream' => true]);
                 $streamResponse = Http::withToken(config('ai.openai.api_key'))

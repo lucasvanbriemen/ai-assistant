@@ -17,7 +17,7 @@ class ChatController extends Controller
 
         return response()->stream(function () use ($message, $history) {
             try {
-                foreach (AIService::streamResponse($message, $history) as $chunk) {
+                foreach (AIService::send($message, $history) as $chunk) {
                     echo $chunk;
                     if (ob_get_level() > 0) {
                         ob_flush();
@@ -25,7 +25,6 @@ class ChatController extends Controller
                     flush();
                 }
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Streaming error: ' . $e->getMessage());
                 echo AIService::formatSSE('error', ['message' => 'Streaming failed']);
             }
         }, 200, [
