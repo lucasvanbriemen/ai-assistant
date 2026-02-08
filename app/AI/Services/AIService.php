@@ -118,9 +118,6 @@ class AIService
         }
     }
 
-    /**
-     * Make an authenticated HTTP request to OpenAI API
-     */
     private static function makeRequest(string $url, array $data)
     {
         return Http::withToken(config('ai.openai.api_key'))
@@ -128,9 +125,6 @@ class AIService
             ->post($url, $data);
     }
 
-    /**
-     * Make a streaming HTTP request and parse SSE response
-     */
     private static function streamResponse(array $requestData, int $timeout = 60): \Generator
     {
         $streamedData = self::parseStreamResponse($requestData, $timeout);
@@ -195,24 +189,16 @@ class AIService
         ];
     }
 
-    /**
-     * Build request data for OpenAI API calls
-     */
     private static function buildRequestData(array $messages, bool $stream = false): array
     {
-        $data = [
+        return [
             'model' => self::MODEL,
             'messages' => $messages,
             'temperature' => self::TEMPERATURE,
             'max_tokens' => config('ai.max_tokens'),
             'tools' => PluginList::formatToolsForOpenAI(),
+            'stream' => $stream,
         ];
-
-        if ($stream) {
-            $data['stream'] = true;
-        }
-
-        return $data;
     }
 
     public static function formatSSE(string $event, array $data): string
