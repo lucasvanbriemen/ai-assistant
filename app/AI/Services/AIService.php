@@ -4,7 +4,6 @@ namespace App\AI\Services;
 
 use App\AI\Core\PluginList;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class AIService
 {
@@ -77,7 +76,6 @@ class AIService
                                 yield self::formatSSE('chunk', ['content' => $delta]);
                             }
                         } catch (\Exception $e) {
-                            Log::warning('Error parsing SSE chunk: ' . $e->getMessage());
                             continue;
                         }
                     }
@@ -86,7 +84,6 @@ class AIService
                 yield self::formatSSE('done', ['message' => $streamedMessage]);
             }
         } catch (\Exception $e) {
-            Log::error('Streaming error: ' . $e->getMessage());
             yield self::formatSSE('error', ['message' => 'Streaming failed: ' . $e->getMessage()]);
         }
     }
@@ -124,8 +121,6 @@ class AIService
             $parameters = json_decode($toolCall['function']['arguments'], true) ?? [];
 
             $toolsUsed[] = ['name' => $toolName, 'parameters' => $parameters];
-
-            Log::info("Executing tool: {$toolName}", ['parameters' => $parameters]);
 
             $result = PluginList::executeTool($toolName, $parameters);
 
@@ -199,7 +194,6 @@ class AIService
                         yield self::formatSSE('chunk', ['content' => $delta]);
                     }
                 } catch (\Exception $e) {
-                    Log::warning('Error parsing final response chunk: ' . $e->getMessage());
                     continue;
                 }
             }
