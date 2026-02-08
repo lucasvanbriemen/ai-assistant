@@ -12,30 +12,11 @@ class PluginList
         new EmailPlugin(),
     ];
 
-    private static array $pluginToolMap = [];
-    private static bool $initialized = false;
-
-    private static function initialize(): void
-    {
-        if (self::$initialized) {
-            return;
-        }
-
-        foreach (self::PLUGINS as $plugin) {
-            foreach ($plugin->getTools() as $tool) {
-                self::$pluginToolMap[$tool['name']] = $plugin;
-            }
-        }
-
-        self::$initialized = true;
-    }
-
     /**
      * Get all available tools in OpenAI format
      */
     public static function getToolsInOpenAIFormat(): array
     {
-        self::initialize();
         $tools = [];
         foreach (self::PLUGINS as $plugin) {
             foreach ($plugin->getTools() as $tool) {
@@ -58,24 +39,14 @@ class PluginList
 
     public static function executeTool(string $toolName, array $parameters): ToolResult
     {
-        self::initialize();
-        $plugin = self::$pluginToolMap[$toolName] ?? null;
-
-        if (!$plugin) {
-            return ToolResult::failure("Tool '{$toolName}' not found");
-        }
-
-        // Validate parameters
-        $tool = null;
-        foreach ($plugin->getTools() as $t) {
-            if ($t['name'] === $toolName) {
-                $tool = $t;
-                break;
+        $plugin = null;
+        foreach (self::PLUGINS as $index_plugin) {
+            foreach ($index_plugin->getTools() as $tool) {
+                if ($tool['name'] === $toolName) {
+                    $plugin = $index_plugin;
+                    break 2;
+                }
             }
-        }
-
-        if (!$tool) {
-            return ToolResult::failure("Tool '{$toolName}' not found");
         }
 
         try {
