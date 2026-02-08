@@ -11,7 +11,7 @@
 
     // Add placeholder for streaming response
     const placeholderIndex = messages.length;
-    messages.push({role: 'assistant', content: '', timestamp: new Date(), streaming: true});
+    messages.push({role: 'assistant', content: '', timestamp: new Date()});
     messages = messages;
 
     api.stream(
@@ -19,7 +19,7 @@
       {
         message: userMessage,
         history: messages
-          .filter(m => m.role !== 'system' && m.role !== 'error' && !m.streaming)
+          .filter(m => m.role !== 'system' && m.role !== 'error')
           .map(m => ({
             role: m.role,
             content: m.content,
@@ -33,7 +33,6 @@
       // onComplete
       (finalMessage) => {
         messages[placeholderIndex].content = finalMessage;
-        messages[placeholderIndex].streaming = false;
         executingTools = [];
         messages = messages;
       },
