@@ -1,6 +1,6 @@
 <script>
-  import { onMount } from 'svelte';
   import * as THREE from 'three';
+  import '@styles/AtomLogo.scss';
 
   let { size = 280, animate = true } = $props();
 
@@ -24,10 +24,12 @@
   let orbits = [];
   let animationId;
 
-  onMount(() => {
-    initThreeJS();
-    if (animate) {
-      animateScene();
+  $effect(() => {
+    if (container) {
+      initThreeJS();
+      if (animate) {
+        animateScene();
+      }
     }
 
     return () => {
@@ -238,16 +240,3 @@
 </script>
 
 <div class="atom-container" bind:this={container} style="width: {size}px; height: {size}px;"></div>
-
-<style>
-  .atom-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .atom-container :global(canvas) {
-    display: block;
-  }
-</style>
