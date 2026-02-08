@@ -8,25 +8,36 @@ use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    private const API_KEY = config('ai.openai.api_key');
-    private const MODEL = config('ai.openai.model');
-    private const BASE_URL = config('ai.openai.base_url');
+    private static function getApiKey(): string
+    {
+        return config('ai.openai.api_key');
+    }
+
+    private static function getModel(): string
+    {
+        return config('ai.openai.model');
+    }
+
+    private static function getBaseUrl(): string
+    {
+        return config('ai.openai.base_url');
+    }
 
     public static function send(string $message, array $conversationHistory = []): array
     {
         $messages = self::buildMessages($message, $conversationHistory);
 
         $requestData = [
-            'model' => self::MODEL,
+            'model' => self::getModel(),
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
             'tools' => PluginList::formatToolsForOpenAI(),
         ];
 
-        $response = Http::withToken(self::API_KEY)
+        $response = Http::withToken(self::getApiKey())
             ->timeout(120)
-            ->post(self::BASE_URL."/chat/completions", $requestData)
+            ->post(self::getBaseUrl()."/chat/completions", $requestData)
             ->json();
 
         // Check if the assistant wants to call tools
@@ -100,16 +111,16 @@ class AIService
         // Get final response from AI
         // Get available tools again in case more tool calls are needed
         $requestData = [
-            'model' => self::MODEL,
+            'model' => self::getModel(),
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
             'tools' => PluginList::formatToolsForOpenAI(),
         ];
 
-        $response = Http::withToken(self::API_KEY)
+        $response = Http::withToken(self::getApiKey())
             ->timeout(120)
-            ->post(self::BASE_URL."/chat/completions", $requestData)
+            ->post(self::getBaseUrl()."/chat/completions", $requestData)
             ->json();
 
         $assistantMessage = $response['choices'][0]['message'];

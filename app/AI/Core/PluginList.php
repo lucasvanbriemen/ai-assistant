@@ -8,9 +8,12 @@ use App\AI\Plugins\EmailPlugin;
 
 class PluginList
 {
-    public const PLUGINS = [
-        new EmailPlugin(),
-    ];
+    private static function getPlugins(): array
+    {
+        return [
+            new EmailPlugin()
+        ];
+    }
 
     /**
      * https://platform.openai.com/docs/guides/function-calling?api-mode=chat
@@ -18,7 +21,7 @@ class PluginList
     public static function formatToolsForOpenAI(): array
     {
         $tools = [];
-        foreach (self::PLUGINS as $plugin) {
+        foreach (self::getPlugins() as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 $tools[] = [
                     'type' => 'function',
@@ -50,7 +53,7 @@ class PluginList
 
     private static function getPluginByToolName(string $toolName): ?PluginInterface
     {
-        foreach (self::PLUGINS as $plugin) {
+        foreach (self::getPlugins() as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 if ($tool['name'] === $toolName) {
                     return $plugin;
