@@ -2,6 +2,7 @@
 
 namespace App\AI\Services;
 
+use App\AI\Core\PluginList;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -15,73 +16,25 @@ class AIStreamService
         // Build messages using existing AIService::buildMessages pattern
         $messages = self::buildMessages($message, $conversationHistory);
 
-        $requestData = [
-            'model' => self::MODEL,
-            'messages' => $messages,
-            'temperature' => 0.3,
-            'max_tokens' => config('ai.max_tokens'),
-            'tools' => \App\AI\Core\PluginList::formatToolsForOpenAI(),
-            'stream' => true, // Enable streaming
-        ];
-
         try {
-            // Open streaming connection to OpenAI
-            $response = Http::withToken(config('ai.openai.api_key'))
-                ->timeout(config('ai.streaming.timeout', 60))
-                ->withOptions(['stream' => true])
-                ->post(self::BASE_URL . "/chat/completions", $requestData);
+            // First, check if the response will include tool calls
+            $response = self::sendRequest($messages);
+            $assistantMessage = $response['choices'][0]['message'];
 
-            if (!$response->successful()) {
-                throw new \Exception('OpenAI API error: ' . $response->status());
-            }
+            // Check if the assistant wants to call tools
+            if (isset($assistantMessage['tool_calls'])) {
+                // Handle tool calls through synchronous execution, then stream the final response
+                $finalResponse = self::processToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
 
-            $fullMessage = '';
-            $body = $response->getBody();
-            $hasToolCalls = false;
-
-            // Read and parse SSE stream
-            while (!$body->eof()) {
-                $line = self::readLine($body);
-                if (empty($line) || $line === 'data: [DONE]') {
-                    continue;
+                // Stream the final response
+                foreach (self::streamText($finalResponse['message']) as $chunk) {
+                    yield $chunk;
                 }
-
-                if (str_starts_with($line, 'data: ')) {
-                    try {
-                        $json = json_decode(substr($line, 6), true);
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            continue;
-                        }
-
-                        // Check for tool calls in the response
-                        $toolCalls = $json['choices'][0]['delta']['tool_calls'] ?? null;
-                        if ($toolCalls) {
-                            $hasToolCalls = true;
-                        }
-
-                        $delta = $json['choices'][0]['delta']['content'] ?? '';
-
-                        if ($delta) {
-                            $fullMessage .= $delta;
-                            yield self::formatSSE('chunk', ['content' => $delta]);
-                        }
-                    } catch (\Exception $e) {
-                        Log::warning('Error parsing SSE chunk: ' . $e->getMessage());
-                        continue;
-                    }
-                }
-            }
-
-            // If tool calls were detected, signal frontend to use sync endpoint
-            if ($hasToolCalls) {
-                Log::info('Tool calls detected in streaming response, requesting fallback to sync endpoint');
-                yield self::formatSSE('error', [
-                    'error' => true,
-                    'message' => 'Tool calls detected. Switching to synchronous mode for reliable execution.',
-                    'tool_calls_detected' => true
-                ]);
             } else {
-                yield self::formatSSE('done', ['message' => $fullMessage]);
+                // No tool calls, stream the response normally
+                foreach (self::streamText($assistantMessage['content'] ?? '') as $chunk) {
+                    yield $chunk;
+                }
             }
         } catch (\Exception $e) {
             Log::error('Streaming error: ' . $e->getMessage());
@@ -89,22 +42,132 @@ class AIStreamService
         }
     }
 
+    /**
+     * Stream text character by character for smooth rendering
+     */
+    private static function streamText(string $text): \Generator
+    {
+        if (empty($text)) {
+            yield self::formatSSE('done', ['message' => '']);
+            return;
+        }
+
+        // Stream by word chunks for better performance than char-by-char
+        $words = explode(' ', $text);
+        $accumulated = '';
+
+        foreach ($words as $index => $word) {
+            $accumulated .= $word;
+            if ($index < count($words) - 1) {
+                $accumulated .= ' ';
+            }
+            yield self::formatSSE('chunk', ['content' => $word . ($index < count($words) - 1 ? ' ' : '')]);
+        }
+
+        yield self::formatSSE('done', ['message' => $text]);
+    }
+
+    /**
+     * Send non-streaming request to OpenAI (for checking tool calls and getting responses)
+     */
+    private static function sendRequest(array $messages): array
+    {
+        $requestData = [
+            'model' => self::MODEL,
+            'messages' => $messages,
+            'temperature' => 0.3,
+            'max_tokens' => config('ai.max_tokens'),
+            'tools' => PluginList::formatToolsForOpenAI(),
+        ];
+
+        $response = Http::withToken(config('ai.openai.api_key'))
+            ->timeout(120)
+            ->post(self::BASE_URL . "/chat/completions", $requestData)
+            ->json();
+
+        return $response;
+    }
+
+    /**
+     * Process tool calls (same logic as AIService but returns the final response)
+     */
+    private static function processToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): array
+    {
+        $messages = $previousMessages;
+        $toolsUsed = [];
+
+        // Add assistant message with tool calls
+        $originalAssistantMessage = end($previousMessages);
+        $assistantMessage = [
+            'role' => 'assistant',
+            'tool_calls' => $toolCalls,
+        ];
+        if (isset($originalAssistantMessage['content']) && $originalAssistantMessage['content'] !== null) {
+            $assistantMessage['content'] = $originalAssistantMessage['content'];
+        }
+
+        $messages[] = $assistantMessage;
+
+        // Execute each tool call
+        $toolResults = [];
+        foreach ($toolCalls as $toolCall) {
+            $toolName = $toolCall['function']['name'];
+            $parameters = json_decode($toolCall['function']['arguments'], true) ?? [];
+
+            $toolsUsed[] = ['name' => $toolName, 'parameters' => $parameters];
+
+            $result = PluginList::executeTool($toolName, $parameters);
+
+            $toolResults[] = [
+                'tool_call_id' => $toolCall['id'],
+                'role' => 'tool',
+                'name' => $toolName,
+                'content' => json_encode($result->toArray()),
+            ];
+        }
+
+        // Add tool results
+        foreach ($toolResults as $toolResult) {
+            $messages[] = [
+                'role' => 'tool',
+                'tool_call_id' => $toolResult['tool_call_id'],
+                'content' => $toolResult['content'],
+            ];
+        }
+
+        // Get final response from AI
+        $requestData = [
+            'model' => self::MODEL,
+            'messages' => $messages,
+            'temperature' => 0.3,
+            'max_tokens' => config('ai.max_tokens'),
+            'tools' => PluginList::formatToolsForOpenAI(),
+        ];
+
+        $response = Http::withToken(config('ai.openai.api_key'))
+            ->timeout(120)
+            ->post(self::BASE_URL . "/chat/completions", $requestData)
+            ->json();
+
+        $assistantMessage = $response['choices'][0]['message'];
+
+        // Check if the final response also includes tool calls (recursive)
+        if (isset($assistantMessage['tool_calls'])) {
+            return self::processToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
+        }
+
+        $finalResponse = $assistantMessage['content'] ?? '';
+
+        return [
+            'success' => true,
+            'message' => $finalResponse,
+            'tools_used' => $toolsUsed,
+        ];
+    }
+
     public static function formatSSE(string $event, array $data): string
     {
         return "event: {$event}\ndata: " . json_encode($data) . "\n\n";
-    }
-
-    private static function readLine($stream): string
-    {
-        $line = '';
-        while (!$stream->eof()) {
-            $char = $stream->read(1);
-            if ($char === "\n") {
-                break;
-            }
-            $line .= $char;
-        }
-        return trim($line);
     }
 
     private static function buildMessages(string $message, array $conversationHistory): array
