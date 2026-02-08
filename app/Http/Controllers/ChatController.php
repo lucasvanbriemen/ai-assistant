@@ -21,16 +21,12 @@ class ChatController extends Controller
         $history = $request->input('history', []);
 
         return response()->stream(function () use ($message, $history) {
-            try {
-                foreach (AIService::send($message, $history) as $chunk) {
-                    echo $chunk;
-                    if (ob_get_level() > 0) {
-                        ob_flush();
-                    }
-                    flush();
+            foreach (AIService::send($message, $history) as $chunk) {
+                echo $chunk;
+                if (ob_get_level() > 0) {
+                    ob_flush();
                 }
-            } catch (\Exception $e) {
-                echo AIService::formatSSE('error', ['message' => 'Streaming failed']);
+                flush();
             }
         }, 200, [
             'Content-Type' => 'text/event-stream',
