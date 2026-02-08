@@ -13,7 +13,6 @@ class AIStreamService
 
     public static function streamResponse(string $message, array $conversationHistory): \Generator
     {
-        // Build messages using existing AIService::buildMessages pattern
         $messages = self::buildMessages($message, $conversationHistory);
 
         try {
