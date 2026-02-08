@@ -22,11 +22,8 @@ class AIService
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
+            'tools' => $tools,
         ];
-
-        if (!empty($tools)) {
-            $requestData['tools'] = $tools;
-        }
 
         $response = Http::withToken(self::API_KEY)
             ->timeout(120)
