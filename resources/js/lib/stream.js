@@ -64,8 +64,10 @@ export class StreamHandler {
     processLine(line) {
         const trimmedLine = line.trim();
 
+        let eventType = 'chunk';
         if (trimmedLine.startsWith('event: ')) {
-            // Event type line, we can track this if needed
+            // Extract event type for tool tracking
+            eventType = trimmedLine.substring(7).trim();
             return;
         }
 
@@ -79,6 +81,9 @@ export class StreamHandler {
                     this.callbacks.onChunk?.(data.content, this.accumulator);
                 } else if (data.message) {
                     this.callbacks.onComplete?.(data.message);
+                } else if (data.name && data.action) {
+                    // Tool event
+                    this.callbacks.onTool?.(data.name, data.action);
                 } else if (data.error) {
                     this.callbacks.onError?.(new Error(data.message || 'Unknown streaming error'));
                 }

@@ -23,11 +23,8 @@ class AIStreamService
 
             // Check if the assistant wants to call tools
             if (isset($assistantMessage['tool_calls'])) {
-                // Handle tool calls through synchronous execution, then stream the final response
-                $finalResponse = self::processToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
-
-                // Stream the final response
-                foreach (self::streamText($finalResponse['message']) as $chunk) {
+                // Stream tool progress and get final response
+                foreach (self::processToolCallsWithProgress($assistantMessage['tool_calls'], $message, $conversationHistory, $messages) as $chunk) {
                     yield $chunk;
                 }
             } else {
@@ -43,7 +40,95 @@ class AIStreamService
     }
 
     /**
-     * Stream text character by character for smooth rendering
+     * Process tool calls and stream progress indicators, then stream final response
+     */
+    private static function processToolCallsWithProgress(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): \Generator
+    {
+        $messages = $previousMessages;
+        $toolsUsed = [];
+
+        // Add assistant message with tool calls
+        $originalAssistantMessage = end($previousMessages);
+        $assistantMessage = [
+            'role' => 'assistant',
+            'tool_calls' => $toolCalls,
+        ];
+        if (isset($originalAssistantMessage['content']) && $originalAssistantMessage['content'] !== null) {
+            $assistantMessage['content'] = $originalAssistantMessage['content'];
+        }
+
+        $messages[] = $assistantMessage;
+
+        // Stream tool progress indicators before executing
+        foreach ($toolCalls as $toolCall) {
+            $toolName = $toolCall['function']['name'];
+            yield self::formatSSE('tool', ['name' => $toolName, 'action' => 'start']);
+        }
+
+        // Execute each tool call
+        $toolResults = [];
+        foreach ($toolCalls as $toolCall) {
+            $toolName = $toolCall['function']['name'];
+            $parameters = json_decode($toolCall['function']['arguments'], true) ?? [];
+
+            $toolsUsed[] = ['name' => $toolName, 'parameters' => $parameters];
+
+            Log::info("Executing tool: {$toolName}", ['parameters' => $parameters]);
+
+            $result = PluginList::executeTool($toolName, $parameters);
+
+            $toolResults[] = [
+                'tool_call_id' => $toolCall['id'],
+                'role' => 'tool',
+                'name' => $toolName,
+                'content' => json_encode($result->toArray()),
+            ];
+
+            // Stream completion of this tool
+            yield self::formatSSE('tool', ['name' => $toolName, 'action' => 'complete']);
+        }
+
+        // Add tool results
+        foreach ($toolResults as $toolResult) {
+            $messages[] = [
+                'role' => 'tool',
+                'tool_call_id' => $toolResult['tool_call_id'],
+                'content' => $toolResult['content'],
+            ];
+        }
+
+        // Get final response from AI
+        $requestData = [
+            'model' => self::MODEL,
+            'messages' => $messages,
+            'temperature' => 0.3,
+            'max_tokens' => config('ai.max_tokens'),
+            'tools' => PluginList::formatToolsForOpenAI(),
+        ];
+
+        $response = Http::withToken(config('ai.openai.api_key'))
+            ->timeout(120)
+            ->post(self::BASE_URL . "/chat/completions", $requestData)
+            ->json();
+
+        $assistantMessage = $response['choices'][0]['message'];
+
+        // Check if the final response also includes tool calls (recursive)
+        if (isset($assistantMessage['tool_calls'])) {
+            foreach (self::processToolCallsWithProgress($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages) as $chunk) {
+                yield $chunk;
+            }
+        } else {
+            $finalResponse = $assistantMessage['content'] ?? '';
+            // Stream the final response
+            foreach (self::streamText($finalResponse) as $chunk) {
+                yield $chunk;
+            }
+        }
+    }
+
+    /**
+     * Stream text word by word for smooth rendering
      */
     private static function streamText(string $text): \Generator
     {
@@ -86,83 +171,6 @@ class AIStreamService
             ->json();
 
         return $response;
-    }
-
-    /**
-     * Process tool calls (same logic as AIService but returns the final response)
-     */
-    private static function processToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): array
-    {
-        $messages = $previousMessages;
-        $toolsUsed = [];
-
-        // Add assistant message with tool calls
-        $originalAssistantMessage = end($previousMessages);
-        $assistantMessage = [
-            'role' => 'assistant',
-            'tool_calls' => $toolCalls,
-        ];
-        if (isset($originalAssistantMessage['content']) && $originalAssistantMessage['content'] !== null) {
-            $assistantMessage['content'] = $originalAssistantMessage['content'];
-        }
-
-        $messages[] = $assistantMessage;
-
-        // Execute each tool call
-        $toolResults = [];
-        foreach ($toolCalls as $toolCall) {
-            $toolName = $toolCall['function']['name'];
-            $parameters = json_decode($toolCall['function']['arguments'], true) ?? [];
-
-            $toolsUsed[] = ['name' => $toolName, 'parameters' => $parameters];
-
-            $result = PluginList::executeTool($toolName, $parameters);
-
-            $toolResults[] = [
-                'tool_call_id' => $toolCall['id'],
-                'role' => 'tool',
-                'name' => $toolName,
-                'content' => json_encode($result->toArray()),
-            ];
-        }
-
-        // Add tool results
-        foreach ($toolResults as $toolResult) {
-            $messages[] = [
-                'role' => 'tool',
-                'tool_call_id' => $toolResult['tool_call_id'],
-                'content' => $toolResult['content'],
-            ];
-        }
-
-        // Get final response from AI
-        $requestData = [
-            'model' => self::MODEL,
-            'messages' => $messages,
-            'temperature' => 0.3,
-            'max_tokens' => config('ai.max_tokens'),
-            'tools' => PluginList::formatToolsForOpenAI(),
-        ];
-
-        $response = Http::withToken(config('ai.openai.api_key'))
-            ->timeout(120)
-            ->post(self::BASE_URL . "/chat/completions", $requestData)
-            ->json();
-
-        $assistantMessage = $response['choices'][0]['message'];
-
-        // Check if the final response also includes tool calls (recursive)
-        if (isset($assistantMessage['tool_calls'])) {
-            return self::processToolCalls($assistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages);
-        }
-
-        $finalResponse = $assistantMessage['content'] ?? '';
-
-        return [
-            'success' => true,
-            'message' => $finalResponse,
-            'tools_used' => $toolsUsed,
-        ];
     }
 
     public static function formatSSE(string $event, array $data): string

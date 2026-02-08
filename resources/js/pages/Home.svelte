@@ -3,6 +3,7 @@
   let input = $state('');
   let isStreaming = $state(false);
   let streamAbort = $state(null);
+  let executingTools = $state([]);
 
   async function sendMessage() {
     const userMessage = input.trim();
@@ -40,6 +41,7 @@
         (finalMessage) => {
           messages[placeholderIndex].content = finalMessage;
           messages[placeholderIndex].streaming = false;
+          executingTools = [];
           messages = messages;
           isStreaming = false;
           streamAbort = null;
@@ -61,6 +63,7 @@
 
             messages[placeholderIndex].content = response.message;
             messages[placeholderIndex].streaming = false;
+            executingTools = [];
             messages = messages;
             isStreaming = false;
             streamAbort = null;
@@ -68,10 +71,20 @@
             console.error('Fallback sync error:', syncError);
             messages[placeholderIndex].content = 'Error: Could not get response';
             messages[placeholderIndex].streaming = false;
+            executingTools = [];
             messages = messages;
             isStreaming = false;
             streamAbort = null;
           }
+        },
+        // onTool
+        (toolName, action) => {
+          if (action === 'start') {
+            executingTools.push(toolName);
+          } else if (action === 'complete') {
+            executingTools = executingTools.filter(t => t !== toolName);
+          }
+          executingTools = executingTools; // Trigger reactivity
         }
       );
     } catch (error) {
@@ -102,6 +115,14 @@
 
   <hr><hr><hr><hr>
 {/each}
+
+{#if executingTools.length > 0}
+  <div style="opacity: 0.6; font-style: italic;">
+    {#each executingTools as tool (tool)}
+      <div>🔧 {tool}</div>
+    {/each}
+  </div>
+{/if}
 
 <textarea bind:value={input} onkeydown={handleKeydown} rows="2" disabled={isStreaming}></textarea>
 <button onclick={sendMessage} disabled={!input.trim() || isStreaming}>
