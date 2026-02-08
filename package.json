@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "fast-glob": "^3.3.3",
-        "page": "latest"
+        "page": "latest",
+        "three": "^0.182.0"
     }
 }
