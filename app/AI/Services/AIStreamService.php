@@ -20,6 +20,7 @@ class AIStreamService
             'messages' => $messages,
             'temperature' => 0.3,
             'max_tokens' => config('ai.max_tokens'),
+            'tools' => \App\AI\Core\PluginList::formatToolsForOpenAI(),
             'stream' => true, // Enable streaming
         ];
 
@@ -36,6 +37,7 @@ class AIStreamService
 
             $fullMessage = '';
             $body = $response->getBody();
+            $hasToolCalls = false;
 
             // Read and parse SSE stream
             while (!$body->eof()) {
@@ -51,6 +53,12 @@ class AIStreamService
                             continue;
                         }
 
+                        // Check for tool calls in the response
+                        $toolCalls = $json['choices'][0]['delta']['tool_calls'] ?? null;
+                        if ($toolCalls) {
+                            $hasToolCalls = true;
+                        }
+
                         $delta = $json['choices'][0]['delta']['content'] ?? '';
 
                         if ($delta) {
@@ -64,7 +72,17 @@ class AIStreamService
                 }
             }
 
-            yield self::formatSSE('done', ['message' => $fullMessage]);
+            // If tool calls were detected, signal frontend to use sync endpoint
+            if ($hasToolCalls) {
+                Log::info('Tool calls detected in streaming response, requesting fallback to sync endpoint');
+                yield self::formatSSE('error', [
+                    'error' => true,
+                    'message' => 'Tool calls detected. Switching to synchronous mode for reliable execution.',
+                    'tool_calls_detected' => true
+                ]);
+            } else {
+                yield self::formatSSE('done', ['message' => $fullMessage]);
+            }
         } catch (\Exception $e) {
             Log::error('Streaming error: ' . $e->getMessage());
             yield self::formatSSE('error', ['message' => 'Streaming failed: ' . $e->getMessage()]);
