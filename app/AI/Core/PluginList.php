@@ -13,9 +13,9 @@ class PluginList
     ];
 
     /**
-     * Get all available tools in OpenAI format
+     * https://platform.openai.com/docs/guides/function-calling?api-mode=chat
      */
-    public static function getToolsInOpenAIFormat(): array
+    public static function formatToolsForOpenAI(): array
     {
         $tools = [];
         foreach (self::PLUGINS as $plugin) {

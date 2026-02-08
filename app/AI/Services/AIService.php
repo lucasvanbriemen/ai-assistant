@@ -15,14 +15,13 @@ class AIService
     public static function send(string $message, array $conversationHistory = []): array
     {
         $messages = self::buildMessages($message, $conversationHistory);
-        $tools = PluginList::getToolsInOpenAIFormat();
 
         $requestData = [
             'model' => self::MODEL,
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
-            'tools' => $tools,
+            'tools' => PluginList::formatToolsForOpenAI(),
         ];
 
         $response = Http::withToken(self::API_KEY)
@@ -100,31 +99,18 @@ class AIService
 
         // Get final response from AI
         // Get available tools again in case more tool calls are needed
-        $tools = PluginList::getToolsInOpenAIFormat();
-
         $requestData = [
             'model' => self::MODEL,
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
+            'tools' => PluginList::formatToolsForOpenAI(),
         ];
-
-        if (!empty($tools)) {
-            $requestData['tools'] = $tools;
-        }
 
         $response = Http::withToken(self::API_KEY)
             ->timeout(120)
             ->post(self::BASE_URL."/chat/completions", $requestData)
             ->json();
-
-        if (isset($response['error'])) {
-            return [
-                'success' => false,
-                'error' => $response['error']['message'] ?? 'API error',
-                'history' => $conversationHistory,
-            ];
-        }
 
         $assistantMessage = $response['choices'][0]['message'];
 
