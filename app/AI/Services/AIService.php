@@ -8,19 +8,12 @@ use Illuminate\Support\Facades\Http;
 
 class AIService
 {
-    private static string $apiKey;
-    private static string $model;
-    private static string $baseUrl;
-    private static bool $initialized = false;
-
+    private const API_KEY = config('ai.openai.api_key');
+    private const MODEL = config('ai.openai.model');
+    private const BASE_URL = config('ai.openai.base_url');
+    
     private static function ensureInitialized(): void
     {
-        if (!self::$initialized) {
-            self::$apiKey = config('ai.openai.api_key');
-            self::$model = config('ai.openai.model');
-            self::$baseUrl = config('ai.openai.base_url');
-            self::$initialized = true;
-        }
     }
 
     public static function send(string $message, array $conversationHistory = []): array
@@ -30,7 +23,7 @@ class AIService
         $tools = PluginList::getToolsInOpenAIFormat();
 
         $requestData = [
-            'model' => self::$model,
+            'model' => self::MODEL,
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
@@ -40,9 +33,9 @@ class AIService
             $requestData['tools'] = $tools;
         }
 
-        $response = Http::withToken(self::$apiKey)
+        $response = Http::withToken(self::API_KEY)
             ->timeout(120)
-            ->post(self::$baseUrl."/chat/completions", $requestData)
+            ->post(self::BASE_URL."/chat/completions", $requestData)
             ->json();
 
         // Check if the assistant wants to call tools
@@ -118,7 +111,7 @@ class AIService
         $tools = PluginList::getToolsInOpenAIFormat();
 
         $requestData = [
-            'model' => self::$model,
+            'model' => self::MODEL,
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => config('ai.max_tokens'),
@@ -128,9 +121,9 @@ class AIService
             $requestData['tools'] = $tools;
         }
 
-        $response = Http::withToken(self::$apiKey)
+        $response = Http::withToken(self::API_KEY)
             ->timeout(120)
-            ->post(self::$baseUrl."/chat/completions", $requestData)
+            ->post(self::BASE_URL."/chat/completions", $requestData)
             ->json();
 
         if (isset($response['error'])) {
