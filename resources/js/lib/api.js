@@ -27,10 +27,10 @@ export default {
     return this.makeRequest("DELETE", url, null, headers);
   },
 
-  stream(url, data, onChunk, onComplete, onError, onTool) {
+  stream(url, data, onChunk, onComplete, onTool) {
     const fullUrl = currentDomain + url;
 
-    const handler = new StreamHandler(fullUrl, data, {onChunk, onComplete, onError, onTool});
+    const handler = new StreamHandler(fullUrl, data, {onChunk, onComplete, onTool});
     handler.connect();
   },
 

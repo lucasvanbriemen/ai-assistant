@@ -40,10 +40,6 @@
         executingTools = [];
         messages = messages;
         isStreaming = false;
-        streamAbort = null;
-      },
-      // onError - fallback to synchronous
-      async (error) => {
       },
       // onTool
       (toolName, action) => {

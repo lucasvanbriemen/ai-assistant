@@ -64,8 +64,6 @@ export class StreamHandler {
             } else if (data.name && data.action) {
                 // Tool event
                 this.callbacks.onTool?.(data.name, data.action);
-            } else if (data.error) {
-                this.callbacks.onError?.(new Error(data.message || 'Unknown streaming error'));
             }
         }
     }
