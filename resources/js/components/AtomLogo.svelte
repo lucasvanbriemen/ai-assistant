@@ -6,8 +6,8 @@
 
   // Animation speed controls (adjust these to change animation speeds)
   const ELECTRON_ORBIT_SPEED_MULTIPLIER = 2.0; // Speed of electrons moving along their orbits
-  const SCENE_ROTATION_SPEED = 10.0; // Speed of entire atom/scene rotation
-  const NUCLEUS_ROTATION_SPEED = 2.0; // Speed of nucleus particles rotating around each other
+  const SCENE_ROTATION_SPEED = 25.0; // Speed of entire atom/scene rotation
+  const NUCLEUS_ROTATION_SPEED = 5.0; // Speed of nucleus particles rotating around each other
 
   let container;
   let scene, camera, renderer;
@@ -148,9 +148,9 @@
       });
       const electron = new THREE.Mesh(electronGeometry, electronMaterial);
 
-      // Very strong point light to create reflections on nucleus
-      const electronLight = new THREE.PointLight(config.color, 8.0, 15); // Much stronger
-      electronLight.decay = 1.0; // Less decay for longer range
+      // Strong point light to create reflections on glass and nucleus
+      const electronLight = new THREE.PointLight(config.color, 125.0, 120); // Stronger for glass reflections
+      electronLight.decay = 0.8; // Lower decay for wider reach to glass
       electron.add(electronLight);
 
       // Store electron with its orbit config
@@ -167,14 +167,20 @@
       orbits.push(orbit);
     });
 
-    // Create outer glass sphere with proper reflections (Siri-style)
+    // Create outer glass sphere with realistic reflections (no bloom)
     const glassGeometry = new THREE.SphereGeometry(3.5, 128, 128);
-    const glassMaterial = new THREE.MeshPhongMaterial({
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.12,
-      shininess: 150, // High shininess for sharp reflections
-      specular: 0xffffff, // White specular highlights
+      opacity: 1,          // Very subtle glass
+      transmission: .96,     // High transparency
+      thickness: .3,        // Thin glass for subtle refraction
+      roughness: 0.0,        // Perfectly smooth for clear reflections
+      metalness: 0.0,
+      clearcoat: 0.0,        // Glossy coating for reflections
+      clearcoatRoughness: 0.0, // Sharp reflections
+      ior: 1.5,              // Glass index of refraction
+      reflectivity: 0,     // High reflectivity to catch electron lights
       side: THREE.DoubleSide,
       depthWrite: false
     });
