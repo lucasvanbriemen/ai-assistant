@@ -1,7 +1,6 @@
 <script>
   let messages = $state([]);
   let input = $state('');
-  let isStreaming = $state(false);
   let executingTools = $state([]);
 
   async function sendMessage() {
@@ -14,8 +13,6 @@
     const placeholderIndex = messages.length;
     messages.push({role: 'assistant', content: '', timestamp: new Date(), streaming: true});
     messages = messages;
-
-    isStreaming = true;
 
     api.stream(
       '/api/chat/send',
@@ -39,7 +36,6 @@
         messages[placeholderIndex].streaming = false;
         executingTools = [];
         messages = messages;
-        isStreaming = false;
       },
       // onTool
       (toolName, action) => {
@@ -82,7 +78,7 @@
   </div>
 {/if}
 
-<textarea bind:value={input} onkeydown={handleKeydown} rows="2" disabled={isStreaming}></textarea>
-<button onclick={sendMessage} disabled={!input.trim() || isStreaming}>
-  {isStreaming ? 'Streaming...' : 'Send'}
+<textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
+<button onclick={sendMessage} disabled={!input.trim()}>
+  Send
 </button>
