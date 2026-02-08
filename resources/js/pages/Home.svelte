@@ -55,10 +55,7 @@
   }
 </script>
 
-<div class="header">
-  <AtomLogo size={350} />
-  <h1>AI Assistant</h1>
-</div>
+<AtomLogo size={350} />
 
 {#each messages as message, i (i)}
   {message.content}
@@ -83,20 +80,4 @@
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>
 
 <style>
-  .header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 2rem 0;
-  }
-
-  .header h1 {
-    margin: 0;
-    font-size: 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
 </style>

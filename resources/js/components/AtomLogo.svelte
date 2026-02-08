@@ -14,8 +14,9 @@
   const ORBIT_TUBE_THICKNESS = 0.06;
   const ORBIT_CONFIGS = [
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: 0, rotationY: 0, color: 0x8b5cf6, speed: 0.01 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: Math.PI / 3, rotationY: 0, color: 0x6366f1, speed: 0.008 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (2 * Math.PI) / 3, rotationY: 0, color: 0x3b82f6, speed: 0.012 }
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (1 * Math.PI) / 4, rotationY: 0, color: 0x6366f1, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (2 * Math.PI) / 4, rotationY: 0, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (3 * Math.PI) / 4, rotationY: 0, color: 0x3b82f6, speed: 0.012 },
   ];
 
   let container;
