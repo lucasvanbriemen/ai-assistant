@@ -4,9 +4,7 @@ return [
     'provider' => env('AI_PROVIDER', 'openai'),
 
     'openai' => [
-        'api_key' => env('OPENAI_API_KEY'),
-        'model' => env('OPENAI_MODEL', 'gpt-4-turbo-preview'),
-        'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'api_key' => env('OPENAI_API_KEY')
     ],
 
     // System prompt for the AI chatbot
