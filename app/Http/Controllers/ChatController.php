@@ -10,7 +10,12 @@ class ChatController extends Controller
 {
     public function sendMessage(Request $request): StreamedResponse
     {
-        set_time_limit(180); // 3 minutes for streaming
+        // Increase execution time for complex queries that make multiple API calls
+        // Default PHP limit is often 30-60 seconds, which is too short when:
+        // - Searching multiple emails
+        // - Reading full email content
+        // - Extracting information from multiple emails
+        set_time_limit(300); // 5 minutes
 
         $message = $request->input('message');
         $history = $request->input('history', []);
