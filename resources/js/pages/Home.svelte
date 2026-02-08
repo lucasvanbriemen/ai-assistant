@@ -57,10 +57,10 @@
   {message.content}
   <hr>
   {#if message.timestamp}
-      {message.timestamp.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-      })}
+    {message.timestamp.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    })}
   {/if}
 
   <hr><hr><hr><hr>
