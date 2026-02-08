@@ -6,7 +6,6 @@
 
   async function sendMessage() {
     const userMessage = input.trim();
-    if (!userMessage || isStreaming) return;
 
     input = '';
     messages.push({role: 'user', content: userMessage, timestamp: new Date()});
@@ -18,51 +17,44 @@
 
     isStreaming = true;
 
-    try {
-      api.stream(
-        '/api/chat/send',
-        {
-          message: userMessage,
-          history: messages
-            .filter(m => m.role !== 'system' && m.role !== 'error' && !m.streaming)
-            .map(m => ({
-              role: m.role,
-              content: m.content,
-            })),
-        },
-        // onChunk
-        (chunk, fullMessage) => {
-          messages[placeholderIndex].content = fullMessage;
-          messages = messages; // Trigger reactivity
-        },
-        // onComplete
-        (finalMessage) => {
-          messages[placeholderIndex].content = finalMessage;
-          messages[placeholderIndex].streaming = false;
-          executingTools = [];
-          messages = messages;
-          isStreaming = false;
-          streamAbort = null;
-        },
-        // onError - fallback to synchronous
-        async (error) => {
-        },
-        // onTool
-        (toolName, action) => {
-          if (action === 'start') {
-            executingTools.push(toolName);
-          } else if (action === 'complete') {
-            executingTools = executingTools.filter(t => t !== toolName);
-          }
-          executingTools = executingTools; // Trigger reactivity
+    api.stream(
+      '/api/chat/send',
+      {
+        message: userMessage,
+        history: messages
+          .filter(m => m.role !== 'system' && m.role !== 'error' && !m.streaming)
+          .map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+      },
+      // onChunk
+      (chunk, fullMessage) => {
+        messages[placeholderIndex].content = fullMessage;
+        messages = messages; // Trigger reactivity
+      },
+      // onComplete
+      (finalMessage) => {
+        messages[placeholderIndex].content = finalMessage;
+        messages[placeholderIndex].streaming = false;
+        executingTools = [];
+        messages = messages;
+        isStreaming = false;
+        streamAbort = null;
+      },
+      // onError - fallback to synchronous
+      async (error) => {
+      },
+      // onTool
+      (toolName, action) => {
+        if (action === 'start') {
+          executingTools.push(toolName);
+        } else if (action === 'complete') {
+          executingTools = executingTools.filter(t => t !== toolName);
         }
-      );
-    } catch (error) {
-      console.error('Error:', error);
-      messages[placeholderIndex].content = 'Error: Could not get response';
-      messages[placeholderIndex].streaming = false;
-      isStreaming = false;
-    }
+        executingTools = executingTools; // Trigger reactivity
+      }
+    );
   }
 
   function handleKeydown(e) {
