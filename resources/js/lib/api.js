@@ -32,8 +32,6 @@ export default {
 
     const handler = new StreamHandler(fullUrl, data, {onChunk, onComplete, onError, onTool});
     handler.connect();
-
-    return () => handler.abort(); // Return abort function
   },
 
   makeRequest(method, url, data = null, headers = {}) {

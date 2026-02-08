@@ -4,7 +4,6 @@ export class StreamHandler {
         this.data = data;
         this.callbacks = callbacks;
         this.accumulator = '';
-        this.aborted = false;
     }
 
     async connect() {
@@ -23,11 +22,6 @@ export class StreamHandler {
         let buffer = '';
 
         while (true) {
-            if (this.aborted) {
-                reader.cancel();
-                break;
-            }
-
             const { done, value } = await reader.read();
             if (done) {
                 break;
@@ -74,9 +68,5 @@ export class StreamHandler {
                 this.callbacks.onError?.(new Error(data.message || 'Unknown streaming error'));
             }
         }
-    }
-
-    abort() {
-        this.aborted = true;
     }
 }
