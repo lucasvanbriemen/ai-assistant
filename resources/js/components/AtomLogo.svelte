@@ -4,12 +4,9 @@
 
   let { size = 280, animate = true } = $props();
 
-  // Animation speed controls (adjust these to change animation speeds)
-  const ELECTRON_ORBIT_SPEED_MULTIPLIER = 2.0; // Speed of electrons moving along their orbits
-  const SCENE_ROTATION_SPEED = 25.0; // Speed of entire atom/scene rotation
-  const NUCLEUS_ROTATION_SPEED = 5.0; // Speed of nucleus particles rotating around each other
-
-  // Orbital configuration (manage all electrons and orbits from here)
+  const ELECTRON_ORBIT_SPEED_MULTIPLIER = 2.0;
+  const SCENE_ROTATION_SPEED = 25.0;
+  const NUCLEUS_ROTATION_SPEED = 5.0;
   const ORBIT_RADIUS = 3.2;
   const ORBIT_TUBE_THICKNESS = 0.06;
   const ORBIT_CONFIGS = [

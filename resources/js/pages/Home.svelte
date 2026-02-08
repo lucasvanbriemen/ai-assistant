@@ -1,5 +1,5 @@
 <script>
-  import AtomLogo from '../components/AtomLogo.svelte';
+  import AtomLogo from '@/components/AtomLogo.svelte';
 
   let messages = $state([]);
   let input = $state('');
@@ -78,6 +78,3 @@
 
 <textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>
-
-<style>
-</style>
