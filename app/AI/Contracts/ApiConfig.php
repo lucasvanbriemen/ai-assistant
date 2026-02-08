@@ -9,13 +9,11 @@ class ApiConfig
 {
     public string $baseUrl;
     public array $endpoints;
-    public array $headers;
 
-    public function __construct($baseUrl, $endpoints = [], $headers = []) 
+    public function __construct($baseUrl, $endpoints = [])
     {
         $this->baseUrl = $baseUrl;
         $this->endpoints = $endpoints;
-        $this->headers = $headers;
     }
 
     public function getEndpointUrl(string $endpoint, array $params = []): string
@@ -32,10 +30,7 @@ class ApiConfig
 
     public function getHeaders(): array
     {
-        $headers = array_merge(
-            ['Content-Type' => 'application/json'],
-            $this->headers
-        );
+        $headers =  ['Content-Type' => 'application/json'];
 
         if (env('AGENT_TOKEN')) {
             $headers['Authorization'] = "Bearer ". env('AGENT_TOKEN');

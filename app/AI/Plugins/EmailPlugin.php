@@ -20,8 +20,7 @@ class EmailPlugin extends PluginInterface
             endpoints: [
                 'search' => '/api/emails/search',
                 'read' => '/api/emails/{id}'
-            ],
-            headers: []
+            ]
         );
     }
 
