@@ -14,9 +14,7 @@
     messages.push({role: 'assistant', content: '', timestamp: new Date()});
     messages = messages;
 
-    api.stream(
-      '/api/chat/send',
-      {
+    api.stream('/api/chat/send', {
         message: userMessage,
         history: messages
           .filter(m => m.role !== 'system' && m.role !== 'error')
@@ -78,6 +76,4 @@
 {/if}
 
 <textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
-<button onclick={sendMessage} disabled={!input.trim()}>
-  Send
-</button>
+<button onclick={sendMessage} disabled={!input.trim()}>Send</button>
