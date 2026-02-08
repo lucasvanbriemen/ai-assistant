@@ -22,12 +22,8 @@ class ChatController extends Controller
 
         return response()->stream(function () use ($message, $history) {
             foreach (AIService::send($message, $history) as $chunk) {
-                echo $chunk;
-                ob_flush();
-                flush();
+                yield $chunk;
             }
-        }, 200, [
-            'X-Accel-Buffering' => 'no',
-        ]);
+        });
     }
 }
