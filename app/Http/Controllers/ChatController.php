@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\AI\Core\PluginList;
 use App\AI\Services\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class ChatController extends Controller
 {
-    public function __construct(
-        private AIService $aiService,
-    ) {}
-
     public function sendMessage(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'message' => 'required|string|max:2000',
-            'history' => 'nullable|array',
-        ]);
+        // Increase execution time for complex queries that make multiple API calls
+        // Default PHP limit is often 30-60 seconds, which is too short when:
+        // - Searching multiple emails
+        // - Reading full email content
+        // - Extracting information from multiple emails
+        set_time_limit(300); // 5 minutes
 
-        $message = $validated['message'];
-        $history = $validated['history'] ?? [];
-        $response = $this->aiService->chat($message, $history);
+        $message = $request->input('message');
+        $history = $request->input('history', []);
+        $response = AIService::send($message, $history);
 
         return response()->json([
             'success' => true,
