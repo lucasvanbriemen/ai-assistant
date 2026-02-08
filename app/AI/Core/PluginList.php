@@ -8,7 +8,10 @@ use App\AI\Plugins\EmailPlugin;
 
 class PluginList
 {
-    public static array $plugins = [];
+    public const PLUGINS = [
+        new EmailPlugin(),
+    ];
+
     private static array $pluginToolMap = [];
     private static bool $initialized = false;
 
@@ -18,11 +21,7 @@ class PluginList
             return;
         }
 
-        self::$plugins = [
-            new EmailPlugin(),
-        ];
-
-        foreach (self::$plugins as $plugin) {
+        foreach (self::PLUGINS as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 self::$pluginToolMap[$tool['name']] = $plugin;
             }
@@ -38,7 +37,7 @@ class PluginList
     {
         self::initialize();
         $tools = [];
-        foreach (self::$plugins as $plugin) {
+        foreach (self::PLUGINS as $plugin) {
             foreach ($plugin->getTools() as $tool) {
                 $tools[] = [
                     'type' => 'function',
