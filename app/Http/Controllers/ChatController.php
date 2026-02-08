@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChatController extends Controller
 {
-    public function streamMessage(Request $request): StreamedResponse
+    public function sendMessage(Request $request): StreamedResponse
     {
         set_time_limit(180); // 3 minutes for streaming
 

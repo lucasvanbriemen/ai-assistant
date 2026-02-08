@@ -20,7 +20,7 @@
 
     try {
       api.stream(
-        '/api/chat/stream',
+        '/api/chat/send',
         {
           message: userMessage,
           history: messages
