@@ -24,7 +24,7 @@ class AIService
         // Check if the assistant wants to call tools
         if (isset($assistantMessage['tool_calls'])) {
             // Process tools and get final response, then stream it
-            foreach (self::processToolCallsWithProgress($assistantMessage['tool_calls'], $message, $conversationHistory, $messages) as $chunk) {
+            foreach (self::processToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages) as $chunk) {
                 yield $chunk;
             }
         } else {
@@ -35,10 +35,7 @@ class AIService
         }
     }
 
-    /**
-     * Process tool calls and stream progress indicators, then stream final response
-     */
-    private static function processToolCallsWithProgress(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): \Generator
+    private static function processToolCalls(array $toolCalls, string $userMessage, array $conversationHistory, array $previousMessages): \Generator
     {
         $messages = $previousMessages;
 
@@ -109,7 +106,7 @@ class AIService
 
             $finalAssistantMessage = $finalResponse['choices'][0]['message'];
             if (isset($finalAssistantMessage['tool_calls'])) {
-                foreach (self::processToolCallsWithProgress($finalAssistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages) as $chunk) {
+                foreach (self::processToolCalls($finalAssistantMessage['tool_calls'], $userMessage, $conversationHistory, $messages) as $chunk) {
                     yield $chunk;
                 }
             }
@@ -137,19 +134,12 @@ class AIService
         yield self::formatSSE('done', ['message' => $streamedData['message']]);
     }
 
-    /**
-     * Parse a streaming SSE response and collect data
-     */
     private static function parseStreamResponse(array $requestData, int $timeout = 60): array
     {
         $streamResponse = Http::withToken(config('ai.openai.api_key'))
             ->timeout($timeout)
             ->withOptions(['stream' => true])
             ->post(self::BASE_URL . "/chat/completions", $requestData);
-
-        if (!$streamResponse->successful()) {
-            throw new \Exception('OpenAI API error: ' . $streamResponse->status());
-        }
 
         $body = $streamResponse->getBody();
         $fullMessage = '';
