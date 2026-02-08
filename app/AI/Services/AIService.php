@@ -202,32 +202,6 @@ class AIService
         }
     }
 
-    /**
-     * Stream text word by word for smooth rendering
-     */
-    private static function streamText(string $text): \Generator
-    {
-        if (empty($text)) {
-            yield self::formatSSE('done', ['message' => '']);
-            return;
-        }
-
-        // Stream by word chunks for better performance than char-by-char
-        $words = explode(' ', $text);
-        $accumulated = '';
-
-        foreach ($words as $index => $word) {
-            $accumulated .= $word;
-            if ($index < count($words) - 1) {
-                $accumulated .= ' ';
-            }
-            yield self::formatSSE('chunk', ['content' => $word . ($index < count($words) - 1 ? ' ' : '')]);
-        }
-
-        yield self::formatSSE('done', ['message' => $text]);
-    }
-
-
     public static function formatSSE(string $event, array $data): string
     {
         return "event: {$event}\ndata: " . json_encode($data) . "\n\n";

@@ -5,7 +5,6 @@
 
   async function sendMessage() {
     const userMessage = input.trim();
-
     input = '';
     messages.push({role: 'user', content: userMessage, timestamp: new Date()});
 
