@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\AI\Core\PluginList;
-use App\AI\Services\AIService;
 use App\AI\Services\AIStreamService;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChatController extends Controller
