@@ -6,9 +6,9 @@
 
   let container;
   let scene, camera, renderer;
-  let nucleus, electrons = [];
+  let nucleusParticles = []; // Multiple nucleus particles
+  let electrons = [];
   let orbits = [];
-  let highlights = []; // Glass reflection highlights
   let animationId;
 
   onMount(() => {
@@ -44,43 +44,62 @@
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // Lighting - enhanced for glass sphere depth
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+    // Lighting - enhanced for glass sphere depth and brightness
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Much brighter ambient
     scene.add(ambientLight);
 
     // Main light from nucleus
-    const nucleusLight = new THREE.PointLight(0x8b5cf6, 3, 100);
+    const nucleusLight = new THREE.PointLight(0x8b5cf6, 5, 100); // Increased intensity
     nucleusLight.position.set(0, 0, 0);
     scene.add(nucleusLight);
 
     // Add directional light for glass sphere highlights
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); // Brighter directional
     dirLight.position.set(5, 5, 5);
     scene.add(dirLight);
 
-    // Create nucleus (bigger, more reflective to show electron lights)
-    const nucleusGeometry = new THREE.SphereGeometry(0.6, 32, 32); // Bigger
-    const nucleusMaterial = new THREE.MeshPhongMaterial({
-      color: 0x8b5cf6,
-      emissive: 0x6366f1,
-      emissiveIntensity: 1.4, // Even brighter
-      shininess: 150, // More reflective
-      transparent: true,
-      opacity: 0.8,
-      specular: 0xffffff
-    });
-    nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
-    scene.add(nucleus);
+    // Create multiple nucleus particles that orbit each other
+    const nucleusConfigs = [
+      { color: 0x8b5cf6, emissive: 0x6366f1, angle: 0, radius: 0.4 },
+      { color: 0x6366f1, emissive: 0x8b5cf6, angle: (Math.PI * 2) / 3, radius: 0.4 },
+      { color: 0x3b82f6, emissive: 0x6366f1, angle: (Math.PI * 4) / 3, radius: 0.4 }
+    ];
 
-    // Add outer glow to nucleus (brighter and bigger)
-    const glowGeometry = new THREE.SphereGeometry(0.85, 32, 32);
-    const glowMaterial = new THREE.MeshBasicMaterial({
-      color: 0x8b5cf6,
-      transparent: true,
-      opacity: 0.5 // Brighter glow
+    nucleusConfigs.forEach(config => {
+      // Create nucleus particle with highly reflective material
+      const nucleusGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+      const nucleusMaterial = new THREE.MeshPhongMaterial({
+        color: config.color,
+        emissive: config.emissive,
+        emissiveIntensity: 1.2, // Reduced to allow more reflection visibility
+        shininess: 200, // Very high shininess for reflections
+        transparent: true,
+        opacity: 0.95,
+        specular: 0xffffff, // White specular for bright reflections
+        reflectivity: 1.0 // Maximum reflectivity
+      });
+      const nucleusParticle = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
+
+      // Add outer glow to each particle
+      const glowGeometry = new THREE.SphereGeometry(0.55, 32, 32);
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: config.color,
+        transparent: true,
+        opacity: 0.6
+      });
+      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+      nucleusParticle.add(glow);
+
+      // Store particle with initial angle, radius, and rotation speeds
+      nucleusParticles.push({
+        mesh: nucleusParticle,
+        angle: config.angle,
+        radius: config.radius,
+        rotationSpeed: { x: 0.02, y: 0.015, z: 0.01 } // Individual rotation speeds
+      });
+
+      scene.add(nucleusParticle);
     });
-    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-    nucleus.add(glow);
 
     // Create 3 orbital paths evenly spaced (bigger atom)
     const orbitRadius = 3.2; // Increased from 2.8
@@ -148,21 +167,6 @@
     glassSphere.renderOrder = 999;
     scene.add(glassSphere);
 
-    // Add flat circular sprites for glass reflections (not spheres - won't stick out)
-    electrons.forEach((electronData, index) => {
-      const highlightGeometry = new THREE.CircleGeometry(0.8, 32); // Flat circle, bigger than electrons
-      const highlightMaterial = new THREE.MeshBasicMaterial({
-        color: orbitConfigs[index].color,
-        transparent: true,
-        opacity: 0,
-        blending: THREE.AdditiveBlending,
-        side: THREE.DoubleSide
-      });
-      const highlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
-      highlights.push({ mesh: highlight, electronData });
-      scene.add(highlight);
-    });
-
     // Subtle rim glow on glass edge
     const rimGeometry = new THREE.SphereGeometry(3.58, 64, 64);
     const rimMaterial = new THREE.MeshBasicMaterial({
@@ -185,9 +189,26 @@
     scene.rotation.y += 0.002;
     scene.rotation.x += 0.001;
 
-    // Pulse nucleus only (subtle)
-    const pulse = Math.sin(Date.now() * 0.002) * 0.05 + 1;
-    nucleus.scale.set(pulse, pulse, pulse);
+    // Animate nucleus particles - both orbiting AND rotating (tumbling)
+    nucleusParticles.forEach((particle, index) => {
+      particle.angle += 0.015; // Orbit speed
+
+      // Calculate position in 3D orbit (not just flat circle)
+      const x = Math.cos(particle.angle) * particle.radius;
+      const y = Math.sin(particle.angle) * particle.radius;
+      const z = Math.sin(particle.angle * 2) * 0.2; // Add some Z variation
+
+      particle.mesh.position.set(x, y, z);
+
+      // Make each particle rotate/tumble on its own axes
+      particle.mesh.rotation.x += particle.rotationSpeed.x;
+      particle.mesh.rotation.y += particle.rotationSpeed.y;
+      particle.mesh.rotation.z += particle.rotationSpeed.z;
+
+      // Subtle pulse for each particle
+      const pulse = Math.sin(Date.now() * 0.002 + particle.angle) * 0.05 + 1;
+      particle.mesh.scale.set(pulse, pulse, pulse);
+    });
 
     // Animate electrons along their orbits (position only - no scaling/pulsing)
     electrons.forEach((electron) => {
@@ -209,31 +230,6 @@
     // Slowly rotate orbits
     orbits.forEach((orbit, index) => {
       orbit.rotation.z += 0.001 * (index + 1);
-    });
-
-    // Update glass reflection highlights (flat circles on glass surface)
-    highlights.forEach((highlight) => {
-      const electronPos = highlight.electronData.mesh.position;
-
-      // Position exactly on inner surface of glass sphere
-      const direction = electronPos.clone().normalize();
-      const glassReflectionPos = direction.multiplyScalar(3.45); // Just inside glass surface (3.5)
-
-      highlight.mesh.position.copy(glassReflectionPos);
-
-      // Orient the flat circle to face outward from center (tangent to sphere)
-      highlight.mesh.lookAt(new THREE.Vector3(0, 0, 0));
-      highlight.mesh.rotateX(Math.PI); // Flip to face outward
-
-      // Calculate opacity based on electron distance from glass
-      const distance = electronPos.length();
-      const glassRadius = 3.5;
-      const distanceToGlass = Math.abs(distance - glassRadius);
-
-      // Fade in when electron is close to glass (bigger and brighter reflections)
-      const maxDistance = 2.0;
-      const opacity = Math.max(0, 1 - (distanceToGlass / maxDistance)) * 0.6; // Even brighter
-      highlight.mesh.material.opacity = opacity;
     });
 
     renderer.render(scene, camera);
