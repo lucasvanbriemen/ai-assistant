@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\AI\Services\AIStreamService;
+use App\AI\Services\AIService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -17,7 +17,7 @@ class ChatController extends Controller
 
         return response()->stream(function () use ($message, $history) {
             try {
-                foreach (AIStreamService::streamResponse($message, $history) as $chunk) {
+                foreach (AIService::streamResponse($message, $history) as $chunk) {
                     echo $chunk;
                     if (ob_get_level() > 0) {
                         ob_flush();
@@ -26,7 +26,7 @@ class ChatController extends Controller
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Streaming error: ' . $e->getMessage());
-                echo AIStreamService::formatSSE('error', ['message' => 'Streaming failed']);
+                echo AIService::formatSSE('error', ['message' => 'Streaming failed']);
             }
         }, 200, [
             'Content-Type' => 'text/event-stream',

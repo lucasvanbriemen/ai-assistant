@@ -6,7 +6,7 @@ use App\AI\Core\PluginList;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class AIStreamService
+class AIService
 {
     private const BASE_URL = 'https://api.openai.com/v1';
     private const MODEL = 'gpt-4o-mini';
