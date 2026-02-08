@@ -25,7 +25,7 @@ class ChatController extends Controller
         return response()->json([
             'success' => true,
             'message' => $response['message'],
-            'history' => $response['history']
+            'history' => $response['history'],
         ]);
     }
 }
