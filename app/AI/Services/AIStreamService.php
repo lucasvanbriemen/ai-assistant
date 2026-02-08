@@ -17,81 +17,74 @@ class AIStreamService
         $messages = self::buildMessages($message, $conversationHistory);
 
         try {
-            // Stream response from OpenAI
+            // First check if response will include tool calls (non-streaming)
+            // Tool call reconstruction from streaming is complex due to argument chunking
             $requestData = [
                 'model' => self::MODEL,
                 'messages' => $messages,
                 'temperature' => 0.3,
                 'max_tokens' => config('ai.max_tokens'),
                 'tools' => PluginList::formatToolsForOpenAI(),
-                'stream' => true,
             ];
 
             $response = Http::withToken(config('ai.openai.api_key'))
-                ->timeout(config('ai.streaming.timeout', 60))
-                ->withOptions(['stream' => true])
-                ->post(self::BASE_URL . "/chat/completions", $requestData);
+                ->timeout(120)
+                ->post(self::BASE_URL . "/chat/completions", $requestData)
+                ->json();
 
-            if (!$response->successful()) {
-                throw new \Exception('OpenAI API error: ' . $response->status());
-            }
+            $assistantMessage = $response['choices'][0]['message'];
 
-            $fullMessage = '';
-            $body = $response->getBody();
-            $hasToolCalls = false;
-            $toolCalls = [];
-
-            // Stream response and check for tool calls
-            while (!$body->eof()) {
-                $line = self::readLine($body);
-                if (empty($line) || $line === 'data: [DONE]') {
-                    continue;
-                }
-
-                if (str_starts_with($line, 'data: ')) {
-                    try {
-                        $json = json_decode(substr($line, 6), true);
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            continue;
-                        }
-
-                        // Check for tool calls in the stream
-                        $toolCallDelta = $json['choices'][0]['delta']['tool_calls'] ?? null;
-                        if ($toolCallDelta) {
-                            $hasToolCalls = true;
-                            // Collect tool call data for later processing
-                            $toolCalls = array_merge($toolCalls, $toolCallDelta);
-                        }
-
-                        $delta = $json['choices'][0]['delta']['content'] ?? '';
-                        if ($delta) {
-                            $fullMessage .= $delta;
-                            yield self::formatSSE('chunk', ['content' => $delta]);
-                        }
-                    } catch (\Exception $e) {
-                        Log::warning('Error parsing SSE chunk: ' . $e->getMessage());
-                        continue;
-                    }
-                }
-            }
-
-            // If tool calls were detected, process them and get final response
-            if ($hasToolCalls) {
-                // Reconstruct tool calls from the message for processing
-                // Add the accumulated message to messages array
-                $messages[] = [
-                    'role' => 'assistant',
-                    'content' => $fullMessage,
-                    'tool_calls' => $toolCalls,
-                ];
-
-                // Clear previous chunks and stream tool processing
-                foreach (self::processToolCallsWithProgress($toolCalls, $message, $conversationHistory, $messages) as $chunk) {
+            // Check if the assistant wants to call tools
+            if (isset($assistantMessage['tool_calls'])) {
+                // Process tools and get final response, then stream it
+                foreach (self::processToolCallsWithProgress($assistantMessage['tool_calls'], $message, $conversationHistory, $messages) as $chunk) {
                     yield $chunk;
                 }
             } else {
-                // No tool calls, stream complete
-                yield self::formatSSE('done', ['message' => $fullMessage]);
+                // No tool calls - stream the response from OpenAI
+                $fullMessage = $assistantMessage['content'] ?? '';
+
+                // Get streaming response for text-only queries
+                $streamRequestData = array_merge($requestData, ['stream' => true]);
+                $streamResponse = Http::withToken(config('ai.openai.api_key'))
+                    ->timeout(60)
+                    ->withOptions(['stream' => true])
+                    ->post(self::BASE_URL . "/chat/completions", $streamRequestData);
+
+                if (!$streamResponse->successful()) {
+                    throw new \Exception('OpenAI API error: ' . $streamResponse->status());
+                }
+
+                $body = $streamResponse->getBody();
+                $streamedMessage = '';
+
+                // Stream response from OpenAI
+                while (!$body->eof()) {
+                    $line = self::readLine($body);
+                    if (empty($line) || $line === 'data: [DONE]') {
+                        continue;
+                    }
+
+                    if (str_starts_with($line, 'data: ')) {
+                        try {
+                            $json = json_decode(substr($line, 6), true);
+                            if (json_last_error() !== JSON_ERROR_NONE) {
+                                continue;
+                            }
+
+                            $delta = $json['choices'][0]['delta']['content'] ?? '';
+                            if ($delta) {
+                                $streamedMessage .= $delta;
+                                yield self::formatSSE('chunk', ['content' => $delta]);
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning('Error parsing SSE chunk: ' . $e->getMessage());
+                            continue;
+                        }
+                    }
+                }
+
+                yield self::formatSSE('done', ['message' => $streamedMessage]);
             }
         } catch (\Exception $e) {
             Log::error('Streaming error: ' . $e->getMessage());
