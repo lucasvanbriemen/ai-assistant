@@ -3,10 +3,7 @@
     import api from './lib/api.js';
     import '@styles/App.scss';
 
-    // Initialize router once
     initRouter();
-
-    // Expose api for components
     window.api = api;
 </script>
 
