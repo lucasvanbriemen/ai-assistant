@@ -1,9 +1,11 @@
+import api from "./api.js";
+
 export default {
+  themeUrl: "https://components.lucasvanbriemen.nl/api/colors?theme=THEME_NAME",
   selectedTheme: "auto",
 
   custom_colors: [
-    // Add custom color definitions here
-    // { name: "primary", light: "#0066cc", dark: "#3399ff" }
+
   ],
 
   getTheme() {
@@ -15,29 +17,21 @@ export default {
     return this.selectedTheme;
   },
 
-  setTheme(theme) {
-    this.selectedTheme = theme;
-    this.applyTheme();
-    localStorage.setItem("theme", theme);
-  },
-
-  applyTheme() {
+  async applyTheme() {
     const theme = this.getTheme();
     document.documentElement.setAttribute("data-theme", theme);
 
-    // Apply custom colors
+    const url = this.themeUrl.replace("THEME_NAME", theme);
+    const colors = await api.get(url);
+
+    colors.forEach(color => {
+      document.documentElement.style.setProperty(`--${color.name}`, color.value);
+    });
+
     this.custom_colors.forEach(color => {
       const name = `--${color.name}`;
       const value = theme === "dark" ? color.dark : color.light;
       document.documentElement.style.setProperty(name, value);
     });
-  },
-
-  init() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      this.selectedTheme = savedTheme;
-    }
-    this.applyTheme();
   },
 };

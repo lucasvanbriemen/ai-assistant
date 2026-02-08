@@ -1,10 +1,10 @@
 import App from './App.svelte';
+import api from './lib/api.js';
 import { mount } from 'svelte';
 import theme from './lib/theme.js';
-import api from './lib/api.js';
 
 // Initialize theme
-theme.init();
+theme.applyTheme();
 
 // Expose api globally for debugging
 window.api = api;
