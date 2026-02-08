@@ -14,74 +14,64 @@ class AIService
     {
         $messages = self::buildMessages($message, $conversationHistory);
 
-        try {
-            // First check if response will include tool calls (non-streaming)
-            // Tool call reconstruction from streaming is complex due to argument chunking
-            $requestData = [
-                'model' => self::MODEL,
-                'messages' => $messages,
-                'temperature' => 0.3,
-                'max_tokens' => config('ai.max_tokens'),
-                'tools' => PluginList::formatToolsForOpenAI(),
-            ];
+        $requestData = [
+            'model' => self::MODEL,
+            'messages' => $messages,
+            'temperature' => 0.3,
+            'max_tokens' => config('ai.max_tokens'),
+            'tools' => PluginList::formatToolsForOpenAI(),
+        ];
 
-            $response = Http::withToken(config('ai.openai.api_key'))
-                ->timeout(120)
-                ->post(self::BASE_URL . "/chat/completions", $requestData)
-                ->json();
+        $response = Http::withToken(config('ai.openai.api_key'))
+            ->timeout(120)
+            ->post(self::BASE_URL . "/chat/completions", $requestData)
+            ->json();
 
-            $assistantMessage = $response['choices'][0]['message'];
+        $assistantMessage = $response['choices'][0]['message'];
 
-            // Check if the assistant wants to call tools
-            if (isset($assistantMessage['tool_calls'])) {
-                // Process tools and get final response, then stream it
-                foreach (self::processToolCallsWithProgress($assistantMessage['tool_calls'], $message, $conversationHistory, $messages) as $chunk) {
-                    yield $chunk;
+        // Check if the assistant wants to call tools
+        if (isset($assistantMessage['tool_calls'])) {
+            // Process tools and get final response, then stream it
+            foreach (self::processToolCallsWithProgress($assistantMessage['tool_calls'], $message, $conversationHistory, $messages) as $chunk) {
+                yield $chunk;
+            }
+        } else {
+            // Get streaming response for text-only queries
+            $streamRequestData = array_merge($requestData, ['stream' => true]);
+            $streamResponse = Http::withToken(config('ai.openai.api_key'))
+                ->timeout(60)
+                ->withOptions(['stream' => true])
+                ->post(self::BASE_URL . "/chat/completions", $streamRequestData);
+
+            if (!$streamResponse->successful()) {
+                throw new \Exception('OpenAI API error: ' . $streamResponse->status());
+            }
+
+            $body = $streamResponse->getBody();
+            $streamedMessage = '';
+
+            // Stream response from OpenAI
+            while (!$body->eof()) {
+                $line = self::readLine($body);
+                if (empty($line) || $line === 'data: [DONE]') {
+                    continue;
                 }
-            } else {
-                // Get streaming response for text-only queries
-                $streamRequestData = array_merge($requestData, ['stream' => true]);
-                $streamResponse = Http::withToken(config('ai.openai.api_key'))
-                    ->timeout(60)
-                    ->withOptions(['stream' => true])
-                    ->post(self::BASE_URL . "/chat/completions", $streamRequestData);
 
-                if (!$streamResponse->successful()) {
-                    throw new \Exception('OpenAI API error: ' . $streamResponse->status());
-                }
-
-                $body = $streamResponse->getBody();
-                $streamedMessage = '';
-
-                // Stream response from OpenAI
-                while (!$body->eof()) {
-                    $line = self::readLine($body);
-                    if (empty($line) || $line === 'data: [DONE]') {
+                if (str_starts_with($line, 'data: ')) {
+                    $json = json_decode(substr($line, 6), true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
                         continue;
                     }
 
-                    if (str_starts_with($line, 'data: ')) {
-                        try {
-                            $json = json_decode(substr($line, 6), true);
-                            if (json_last_error() !== JSON_ERROR_NONE) {
-                                continue;
-                            }
-
-                            $delta = $json['choices'][0]['delta']['content'] ?? '';
-                            if ($delta) {
-                                $streamedMessage .= $delta;
-                                yield self::formatSSE('chunk', ['content' => $delta]);
-                            }
-                        } catch (\Exception $e) {
-                            continue;
-                        }
+                    $delta = $json['choices'][0]['delta']['content'] ?? '';
+                    if ($delta) {
+                        $streamedMessage .= $delta;
+                        yield self::formatSSE('chunk', ['content' => $delta]);
                     }
                 }
-
-                yield self::formatSSE('done', ['message' => $streamedMessage]);
             }
-        } catch (\Exception $e) {
-            yield self::formatSSE('error', ['message' => 'Streaming failed: ' . $e->getMessage()]);
+
+            yield self::formatSSE('done', ['message' => $streamedMessage]);
         }
     }
 
@@ -172,26 +162,22 @@ class AIService
             }
 
             if (str_starts_with($line, 'data: ')) {
-                try {
-                    $json = json_decode(substr($line, 6), true);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        continue;
-                    }
-
-                    // Check for more tool calls
-                    $toolCallsData = $json['choices'][0]['delta']['tool_calls'] ?? null;
-                    if ($toolCallsData) {
-                        $hasMoreToolCalls = true;
-                    }
-
-                    $delta = $json['choices'][0]['delta']['content'] ?? '';
-                    if ($delta) {
-                        $fullFinalMessage .= $delta;
-                        // Stream each chunk as it comes from OpenAI
-                        yield self::formatSSE('chunk', ['content' => $delta]);
-                    }
-                } catch (\Exception $e) {
+                $json = json_decode(substr($line, 6), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
                     continue;
+                }
+
+                // Check for more tool calls
+                $toolCallsData = $json['choices'][0]['delta']['tool_calls'] ?? null;
+                if ($toolCallsData) {
+                    $hasMoreToolCalls = true;
+                }
+
+                $delta = $json['choices'][0]['delta']['content'] ?? '';
+                if ($delta) {
+                    $fullFinalMessage .= $delta;
+                    // Stream each chunk as it comes from OpenAI
+                    yield self::formatSSE('chunk', ['content' => $delta]);
                 }
             }
         }
