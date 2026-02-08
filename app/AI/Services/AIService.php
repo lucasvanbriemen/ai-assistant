@@ -11,8 +11,6 @@ class AIService
     private const BASE_URL = 'https://api.openai.com/v1';
     private const MODEL = 'gpt-4o-mini';
     private const TEMPERATURE = 0.3;
-    private const DEFAULT_TIMEOUT = 60;
-    private const TOOL_TIMEOUT = 120;
 
     public static function send(string $message, array $conversationHistory): \Generator
     {
@@ -21,11 +19,6 @@ class AIService
 
         $response = self::makeRequest(self::BASE_URL . "/chat/completions", $requestData)->json();
         $assistantMessage = $response['choices'][0]['message'] ?? null;
-
-        if ($assistantMessage === null) {
-            yield self::formatSSE('error', ['message' => 'Invalid API response']);
-            return;
-        }
 
         if (isset($assistantMessage['tool_calls'])) {
             yield from self::processToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
@@ -61,7 +54,7 @@ class AIService
 
         // Get final response from AI
         $requestData = self::buildRequestData($messages, true);
-        $streamedData = self::parseStreamResponse($requestData, self::TOOL_TIMEOUT);
+        $streamedData = self::parseStreamResponse($requestData);
 
         // Stream response chunks
         foreach ($streamedData['chunks'] as $chunk) {
@@ -85,13 +78,12 @@ class AIService
     private static function makeRequest(string $url, array $data): Response
     {
         return Http::withToken(config('ai.openai.api_key'))
-            ->timeout(self::TOOL_TIMEOUT)
             ->post($url, $data);
     }
 
-    private static function streamResponse(array $requestData, int $timeout = self::DEFAULT_TIMEOUT): \Generator
+    private static function streamResponse(array $requestData): \Generator
     {
-        $streamedData = self::parseStreamResponse($requestData, $timeout);
+        $streamedData = self::parseStreamResponse($requestData);
 
         foreach ($streamedData['chunks'] as $chunk) {
             yield self::formatSSE('chunk', ['content' => $chunk]);
@@ -100,10 +92,9 @@ class AIService
         yield self::formatSSE('done', ['message' => $streamedData['message']]);
     }
 
-    private static function parseStreamResponse(array $requestData, int $timeout = self::DEFAULT_TIMEOUT): array
+    private static function parseStreamResponse(array $requestData): array
     {
         $streamResponse = Http::withToken(config('ai.openai.api_key'))
-            ->timeout($timeout)
             ->withOptions(['stream' => true])
             ->post(self::BASE_URL . "/chat/completions", $requestData);
 
