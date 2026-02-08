@@ -161,9 +161,7 @@ class AIService
             'content' => $systemPrompt,
         ];
 
-        // Add conversation history (limited by config)
-        $maxHistory = config('ai.max_history', 20);
-        $historyToInclude = array_slice($conversationHistory, -($maxHistory * 2));
+        $historyToInclude = array_slice($conversationHistory, -(config('ai.max_history') * 2));
 
         foreach ($historyToInclude as $entry) {
             if (isset($entry['role']) && isset($entry['content'])) {
