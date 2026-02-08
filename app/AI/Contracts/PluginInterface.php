@@ -32,8 +32,7 @@ abstract class PluginInterface
     protected function apiRequest(string $endpoint, string $method = 'GET', array $pathParams = [], array $queryParams = [], array $body = []): array {
         $url = $this->apiConfig->getEndpointUrl($endpoint, $pathParams);
 
-        $request = Http::withHeaders($this->apiConfig->getHeaders())
-            ->timeout(30); // 30 second timeout per API call
+        $request = Http::withHeaders($this->apiConfig->getHeaders());
 
         if (!empty($queryParams)) {
             $request = $request->withQueryParameters($queryParams);

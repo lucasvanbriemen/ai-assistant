@@ -1,25 +1,48 @@
 <script>
   let messages = $state([]);
   let input = $state('');
+  let executingTools = $state([]);
 
   async function sendMessage() {
     const userMessage = input.trim();
     input = '';
+    messages.push({role: 'user', content: userMessage, timestamp: new Date()});
 
-    messages.push({role: 'user', content: userMessage, timestamp: new Date(),});
+    // Add placeholder for streaming response
+    const placeholderIndex = messages.length;
+    messages.push({role: 'assistant', content: '', timestamp: new Date()});
+    messages = messages;
 
-    const response = await api.post('/api/chat/send', {
+    api.stream('/api/chat/send', {
         message: userMessage,
         history: messages
-            .filter(m => m.role !== 'system' && m.role !== 'error')
-            .map(m => ({
+          .filter(m => m.role !== 'system' && m.role !== 'error')
+          .map(m => ({
             role: m.role,
             content: m.content,
-        })),
-    });
-
-    messages.push({role: 'assistant', content: response.message, timestamp: new Date()});
-    messages = messages;
+          })),
+      },
+      // onChunk
+      (chunk, fullMessage) => {
+        messages[placeholderIndex].content = fullMessage;
+        messages = messages; // Trigger reactivity
+      },
+      // onComplete
+      (finalMessage) => {
+        messages[placeholderIndex].content = finalMessage;
+        executingTools = [];
+        messages = messages;
+      },
+      // onTool
+      (toolName, action) => {
+        if (action === 'start') {
+          executingTools.push(toolName);
+        } else if (action === 'complete') {
+          executingTools = executingTools.filter(t => t !== toolName);
+        }
+        executingTools = executingTools; // Trigger reactivity
+      }
+    );
   }
 
   function handleKeydown(e) {
@@ -42,6 +65,12 @@
 
   <hr><hr><hr><hr>
 {/each}
+
+{#if executingTools.length > 0}
+  {#each executingTools as tool, i (i)}
+   🔧 {tool}
+  {/each}
+{/if}
 
 <textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>

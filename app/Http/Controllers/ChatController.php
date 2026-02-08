@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\AI\Core\PluginList;
 use App\AI\Services\AIService;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChatController extends Controller
 {
-    public function sendMessage(Request $request): JsonResponse
+    public function sendMessage(Request $request): StreamedResponse
     {
         // Increase execution time for complex queries that make multiple API calls
         // Default PHP limit is often 30-60 seconds, which is too short when:
@@ -20,12 +19,11 @@ class ChatController extends Controller
 
         $message = $request->input('message');
         $history = $request->input('history', []);
-        $response = AIService::send($message, $history);
 
-        return response()->json([
-            'success' => true,
-            'message' => $response['message'],
-            'history' => $response['history'],
-        ]);
+        return response()->stream(function () use ($message, $history) {
+            foreach (AIService::send($message, $history) as $chunk) {
+                yield $chunk;
+            }
+        });
     }
 }
