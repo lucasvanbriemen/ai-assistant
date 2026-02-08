@@ -11,14 +11,9 @@ class AIService
     private const API_KEY = config('ai.openai.api_key');
     private const MODEL = config('ai.openai.model');
     private const BASE_URL = config('ai.openai.base_url');
-    
-    private static function ensureInitialized(): void
-    {
-    }
 
     public static function send(string $message, array $conversationHistory = []): array
     {
-        self::ensureInitialized();
         $messages = self::buildMessages($message, $conversationHistory);
         $tools = PluginList::getToolsInOpenAIFormat();
 
