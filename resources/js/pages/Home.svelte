@@ -118,7 +118,7 @@
 
 {#if executingTools.length > 0}
   <div style="opacity: 0.6; font-style: italic;">
-    {#each executingTools as tool (tool)}
+    {#each executingTools as tool, i (i)}
       <div>🔧 {tool}</div>
     {/each}
   </div>
