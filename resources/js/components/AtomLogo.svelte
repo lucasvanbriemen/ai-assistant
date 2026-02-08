@@ -9,6 +9,15 @@
   const SCENE_ROTATION_SPEED = 25.0; // Speed of entire atom/scene rotation
   const NUCLEUS_ROTATION_SPEED = 5.0; // Speed of nucleus particles rotating around each other
 
+  // Orbital configuration (manage all electrons and orbits from here)
+  const ORBIT_RADIUS = 3.2;
+  const ORBIT_TUBE_THICKNESS = 0.06;
+  const ORBIT_CONFIGS = [
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: 0, rotationY: 0, color: 0x8b5cf6, speed: 0.01 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: Math.PI / 3, rotationY: 0, color: 0x6366f1, speed: 0.008 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (2 * Math.PI) / 3, rotationY: 0, color: 0x3b82f6, speed: 0.012 }
+  ];
+
   let container;
   let scene, camera, renderer;
   let nucleusGroup; // Group to hold all nucleus particles
@@ -50,19 +59,11 @@
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // Lighting - enhanced for glass sphere depth and brightness
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Much brighter ambient
+    // Lighting - ambient only, no nucleus/directional lights to avoid unwanted glass reflections
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Ambient light for general visibility
     scene.add(ambientLight);
 
-    // Main light from nucleus
-    const nucleusLight = new THREE.PointLight(0x8b5cf6, 5, 100); // Increased intensity
-    nucleusLight.position.set(0, 0, 0);
-    scene.add(nucleusLight);
-
-    // Add directional light for glass sphere highlights
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); // Brighter directional
-    dirLight.position.set(5, 5, 5);
-    scene.add(dirLight);
+    // No nucleus light or directional light - only electron lights should reflect on glass
 
     // Create a group to hold all nucleus particles (allows rotation around common center)
     nucleusGroup = new THREE.Group();
@@ -116,17 +117,8 @@
       nucleusParticles.push({ mesh: nucleusParticle });
     });
 
-    // Create 3 orbital paths evenly spaced (bigger atom)
-    const orbitRadius = 3.2; // Increased from 2.8
-    const tubeThickness = 0.06; // Thicker orbital lines
-
-    const orbitConfigs = [
-      { radius: orbitRadius, tubeRadius: tubeThickness, rotationX: 0, rotationY: 0, color: 0x8b5cf6, speed: 0.01 },
-      { radius: orbitRadius, tubeRadius: tubeThickness, rotationX: Math.PI / 3, rotationY: 0, color: 0x6366f1, speed: 0.008 },
-      { radius: orbitRadius, tubeRadius: tubeThickness, rotationX: (2 * Math.PI) / 3, rotationY: 0, color: 0x3b82f6, speed: 0.012 }
-    ];
-
-    orbitConfigs.forEach((config, index) => {
+    // Create orbital paths and electrons from config
+    ORBIT_CONFIGS.forEach((config, index) => {
       // Create orbital ring (torus)
       const orbitGeometry = new THREE.TorusGeometry(config.radius, config.tubeRadius, 16, 100);
       const orbitMaterial = new THREE.MeshPhongMaterial({
@@ -167,20 +159,20 @@
       orbits.push(orbit);
     });
 
-    // Create outer glass sphere with realistic reflections (no bloom)
+    // Create outer glass sphere with visible reflections (no bloom, no jumping)
     const glassGeometry = new THREE.SphereGeometry(3.5, 128, 128);
     const glassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
+      color: 0xe0e0e0,       // Darker tint for better reflection visibility
       transparent: true,
-      opacity: 1,          // Very subtle glass
-      transmission: .96,     // High transparency
-      thickness: .3,        // Thin glass for subtle refraction
-      roughness: 0.0,        // Perfectly smooth for clear reflections
+      opacity: 0.28,         // Darker container for visible reflections
+      transmission: 0.75,    // Less transparent - darker surface
+      thickness: 0.4,        // Moderate glass thickness
+      roughness: 0.0,        // Clear glass (not cloudy)
       metalness: 0.0,
-      clearcoat: 0.0,        // Glossy coating for reflections
-      clearcoatRoughness: 0.0, // Sharp reflections
+      clearcoat: 0.0,        // No clearcoat to avoid jumping
+      clearcoatRoughness: 0.0,
       ior: 1.5,              // Glass index of refraction
-      reflectivity: 0,     // High reflectivity to catch electron lights
+      reflectivity: 0.6,     // Higher reflectivity for visible electron lights
       side: THREE.DoubleSide,
       depthWrite: false
     });
