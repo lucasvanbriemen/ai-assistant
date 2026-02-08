@@ -79,12 +79,6 @@ class PluginList
             return ToolResult::failure("Tool '{$toolName}' not found");
         }
 
-        // Validate parameters against schema
-        $errors = ParameterValidator::validate($parameters, $tool['parameters']);
-        if (!empty($errors)) {
-            return ToolResult::failure('Parameter validation failed: ' . json_encode($errors));
-        }
-
         try {
             return $plugin->executeTool($toolName, $parameters);
         } catch (\Exception $e) {
