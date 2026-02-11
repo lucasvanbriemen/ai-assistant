@@ -8,11 +8,17 @@
   let isHovering = $state(false);
 
   const possibleMessages = [
-    "Hello, world!",
-    "Welcome to the AI Agent Interface!",
-    "Have a great day!",
-    "Svelte is awesome!",
-    "This is a greeting card component.",
+    "What can I help with?",
+    "How can I assist you today?",
+    "How do you need help?",
+    "What can you do for me?",
+    "Can you help me with anything?",
+    "I need some assistance, how can I help?",
+    "I'm in need of some help, what can you do?",
+    "Can you assist me with anything?",
+    "I need some help, what can you do?",
+    "What can you help me with?",
+    "How can I assist you?",
   ];
 
   function handleMouseMove(e) {
