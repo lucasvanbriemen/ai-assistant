@@ -1,6 +1,6 @@
 <script>
   import GreetingCard from '@/components/GreetingCard.svelte';
-  import InitalExamples from '@/components/InitalExamples.svelte';
+  import MessageInput from '@/components/MessageInput.svelte';
 
   let messages = $state([]);
   let input = $state('');
@@ -57,7 +57,6 @@
 </script>
 
 <GreetingCard />
-<InitalExamples bind:input />
 
 {#each messages as message, i (i)}
   {message.content}
@@ -78,5 +77,6 @@
   {/each}
 {/if}
 
-<textarea bind:value={input} onkeydown={handleKeydown} rows="2" autofocus></textarea>
+<MessageInput bind:input onhandleKeydown={handleKeydown} />
+
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>
