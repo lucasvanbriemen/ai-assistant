@@ -3,21 +3,14 @@
 
   let { input = $bindable('') } = $props();
 
-  const EXAMPLE_LIMIT = 5;
+  const EXAMPLE_LIMIT = 3;
 
   const examples = [
     'Give me an overview of my emails today and if i need to do anything.',
     'What movie is planed for tonight?',
-    'What is the capital of Italy?',
-    'What is the capital of Spain?',
-    'What is the capital of the United States?',
-    'What is the capital of Canada?',
-    'What is the capital of Australia?',
-    'What is the capital of Japan?',
-    'What is the capital of China?',
-    'What is the capital of Russia?',
-    'What is the capital of India?',
-    'What is the capital of Brazil?',
+    'Where do i need to go tonight?',
+    'Do i need to prepare anything for tonight?',
+    'What movies are playing tonight that i havent yet seen?'
   ];
 
   function getRandomExamples() {
