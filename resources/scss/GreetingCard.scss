@@ -1,4 +1,21 @@
 .greeting-card {
   display: flex;
   background-color: var(--background-color-two);
+
+  width: fit-content;
+  height: fit-content;
+
+  margin: 20px auto;
+
+  // 3D tilt effect
+  transform-style: preserve-3d;
+  will-change: transform;
+
+  // Only apply transition when NOT hovering (smooth return to neutral)
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+
+  &.hovering {
+    // No transition during active mouse movement for instant response
+    transition: none;
+  }
 }
