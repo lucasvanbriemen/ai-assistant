@@ -1,4 +1,6 @@
 <script>
+  import  '@styles/InitalExamples.scss';
+
   let { input = $bindable('') } = $props();
 
   const EXAMPLE_LIMIT = 5;
@@ -25,6 +27,8 @@
 
 </script>
 
-{#each getRandomExamples() as example}
-  <button onclick={() => input = example}>{example}</button>
-{/each}
+<div class="examples">
+  {#each getRandomExamples() as example}
+    <button onclick={() => input = example}>{example}</button>
+  {/each}
+</div>
