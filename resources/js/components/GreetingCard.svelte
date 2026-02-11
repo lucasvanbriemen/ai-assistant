@@ -24,7 +24,7 @@
     const adjustedY = Math.abs(mouseY) < deadzone ? 0 : mouseY;
 
     // Map to rotation angles
-    const maxRotation = 5;
+    const maxRotation = 2.5;
     rotateY = adjustedX * maxRotation;
     rotateX = -adjustedY * maxRotation;
   }
