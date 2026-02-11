@@ -6,8 +6,8 @@
   const EXAMPLE_LIMIT = 5;
 
   const examples = [
-    'What is the capital of France?',
-    'What is the capital of Germany?',
+    'Give me an overview of my emails today and if i need to do anything.',
+    'What movie is planed for tonight?',
     'What is the capital of Italy?',
     'What is the capital of Spain?',
     'What is the capital of the United States?',
