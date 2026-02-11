@@ -66,5 +66,5 @@
 >
   <AtomLogo size={350} />
 
-  {possibleMessages[Math.floor(Math.random() * possibleMessages.length)]}
+  <h2>{possibleMessages[Math.floor(Math.random() * possibleMessages.length)]}</h2>
 </div>

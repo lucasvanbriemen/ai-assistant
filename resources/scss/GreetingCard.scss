@@ -5,7 +5,9 @@
   align-items: center;
   padding: 20px;
 
-  background-color: var(--background-color-two);
+  background-color: var(--background-color);
+  border: 1px solid var(--background-color-one);
+  box-shadow: 1px 1px 66px -15px var(--primary-color-dark);
 
   width: fit-content;
   height: fit-content;
@@ -19,8 +21,14 @@
   // Only apply transition when NOT hovering (smooth return to neutral)
   transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 
+  border-radius: 1rem;
+
   &.hovering {
     // No transition during active mouse movement for instant response
     transition: none;
+  }
+
+  h2 {
+    font-size: 1.5rem;
   }
 }
