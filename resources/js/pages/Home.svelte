@@ -1,5 +1,5 @@
 <script>
-  import AtomLogo from '@/components/AtomLogo.svelte';
+  import GreetingCard from '@/components/GreetingCard.svelte';
 
   let messages = $state([]);
   let input = $state('');
@@ -55,7 +55,7 @@
   }
 </script>
 
-<AtomLogo size={350} />
+<GreetingCard />
 
 {#each messages as message, i (i)}
   {message.content}
@@ -76,5 +76,5 @@
   {/each}
 {/if}
 
-<textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
+<textarea bind:value={input} onkeydown={handleKeydown} rows="2" autofocus></textarea>
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>
