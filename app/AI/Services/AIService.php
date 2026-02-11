@@ -195,9 +195,11 @@ class AIService
     private static function buildSystemPrompt(): string
     {
         $basePrompt = config('ai.system_prompt', 'You are a helpful AI assistant.');
-        $today = date('l, F j, Y');
+        $today = date('l, F j, Y'); // e.g., "Tuesday, February 11, 2026"
+        $todayYMD = date('Y-m-d');  // e.g., "2026-02-11"
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
-        return "{$basePrompt}\n\nCurrent date and time: {$today}. Use this to interpret relative dates like 'last Friday', 'tomorrow', 'next week', etc.";
+        return "{$basePrompt}\n\n=== CURRENT DATE AND TIME ===\nToday is: {$today}\nDate in YYYY-MM-DD format: {$todayYMD}\nTomorrow in YYYY-MM-DD format: {$tomorrow}\n\n=== DATE COMPARISON RULES ===\nWhen answering time-sensitive queries:\n1. Extract the EXACT date from email content (do NOT modify it)\n2. Compare event date to current date ({$todayYMD})\n3. ONLY return events where event date matches the requested timeframe\n4. NEVER change dates to match user queries\n\nEXAMPLE (assuming today is {$todayYMD}):\n- User asks: \"What movie am I going tonight?\"\n- Email says: \"The Shining on 2026-02-09 at 18:00\"\n- Correct response: \"I don't see any movies tonight. You had The Shining on February 9, which was 2 days ago.\"\n- WRONG response: \"Tonight you're seeing The Shining on February 11\" (this changes the date!)";
     }
 
     private static function buildAssistantMessage(array $toolCalls, array $previousMessages): array
