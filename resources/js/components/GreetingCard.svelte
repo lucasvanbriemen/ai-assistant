@@ -56,6 +56,9 @@
 </script>
 
 <div class="greeting-card-wrapper">
+  <!-- Rotating gradient background behind the card -->
+  <div class="gradient-shadow"></div>
+
   <div
     class="greeting-card"
     class:hovering={isHovering}

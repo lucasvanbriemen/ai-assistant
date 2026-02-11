@@ -10,10 +10,15 @@
   width: fit-content;
   height: fit-content;
   margin: 20px auto;
-  padding: 4px; // Space for the gradient border
-  border-radius: 1rem;
+}
 
-  // Animated conic gradient background
+.gradient-shadow {
+  position: absolute;
+  inset: -10px; // Extend beyond card edges
+  border-radius: 1rem;
+  z-index: 0;
+
+  // Animated conic gradient
   background: conic-gradient(
     from var(--gradient-angle),
     #ff0000,
@@ -22,12 +27,16 @@
     #ff0000
   );
 
+  filter: blur(20px);
+  opacity: 0.8;
   animation: rotate-gradient 3s linear infinite;
+  pointer-events: none; // Don't block mouse events
 }
 
 .greeting-card {
   display: flex;
   position: relative;
+  z-index: 1; // Above the gradient shadow
 
   flex-direction: column;
   align-items: center;
