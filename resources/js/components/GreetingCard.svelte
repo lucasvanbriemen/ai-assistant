@@ -7,6 +7,14 @@
   let cardElement = $state(null);
   let isHovering = $state(false);
 
+  const possibleMessages = [
+    "Hello, world!",
+    "Welcome to the AI Agent Interface!",
+    "Have a great day!",
+    "Svelte is awesome!",
+    "This is a greeting card component.",
+  ];
+
   function handleMouseMove(e) {
     if (!cardElement) return;
 
@@ -52,5 +60,5 @@
 >
   <AtomLogo size={350} />
 
-  Hello, world!
+  {possibleMessages[Math.floor(Math.random() * possibleMessages.length)]}
 </div>
