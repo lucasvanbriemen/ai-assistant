@@ -1,5 +1,33 @@
+// Define animatable custom property for gradient angle
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.greeting-card-wrapper {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  margin: 20px auto;
+  padding: 4px; // Space for the gradient border
+  border-radius: 1rem;
+
+  // Animated conic gradient background
+  background: conic-gradient(
+    from var(--gradient-angle),
+    #ff0000,
+    #00ff00,
+    #0000ff,
+    #ff0000
+  );
+
+  animation: rotate-gradient 3s linear infinite;
+}
+
 .greeting-card {
   display: flex;
+  position: relative;
 
   flex-direction: column;
   align-items: center;
@@ -11,8 +39,6 @@
 
   width: fit-content;
   height: fit-content;
-
-  margin: 20px auto;
 
   // 3D tilt effect
   transform-style: preserve-3d;
@@ -30,5 +56,14 @@
 
   h2 {
     font-size: 1.5rem;
+  }
+}
+
+@keyframes rotate-gradient {
+  from {
+    --gradient-angle: 0deg;
+  }
+  to {
+    --gradient-angle: 360deg;
   }
 }

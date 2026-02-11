@@ -55,16 +55,18 @@
   }
 </script>
 
-<div
-  class="greeting-card"
-  class:hovering={isHovering}
-  bind:this={cardElement}
-  onmouseenter={handleMouseEnter}
-  onmousemove={handleMouseMove}
-  onmouseleave={handleMouseLeave}
-  style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);"
->
-  <AtomLogo size={350} />
+<div class="greeting-card-wrapper">
+  <div
+    class="greeting-card"
+    class:hovering={isHovering}
+    bind:this={cardElement}
+    onmouseenter={handleMouseEnter}
+    onmousemove={handleMouseMove}
+    onmouseleave={handleMouseLeave}
+    style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);"
+  >
+    <AtomLogo size={350} />
 
-  <h2>{possibleMessages[Math.floor(Math.random() * possibleMessages.length)]}</h2>
+    <h2>{possibleMessages[Math.floor(Math.random() * possibleMessages.length)]}</h2>
+  </div>
 </div>
