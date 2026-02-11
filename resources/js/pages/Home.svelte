@@ -1,5 +1,6 @@
 <script>
   import GreetingCard from '@/components/GreetingCard.svelte';
+  import InitalExamples from '@/components/InitalExamples.svelte';
 
   let messages = $state([]);
   let input = $state('');
@@ -56,6 +57,7 @@
 </script>
 
 <GreetingCard />
+<InitalExamples bind:input />
 
 {#each messages as message, i (i)}
   {message.content}

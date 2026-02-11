@@ -66,6 +66,7 @@
     onmouseenter={handleMouseEnter}
     onmousemove={handleMouseMove}
     onmouseleave={handleMouseLeave}
+    aria-role="we"
     style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);"
   >
     <AtomLogo size={350} />
