@@ -1,6 +1,8 @@
 <script>
   let { input = $bindable('') } = $props();
 
+  const EXAMPLE_LIMIT = 5;
+
   const examples = [
     'What is the capital of France?',
     'What is the capital of Germany?',
@@ -15,8 +17,14 @@
     'What is the capital of India?',
     'What is the capital of Brazil?',
   ];
+
+  function getRandomExamples() {
+    const shuffled = examples.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, EXAMPLE_LIMIT);
+  }
+
 </script>
 
-{#each examples as example, i (i)}
-  <button on:click={() => input = example}>{example}</button>
+{#each getRandomExamples() as example}
+  <button onclick={() => input = example}>{example}</button>
 {/each}
