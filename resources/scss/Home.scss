@@ -9,4 +9,8 @@
   justify-content: center;
 
   gap: 5rem;
+
+  &.with-messages {
+    justify-content: space-between;
+  }
 }
