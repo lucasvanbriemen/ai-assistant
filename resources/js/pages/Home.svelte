@@ -78,5 +78,3 @@
 {/if}
 
 <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} />
-
-<button onclick={sendMessage} disabled={!input.trim()}>Send</button>
