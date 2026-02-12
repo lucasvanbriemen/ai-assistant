@@ -24,20 +24,6 @@
 
   // Custom renderer for code blocks with copy button
   const renderer = new marked.Renderer();
-  renderer.code = function(code, language) {
-    const lang = language || 'plaintext';
-    const highlighted = this.options.highlight(code, lang);
-    return `
-      <div class="code-block">
-        <div class="code-header">
-          <span class="language">${lang}</span>
-          <button class="copy-button" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`).then(() => { this.textContent = '✓ Copied!'; setTimeout(() => this.textContent = 'Copy', 2000); })">Copy</button>
-        </div>
-        <pre><code class="hljs language-${lang}">${highlighted}</code></pre>
-      </div>
-    `;
-  };
-
   marked.use({ renderer });
 
   let html = $derived.by(() => {
