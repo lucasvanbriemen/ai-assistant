@@ -3,7 +3,6 @@
   import MessageInput from '@/components/MessageInput.svelte';
   import UserMessage from '@/components/UserMessage.svelte';
   import ThinkingIndicator from '@/components/ThinkingIndicator.svelte';
-  import ToolExecutionBadge from '@/components/ToolExecutionBadge.svelte';
   import '@styles/Home.scss';
 
   let messages = $state([]);
@@ -95,11 +94,16 @@
     <div class="messages-container">
       <div class="messages-list" bind:this={messagesListEl}>
         {#each messages as message, i (i)}
-          <UserMessage content={message.content} timestamp={message.timestamp} role={message.role} isThinking={isThinking} isStreaming={isStreaming} />
+          <UserMessage
+            content={message.content}
+            timestamp={message.timestamp}
+            role={message.role}
+            isThinking={isThinking}
+            isStreaming={isStreaming}
+            executingTools={executingTools}
+          />
         {/each}
       </div>
-
-      <ToolExecutionBadge tools={executingTools} />
     </div>
   {/if}
 
