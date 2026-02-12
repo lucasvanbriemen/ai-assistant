@@ -7,23 +7,21 @@
 </script>
 
 <div class="message {role}-message">
-  <div class="message-body">
-    <div class="message-content">
-      {#if content}
-        <MarkdownRenderer content={content} />
-      {/if}
+  <div class="message-content">
+    {#if content}
+      <MarkdownRenderer content={content} />
+    {/if}
 
-      {#if isThinking && !isStreaming && content === ''}
-        <ThinkingIndicator />
-      {/if}
-    </div>
-    {#if timestamp}
-      <div class="message-timestamp">
-        {timestamp.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </div>
+    {#if isThinking && !isStreaming && content === ''}
+      <ThinkingIndicator />
     {/if}
   </div>
+  {#if timestamp}
+    <div class="message-timestamp">
+      {timestamp.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}
+    </div>
+  {/if}
 </div>
