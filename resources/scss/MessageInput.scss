@@ -6,7 +6,10 @@
   align-items: center;
 
   border: 1px solid var(--border-color);
-  padding: 0.25rem;
+  padding: 0.5rem 0.5rem;
+  margin: 1rem 0;
+
+  position: relative;
 
   input {
     border: none;
@@ -16,5 +19,22 @@
     font-size: 1rem;
     color: var(--text-color-one);
     background-color: transparent;
+  }
+
+  label {
+    position: absolute;
+    top: 50%;
+    left: 0.95rem;
+    transform: translateY(-50%);
+    transition: all 0.3s ease-in-out;
+    background-color: var(--background-color);
+    color: var(--text-color-secondary);
+    cursor: text;
+  }
+
+  input:focus + label,
+  input:not(:placeholder-shown) + label {
+    top: 0rem;
+    font-size: 0.75rem;
   }
 }

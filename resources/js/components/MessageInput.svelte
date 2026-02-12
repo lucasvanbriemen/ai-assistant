@@ -6,6 +6,7 @@
 </script>
 
 <div class="input-wrapper">
-  <input bind:value={input} onkeydown={handleKeydown} rows="2" autofocus />
+  <input id="message-input" bind:value={input} onkeydown={handleKeydown} autofocus placeholder=" " />
+  <label for="message-input">Type your message</label>
   <Icon name="send" size="1.5rem" className="send-button" onclick={onhandleSend} />
 </div>
