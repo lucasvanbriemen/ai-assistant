@@ -62,9 +62,7 @@
 
 <div class="home-container" class:with-messages={hasMessages}>
   {#if !hasMessages}
-    <div class="greeting-wrapper">
-      <GreetingCard />
-    </div>
+    <GreetingCard />
   {:else}
     <div class="messages-container">
       {#each messages as message, i (i)}
@@ -88,7 +86,5 @@
     </div>
   {/if}
 
-  <div class="input-container" class:centered={!hasMessages}>
-    <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} />
-  </div>
+  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} />
 </div>
