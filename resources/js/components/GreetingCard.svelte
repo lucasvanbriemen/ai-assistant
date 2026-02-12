@@ -32,6 +32,7 @@
     'Hi',
     'Welcome',
     'Greetings',
+    'Howdy',
   ];
 
   const helpMessages = [

@@ -25,6 +25,6 @@
     placeholder=" "
     rows="1"
   ></textarea>
-  <label for="message-input">Type your message (Shift+Enter for new line)</label>
+  <label for="message-input">Ask me anything...</label>
   <Icon name="send" size="1.5rem" className="send-button" onclick={onhandleSend} />
 </div>
