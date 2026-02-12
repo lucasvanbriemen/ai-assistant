@@ -1,7 +1,7 @@
 <script>
   import GreetingCard from '@/components/GreetingCard.svelte';
   import MessageInput from '@/components/MessageInput.svelte';
-  import UserMessage from '@/components/UserMessage.svelte';
+  import Message from '@/components/Message.svelte';
   import '@styles/Home.scss';
 
   let messages = $state([]);
@@ -92,13 +92,7 @@
   {:else}
     <div class="messages-list" bind:this={messagesListEl}>
       {#each messages as message, i (i)}
-        <UserMessage
-          content={message.content}
-          timestamp={message.timestamp}
-          role={message.role}
-          isThinking={isThinking}
-          isStreaming={isStreaming}
-          executingTools={executingTools}
+        <Message content={message.content} timestamp={message.timestamp} role={message.role} isThinking={isThinking} isStreaming={isStreaming} executingTools={executingTools}
         />
       {/each}
     </div>
