@@ -89,5 +89,5 @@ return [
     'max_history' => env('AI_MAX_HISTORY', 20),
 
     // Maximum tokens for response
-    'max_tokens' => env('AI_MAX_TOKENS', 512),
+    'max_tokens' => env('AI_MAX_TOKENS', 1024),
 ];
