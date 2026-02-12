@@ -31,20 +31,14 @@
   &.assistant-message {
     flex-direction: column;
 
-    .message-body {
-      flex: 1;
-    }
-
     .message-content {
       background: var(--background-color-one);
-      backdrop-filter: blur(12px);
-      color: var(--text-color);
       padding: 0.875rem 1.125rem;
       border-radius: 0.25rem 1.25rem 1.25rem 1.25rem;
 
       p {
         margin: 0;
-        line-height: 1.6;
+        line-height: 1.5;
         word-wrap: break-word;
         white-space: pre-wrap;
       }
