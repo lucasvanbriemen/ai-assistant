@@ -34,23 +34,6 @@
   &.assistant-message {
     flex-direction: row;
 
-    .message-avatar {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-
-      svg {
-        color: #667eea;
-      }
-    }
-
     .message-body {
       flex: 1;
     }
