@@ -1,6 +1,3 @@
-/**
- * Get the current time-based greeting
- */
 function getTimeGreeting() {
   const hour = new Date().getHours();
 
@@ -15,7 +12,6 @@ function getTimeGreeting() {
   }
 }
 
-// Simple greeting options
 const greetingOptions = [
   'Hey',
   'Hello',
@@ -24,7 +20,6 @@ const greetingOptions = [
   'Greetings',
 ];
 
-// Help messages
 const helpMessages = [
   "What can I help with?",
   "How can I assist you today?",
@@ -40,7 +35,6 @@ const helpMessages = [
   "I'm all ears. What do you need?",
 ];
 
-// Prime introduction variations
 const primeIntros = [
   "I'm Prime.",
   "Prime here.",
