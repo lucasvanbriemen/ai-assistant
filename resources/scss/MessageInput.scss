@@ -44,14 +44,8 @@
     border-color: var(--primary-color);
   }
 
-  .icon.send-button {
+  .icon.send-button:hover {
     cursor: pointer;
-    color: var(--primary-color);
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--primary-color-dark, var(--primary-color));
-      opacity: 0.8;
-    }
+    opacity: 0.8;
   }
 }
