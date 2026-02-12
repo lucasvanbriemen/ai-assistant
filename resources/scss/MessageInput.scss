@@ -61,14 +61,6 @@
   &.disabled {
     opacity: 0.6;
     pointer-events: none;
-
-    textarea {
-      cursor: not-allowed;
-    }
-
-    .icon.send-button {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    cursor: not-allowed;
   }
 }
