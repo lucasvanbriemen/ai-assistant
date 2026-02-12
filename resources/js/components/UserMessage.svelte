@@ -14,12 +14,8 @@
       <ThinkingIndicator />
     {/if}
   </div>
-  {#if timestamp}
-    <div class="message-timestamp">
-      {timestamp.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}
-    </div>
-  {/if}
+
+  <div class="message-timestamp">
+    {timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+  </div>
 </div>
