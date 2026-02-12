@@ -141,7 +141,10 @@
   >
     <AtomLogo size={350} />
 
-    <div class="ai-name">Prime</div>
+    <div class="ai-identity">
+      <div class="ai-name">Prime</div>
+      <div class="ai-acronym">Personal Responsive Intelligent Manager for Everything</div>
+    </div>
 
     <h2 class="greeting-message">{displayMessage}</h2>
   </div>
