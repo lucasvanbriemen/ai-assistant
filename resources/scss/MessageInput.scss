@@ -1,13 +1,13 @@
 .input-wrapper {
   border-radius: 0.5rem;
-  width: fit-content;
+  width: calc(min(100ch, 90vw));
 
   display: flex;
   align-items: center;
 
   border: 1px solid var(--border-color);
   padding: 0.5rem 0.5rem;
-  margin: 1rem 0;
+  margin: 10rem auto;
 
   position: relative;
 
@@ -19,6 +19,7 @@
     font-size: 1rem;
     color: var(--text-color-one);
     background-color: transparent;
+    flex: 1;
   }
 
   label {
@@ -36,5 +37,21 @@
   input:not(:placeholder-shown) + label {
     top: 0rem;
     font-size: 0.75rem;
+    padding: 0 0.25rem;
+  }
+
+  &:has(input:focus, input:not(:placeholder-shown)) {
+    border-color: var(--primary-color);
+  }
+
+  .icon.send-button {
+    cursor: pointer;
+    color: var(--primary-color);
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--primary-color-dark, var(--primary-color));
+      opacity: 0.8;
+    }
   }
 }
