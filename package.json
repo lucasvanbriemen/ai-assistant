@@ -18,7 +18,10 @@
         "vite": "^6.2.4"
     },
     "dependencies": {
+        "@tailwindcss/typography": "^0.5.19",
         "fast-glob": "^3.3.3",
+        "highlight.js": "^11.11.1",
+        "marked": "^17.0.2",
         "page": "latest",
         "three": "^0.182.0"
     }

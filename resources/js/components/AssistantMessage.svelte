@@ -1,4 +1,5 @@
 <script>
+  import MarkdownRenderer from '@/components/MarkdownRenderer.svelte';
   import '@styles/Message.scss';
 
   let { content, timestamp, isStreaming = false } = $props();
@@ -14,7 +15,9 @@
   </div>
   <div class="message-body">
     <div class="message-content">
-      <p>{content}</p>
+      {#if content}
+        <MarkdownRenderer content={content} />
+      {/if}
       {#if isStreaming}
         <span class="cursor-blink">▋</span>
       {/if}
