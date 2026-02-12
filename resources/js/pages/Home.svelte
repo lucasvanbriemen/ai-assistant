@@ -92,8 +92,7 @@
   {:else}
     <div class="messages-list" bind:this={messagesListEl}>
       {#each messages as message, i (i)}
-        <Message content={message.content} timestamp={message.timestamp} role={message.role} isThinking={isThinking} isStreaming={isStreaming} executingTools={executingTools}
-        />
+        <Message content={message.content} timestamp={message.timestamp} role={message.role} isThinking={isThinking} isStreaming={isStreaming} executingTools={executingTools} />
       {/each}
     </div>
   {/if}
