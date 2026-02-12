@@ -4,6 +4,8 @@
 
   display: flex;
   align-items: center;
+  
+  background-color: var(--background-color-one);
 
   border: 1px solid var(--border-color);
   padding: 0.5rem 0.5rem;
@@ -28,7 +30,7 @@
     left: 0.95rem;
     transform: translateY(-50%);
     transition: all 0.3s ease-in-out;
-    background-color: var(--background-color);
+    background-color: var(--background-color-one);
     color: var(--text-color-secondary);
     cursor: text;
   }
