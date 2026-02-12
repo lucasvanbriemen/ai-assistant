@@ -102,7 +102,6 @@
             <AssistantMessage
               content={message.content}
               timestamp={message.timestamp}
-              isStreaming={isStreaming && i === messages.length - 1}
             />
           {/if}
         {/each}
