@@ -14,6 +14,6 @@
 
 <div class="input-wrapper" class:disabled>
   <textarea bind:this={textarea} bind:value={input} onkeydown={onkeydown} autofocus placeholder=" " rows="1" disabled={disabled}></textarea>
-  <label for="message-input">{disabled ? 'AI is thinking...' : 'Ask me anything...'}</label>
+  <label for="message-input">{disabled ? 'Prime is thinking...' : 'Ask me anything...'}</label>
   <Icon name="send" size="1.5rem" className="send-button" onclick={disabled ? null : onhandleSend} />
 </div>
