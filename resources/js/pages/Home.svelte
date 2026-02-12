@@ -2,7 +2,6 @@
   import GreetingCard from '@/components/GreetingCard.svelte';
   import MessageInput from '@/components/MessageInput.svelte';
   import UserMessage from '@/components/UserMessage.svelte';
-  import ThinkingIndicator from '@/components/ThinkingIndicator.svelte';
   import '@styles/Home.scss';
 
   let messages = $state([]);
