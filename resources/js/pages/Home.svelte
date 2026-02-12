@@ -10,7 +10,6 @@
   let input = $state('');
   let executingTools = $state([]);
   let isThinking = $state(false);
-  let isStreaming = $state(false);
   let messagesListEl = $state(null);
 
   // Track if we have any messages
@@ -48,7 +47,6 @@
       // onChunk
       (chunk, fullMessage) => {
         isThinking = false;
-        isStreaming = true;
         messages[placeholderIndex].content = fullMessage;
         messages = messages; // Trigger reactivity
       },
@@ -56,7 +54,6 @@
       (finalMessage) => {
         messages[placeholderIndex].content = finalMessage;
         executingTools = [];
-        isStreaming = false;
         isThinking = false;
         messages = messages;
       },
