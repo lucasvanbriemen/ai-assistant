@@ -1,9 +1,14 @@
 <script>
-  import AtomLogo from '@/components/AtomLogo.svelte';
+  import GreetingCard from '@/components/GreetingCard.svelte';
+  import MessageInput from '@/components/MessageInput.svelte';
+  import '@styles/Home.scss';
 
   let messages = $state([]);
   let input = $state('');
   let executingTools = $state([]);
+
+  // Track if we have any messages
+  let hasMessages = $derived(messages.length > 0);
 
   async function sendMessage() {
     const userMessage = input.trim();
@@ -55,26 +60,31 @@
   }
 </script>
 
-<AtomLogo size={350} />
+<div class="home-container" class:with-messages={hasMessages}>
+  {#if !hasMessages}
+    <GreetingCard />
+  {:else}
+    <div class="messages-container">
+      {#each messages as message, i (i)}
+        {message.content}
+        <hr>
+        {#if message.timestamp}
+          {message.timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        {/if}
 
-{#each messages as message, i (i)}
-  {message.content}
-  <hr>
-  {#if message.timestamp}
-    {message.timestamp.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })}
+        <hr><hr><hr><hr>
+      {/each}
+
+      {#if executingTools.length > 0}
+        {#each executingTools as tool, i (i)}
+         🔧 {tool}
+        {/each}
+      {/if}
+    </div>
   {/if}
 
-  <hr><hr><hr><hr>
-{/each}
-
-{#if executingTools.length > 0}
-  {#each executingTools as tool, i (i)}
-   🔧 {tool}
-  {/each}
-{/if}
-
-<textarea bind:value={input} onkeydown={handleKeydown} rows="2"></textarea>
-<button onclick={sendMessage} disabled={!input.trim()}>Send</button>
+  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} />
+</div>

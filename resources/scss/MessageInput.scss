@@ -1,0 +1,60 @@
+.input-wrapper {
+  border-radius: 0.5rem;
+  width: calc(min(100ch, 90vw));
+
+  display: flex;
+  align-items: center;
+
+  background-color: var(--background-color-one);
+
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 0.5rem;
+
+  position: relative;
+
+  input, textarea {
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 0.5rem;
+    font-size: 1rem;
+    color: var(--text-color-one);
+    background-color: transparent;
+    flex: 1;
+    min-height: 1.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+
+  label {
+    position: absolute;
+    top: 50%;
+    left: 0.95rem;
+    transform: translateY(-50%);
+    transition: all 0.3s ease-in-out;
+    background-color: var(--background-color-one);
+    color: var(--text-color-secondary);
+    cursor: text;
+    pointer-events: none;
+  }
+
+  input:focus + label,
+  input:not(:placeholder-shown) + label,
+  textarea:focus + label,
+  textarea:not(:placeholder-shown) + label {
+    top: 0rem;
+    font-size: 0.75rem;
+    padding: 0 0.25rem;
+  }
+
+  &:has(input:focus, input:not(:placeholder-shown), textarea:focus, textarea:not(:placeholder-shown)) {
+    border-color: var(--primary-color);
+  }
+
+  .icon.send-button:hover {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+}
