@@ -6,25 +6,14 @@
 
   let textarea;
 
-  // Auto-resize textarea
   $effect(() => {
-    if (textarea && input !== undefined) {
-      textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 'px';
-    }
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   });
 </script>
 
 <div class="input-wrapper">
-  <textarea
-    bind:this={textarea}
-    id="message-input"
-    bind:value={input}
-    onkeydown={onkeydown}
-    autofocus
-    placeholder=" "
-    rows="1"
-  ></textarea>
+  <textarea bind:this={textarea} bind:value={input} onkeydown={onkeydown} autofocus placeholder=" " rows="1"></textarea>
   <label for="message-input">Ask me anything...</label>
   <Icon name="send" size="1.5rem" className="send-button" onclick={onhandleSend} />
 </div>
