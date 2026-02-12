@@ -1,8 +1,9 @@
 <script>
   import MarkdownRenderer from '@/components/MarkdownRenderer.svelte';
+  import ThinkingIndicator from '@/components/ThinkingIndicator.svelte';
   import '@styles/Message.scss';
 
-  let { content, timestamp, role = "user" } = $props();
+  let { content, timestamp, role = "user", isThinking, isStreaming } = $props();
 </script>
 
 <div class="message {role}-message">
@@ -10,6 +11,10 @@
     <div class="message-content">
       {#if content}
         <MarkdownRenderer content={content} />
+      {/if}
+
+      {#if isThinking && !isStreaming && content === ''}
+        <ThinkingIndicator />
       {/if}
     </div>
     {#if timestamp}
