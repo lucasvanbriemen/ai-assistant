@@ -77,6 +77,6 @@
   {/each}
 {/if}
 
-<MessageInput bind:input onhandleKeydown={handleKeydown} />
+<MessageInput bind:input onhandleKeydown={handleKeydown} onhandleSend={sendMessage} />
 
 <button onclick={sendMessage} disabled={!input.trim()}>Send</button>

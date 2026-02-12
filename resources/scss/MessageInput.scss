@@ -1,3 +1,20 @@
-textarea {
-  background-color: red;
+.input-wrapper {
+  border-radius: 0.5rem;
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid var(--border-color);
+  padding: 0.25rem;
+
+  input {
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 0.5rem;
+    font-size: 1rem;
+    color: var(--text-color-one);
+    background-color: transparent;
+  }
 }
