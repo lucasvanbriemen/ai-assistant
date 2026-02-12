@@ -49,16 +49,7 @@
   <!-- Rotating gradient background behind the card -->
   <div class="gradient-shadow"></div>
 
-  <div
-    class="greeting-card"
-    class:hovering={isHovering}
-    bind:this={cardElement}
-    onmouseenter={handleMouseEnter}
-    onmousemove={handleMouseMove}
-    onmouseleave={handleMouseLeave}
-    aria-role="we"
-    style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);"
-  >
+  <div class="greeting-card" class:hovering={isHovering} bind:this={cardElement} onmouseenter={handleMouseEnter} onmousemove={handleMouseMove} onmouseleave={handleMouseLeave} style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);">
     <AtomLogo size={350} />
 
     <div class="ai-identity">
