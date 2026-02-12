@@ -26,13 +26,13 @@
 
   // Links
   a {
-    color: #667eea;
+    color: var(--primary-color);
     text-decoration: none;
     border-bottom: 1px solid transparent;
     transition: border-color 0.2s;
 
     &:hover {
-      border-bottom-color: #667eea;
+      border-bottom-color: var(--primary-color-dark);
     }
   }
 
@@ -68,7 +68,7 @@
   blockquote {
     margin: 1rem 0;
     padding: 0.5rem 1rem;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--primary-color);
     background: rgba(102, 126, 234, 0.1);
     color: rgba(255, 255, 255, 0.8);
     font-style: italic;
