@@ -90,19 +90,17 @@
   {#if !hasMessages}
     <GreetingCard />
   {:else}
-    <div class="messages-container">
-      <div class="messages-list" bind:this={messagesListEl}>
-        {#each messages as message, i (i)}
-          <UserMessage
-            content={message.content}
-            timestamp={message.timestamp}
-            role={message.role}
-            isThinking={isThinking}
-            isStreaming={isStreaming}
-            executingTools={executingTools}
-          />
-        {/each}
-      </div>
+    <div class="messages-list" bind:this={messagesListEl}>
+      {#each messages as message, i (i)}
+        <UserMessage
+          content={message.content}
+          timestamp={message.timestamp}
+          role={message.role}
+          isThinking={isThinking}
+          isStreaming={isStreaming}
+          executingTools={executingTools}
+        />
+      {/each}
     </div>
   {/if}
 
