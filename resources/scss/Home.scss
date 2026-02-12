@@ -1,0 +1,39 @@
+.home-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.greeting-wrapper {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(min(100ch, 90vw));
+}
+
+.messages-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 2rem;
+  padding-bottom: 8rem;
+}
+
+.input-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(min(100ch, 90vw));
+  padding: 0;
+  margin: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-container.centered {
+  top: 50%;
+}
+
+.input-container:not(.centered) {
+  top: auto;
+  bottom: 1rem;
+}
