@@ -10,9 +10,7 @@
   <div class="message-content">
     {#if content}
       <MarkdownRenderer content={content} />
-    {/if}
-
-    {#if isThinking && !isStreaming && content === ''}
+    {:else if isThinking && !isStreaming && content === ''}
       <ThinkingIndicator />
     {/if}
   </div>
