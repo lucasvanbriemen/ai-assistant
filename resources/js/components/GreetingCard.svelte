@@ -62,23 +62,29 @@
     const username = getUsername();
     const timeGreeting = getTimeGreeting();
     const helpMsg = helpMessages[Math.floor(Math.random() * helpMessages.length)];
+    const primeIntro = primeIntros[Math.floor(Math.random() * primeIntros.length)];
+
+    // Randomly decide if we include Prime's name (40% chance)
+    const includePrime = Math.random() < 0.4;
+    const primeText = includePrime ? `${primeIntro} ` : '';
 
     // 30% - Time-based greeting with username
     if (rand < 0.3) {
-      return `${timeGreeting}, ${username}! ${helpMsg}`;
+      return `${timeGreeting}, ${username}! ${primeText}${helpMsg}`;
     }
     // 20% - Simple greeting with username
     else if (rand < 0.5) {
       const greeting = greetingOptions[Math.floor(Math.random() * greetingOptions.length)];
-      return `${greeting}, ${username}! ${helpMsg}`;
+      return `${greeting}, ${username}! ${primeText}${helpMsg}`;
     }
     // 15% - Time-based greeting only
     else if (rand < 0.65) {
-      return `${timeGreeting}! ${helpMsg}`;
+      return `${timeGreeting}! ${primeText}${helpMsg}`;
     }
-    // 35% - Just the help message
+    // 35% - Just the help message (with Prime intro more likely here)
     else {
-      return helpMsg;
+      const soloIntro = Math.random() < 0.6 ? `${primeIntro} ` : '';
+      return `${soloIntro}${helpMsg}`;
     }
   }
 
@@ -134,6 +140,8 @@
     style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);"
   >
     <AtomLogo size={350} />
+
+    <div class="ai-name">Prime</div>
 
     <h2 class="greeting-message">{displayMessage}</h2>
   </div>
