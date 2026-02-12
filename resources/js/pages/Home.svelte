@@ -99,10 +99,7 @@
           {#if message.role === 'user'}
             <UserMessage content={message.content} timestamp={message.timestamp} />
           {:else if message.role === 'assistant'}
-            <AssistantMessage
-              content={message.content}
-              timestamp={message.timestamp}
-            />
+            <AssistantMessage content={message.content} timestamp={message.timestamp}/>
           {/if}
         {/each}
 
