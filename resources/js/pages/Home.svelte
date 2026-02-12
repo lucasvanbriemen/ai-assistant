@@ -2,7 +2,6 @@
   import GreetingCard from '@/components/GreetingCard.svelte';
   import MessageInput from '@/components/MessageInput.svelte';
   import UserMessage from '@/components/UserMessage.svelte';
-  import AssistantMessage from '@/components/AssistantMessage.svelte';
   import ThinkingIndicator from '@/components/ThinkingIndicator.svelte';
   import ToolExecutionBadge from '@/components/ToolExecutionBadge.svelte';
   import '@styles/Home.scss';
@@ -96,11 +95,7 @@
     <div class="messages-container">
       <div class="messages-list" bind:this={messagesListEl}>
         {#each messages as message, i (i)}
-          {#if message.role === 'user'}
-            <UserMessage content={message.content} timestamp={message.timestamp} />
-          {:else if message.role === 'assistant'}
-            <AssistantMessage content={message.content} timestamp={message.timestamp}/>
-          {/if}
+          <UserMessage content={message.content} timestamp={message.timestamp} />
         {/each}
 
         {#if isThinking && !isStreaming}

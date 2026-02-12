@@ -1,19 +1,24 @@
 <script>
+  import MarkdownRenderer from '@/components/MarkdownRenderer.svelte';
   import '@styles/Message.scss';
 
-  let { content, timestamp } = $props();
+  let { content, timestamp, role = "user" } = $props();
 </script>
 
-<div class="message user-message">
-  <div class="message-content">
-    <p>{content}</p>
-  </div>
-  {#if timestamp}
-    <div class="message-timestamp">
-      {timestamp.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}
+<div class="message {role}-message">
+  <div class="message-body">
+    <div class="message-content">
+      {#if content}
+        <MarkdownRenderer content={content} />
+      {/if}
     </div>
-  {/if}
+    {#if timestamp}
+      <div class="message-timestamp">
+        {timestamp.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </div>
+    {/if}
+  </div>
 </div>
