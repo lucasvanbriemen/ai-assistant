@@ -17,13 +17,19 @@ class AIService
         $messages = self::buildMessages($message, $conversationHistory);
         $requestData = self::buildRequestData($messages);
 
+        // Send initial "thinking" event
+        yield self::formatSSE('thinking', ['status' => 'start']);
+
         $response = self::makeRequest(self::BASE_URL . "/chat/completions", $requestData)->json();
         $assistantMessage = $response['choices'][0]['message'] ?? null;
+
+        // End thinking state
+        yield self::formatSSE('thinking', ['status' => 'end']);
 
         if (isset($assistantMessage['tool_calls'])) {
             yield from self::processToolCalls($assistantMessage['tool_calls'], $message, $conversationHistory, $messages);
         } else {
-            yield from self::streamResponse(array_merge($requestData, ['stream' => true]));
+            yield from self::streamResponseRealtime(array_merge($requestData, ['stream' => true]));
         }
     }
 
@@ -52,17 +58,58 @@ class AIService
             ];
         }
 
-        // Get final response from AI
-        $requestData = self::buildRequestData($messages, true);
-        $streamedData = self::parseStreamResponse($requestData);
+        // Send thinking event before getting final response
+        yield self::formatSSE('thinking', ['status' => 'start']);
 
-        // Stream response chunks
-        foreach ($streamedData['chunks'] as $chunk) {
-            yield self::formatSSE('chunk', ['content' => $chunk]);
+        // Get final response from AI with real-time streaming
+        $requestData = self::buildRequestData($messages, true);
+
+        // End thinking and start streaming response
+        yield self::formatSSE('thinking', ['status' => 'end']);
+
+        // Stream response in real-time
+        $streamResponse = Http::withToken(config('ai.openai.api_key'))
+            ->withOptions(['stream' => true])
+            ->post(self::BASE_URL . "/chat/completions", $requestData);
+
+        $body = $streamResponse->getBody();
+        $fullMessage = '';
+        $hasMoreToolCalls = false;
+
+        while (!$body->eof()) {
+            $line = self::readLine($body);
+            if (empty($line) || $line === 'data: [DONE]') {
+                continue;
+            }
+
+            if (!str_starts_with($line, 'data: ')) {
+                continue;
+            }
+
+            $json = json_decode(substr($line, 6), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                continue;
+            }
+
+            $delta = $json['choices'][0]['delta'] ?? [];
+
+            if (isset($delta['tool_calls'])) {
+                $hasMoreToolCalls = true;
+            }
+
+            $content = $delta['content'] ?? '';
+            if ($content) {
+                $fullMessage .= $content;
+                yield self::formatSSE('chunk', ['content' => $content]);
+                if (ob_get_level() > 0) {
+                    ob_flush();
+                }
+                flush();
+            }
         }
 
         // Handle recursive tool calls
-        if ($streamedData['hasMoreToolCalls']) {
+        if ($hasMoreToolCalls) {
             $finalResponse = self::makeRequest(self::BASE_URL . "/chat/completions", array_merge($requestData, ['stream' => false]))->json();
             $finalAssistantMessage = $finalResponse['choices'][0]['message'] ?? null;
 
@@ -72,7 +119,7 @@ class AIService
             }
         }
 
-        yield self::formatSSE('done', ['message' => $streamedData['message']]);
+        yield self::formatSSE('done', ['message' => $fullMessage]);
     }
 
     private static function makeRequest(string $url, array $data): Response
@@ -90,6 +137,48 @@ class AIService
         }
 
         yield self::formatSSE('done', ['message' => $streamedData['message']]);
+    }
+
+    private static function streamResponseRealtime(array $requestData): \Generator
+    {
+        $streamResponse = Http::withToken(config('ai.openai.api_key'))
+            ->withOptions(['stream' => true])
+            ->post(self::BASE_URL . "/chat/completions", $requestData);
+
+        $body = $streamResponse->getBody();
+        $fullMessage = '';
+
+        while (!$body->eof()) {
+            $line = self::readLine($body);
+            if (empty($line) || $line === 'data: [DONE]') {
+                continue;
+            }
+
+            if (!str_starts_with($line, 'data: ')) {
+                continue;
+            }
+
+            $json = json_decode(substr($line, 6), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                continue;
+            }
+
+            $delta = $json['choices'][0]['delta'] ?? [];
+            $content = $delta['content'] ?? '';
+
+            if ($content) {
+                $fullMessage .= $content;
+                // Stream each chunk immediately as it arrives
+                yield self::formatSSE('chunk', ['content' => $content]);
+                // Force flush to ensure immediate delivery
+                if (ob_get_level() > 0) {
+                    ob_flush();
+                }
+                flush();
+            }
+        }
+
+        yield self::formatSSE('done', ['message' => $fullMessage]);
     }
 
     private static function parseStreamResponse(array $requestData): array

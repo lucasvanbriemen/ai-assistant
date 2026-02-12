@@ -32,9 +32,6 @@
     messages.push({role: 'user', content: userMessage, timestamp: new Date()});
     messages = messages;
 
-    // Show thinking indicator
-    isThinking = true;
-
     // Add placeholder for streaming response
     const placeholderIndex = messages.length;
     messages.push({role: 'assistant', content: '', timestamp: new Date()});
@@ -72,6 +69,14 @@
           executingTools = executingTools.filter(t => t !== toolName);
         }
         executingTools = executingTools; // Trigger reactivity
+      },
+      // onThinking
+      (status) => {
+        if (status === 'start') {
+          isThinking = true;
+        } else if (status === 'end') {
+          isThinking = false;
+        }
       }
     );
   }

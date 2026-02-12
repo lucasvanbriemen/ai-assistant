@@ -11,10 +11,10 @@
     </svg>
   </div>
   <div class="message-body">
-    <div class="thinking-dots">
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="skeleton-text">
+      <div class="skeleton-line long"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line short"></div>
     </div>
   </div>
 </div>
