@@ -1,19 +1,33 @@
 <script>
   import GreetingCard from '@/components/GreetingCard.svelte';
   import MessageInput from '@/components/MessageInput.svelte';
+  import Message from '@/components/Message.svelte';
   import '@styles/Home.scss';
 
   let messages = $state([]);
   let input = $state('');
   let executingTools = $state([]);
+  let isThinking = $state(false);
+  let isStreaming = $state(false);
+  let messagesListEl = $state(null);
 
   // Track if we have any messages
   let hasMessages = $derived(messages.length > 0);
 
+  // Auto-scroll to bottom when messages change or when thinking/streaming
+  $effect(() => {
+    if (messagesListEl && (messages.length > 0 || isThinking || isStreaming)) {
+      messagesListEl.scrollTop = messagesListEl.scrollHeight;
+    }
+  });
+
   async function sendMessage() {
     const userMessage = input.trim();
+    if (!userMessage) return;
+
     input = '';
     messages.push({role: 'user', content: userMessage, timestamp: new Date()});
+    messages = messages;
 
     // Add placeholder for streaming response
     const placeholderIndex = messages.length;
@@ -31,6 +45,8 @@
       },
       // onChunk
       (chunk, fullMessage) => {
+        isThinking = false;
+        isStreaming = true;
         messages[placeholderIndex].content = fullMessage;
         messages = messages; // Trigger reactivity
       },
@@ -38,6 +54,8 @@
       (finalMessage) => {
         messages[placeholderIndex].content = finalMessage;
         executingTools = [];
+        isStreaming = false;
+        isThinking = false;
         messages = messages;
       },
       // onTool
@@ -48,6 +66,14 @@
           executingTools = executingTools.filter(t => t !== toolName);
         }
         executingTools = executingTools; // Trigger reactivity
+      },
+      // onThinking
+      (status) => {
+        if (status === 'start') {
+          isThinking = true;
+        } else if (status === 'end') {
+          isThinking = false;
+        }
       }
     );
   }
@@ -64,27 +90,12 @@
   {#if !hasMessages}
     <GreetingCard />
   {:else}
-    <div class="messages-container">
+    <div class="messages-list" bind:this={messagesListEl}>
       {#each messages as message, i (i)}
-        {message.content}
-        <hr>
-        {#if message.timestamp}
-          {message.timestamp.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        {/if}
-
-        <hr><hr><hr><hr>
+        <Message content={message.content} timestamp={message.timestamp} role={message.role} isThinking={isThinking} isStreaming={isStreaming} executingTools={executingTools} />
       {/each}
-
-      {#if executingTools.length > 0}
-        {#each executingTools as tool, i (i)}
-         🔧 {tool}
-        {/each}
-      {/if}
     </div>
   {/if}
 
-  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} />
+  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} disabled={isThinking || isStreaming} />
 </div>

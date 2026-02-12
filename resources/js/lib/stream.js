@@ -48,8 +48,10 @@ export class StreamHandler {
     processLine(line) {
         const trimmedLine = line.trim();
 
+        let currentEvent = 'message'; // default event type
         if (trimmedLine.startsWith('event: ')) {
-            return;
+            currentEvent = trimmedLine.substring(7).trim();
+            return; // Store event type for next data line
         }
 
         if (trimmedLine.startsWith('data: ')) {
@@ -64,6 +66,9 @@ export class StreamHandler {
             } else if (data.name && data.action) {
                 // Tool event
                 this.callbacks.onTool?.(data.name, data.action);
+            } else if (data.status) {
+                // Thinking event
+                this.callbacks.onThinking?.(data.status);
             }
         }
     }
