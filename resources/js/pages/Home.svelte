@@ -1,19 +1,39 @@
 <script>
   import GreetingCard from '@/components/GreetingCard.svelte';
   import MessageInput from '@/components/MessageInput.svelte';
+  import UserMessage from '@/components/UserMessage.svelte';
+  import AssistantMessage from '@/components/AssistantMessage.svelte';
+  import ThinkingIndicator from '@/components/ThinkingIndicator.svelte';
+  import ToolExecutionBadge from '@/components/ToolExecutionBadge.svelte';
   import '@styles/Home.scss';
 
   let messages = $state([]);
   let input = $state('');
   let executingTools = $state([]);
+  let isThinking = $state(false);
+  let isStreaming = $state(false);
+  let messagesListEl = $state(null);
 
   // Track if we have any messages
   let hasMessages = $derived(messages.length > 0);
 
+  // Auto-scroll to bottom when messages change or when thinking/streaming
+  $effect(() => {
+    if (messagesListEl && (messages.length > 0 || isThinking || isStreaming)) {
+      messagesListEl.scrollTop = messagesListEl.scrollHeight;
+    }
+  });
+
   async function sendMessage() {
     const userMessage = input.trim();
+    if (!userMessage) return;
+
     input = '';
     messages.push({role: 'user', content: userMessage, timestamp: new Date()});
+    messages = messages;
+
+    // Show thinking indicator
+    isThinking = true;
 
     // Add placeholder for streaming response
     const placeholderIndex = messages.length;
@@ -31,6 +51,8 @@
       },
       // onChunk
       (chunk, fullMessage) => {
+        isThinking = false;
+        isStreaming = true;
         messages[placeholderIndex].content = fullMessage;
         messages = messages; // Trigger reactivity
       },
@@ -38,6 +60,8 @@
       (finalMessage) => {
         messages[placeholderIndex].content = finalMessage;
         executingTools = [];
+        isStreaming = false;
+        isThinking = false;
         messages = messages;
       },
       // onTool
@@ -65,26 +89,27 @@
     <GreetingCard />
   {:else}
     <div class="messages-container">
-      {#each messages as message, i (i)}
-        {message.content}
-        <hr>
-        {#if message.timestamp}
-          {message.timestamp.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        {/if}
-
-        <hr><hr><hr><hr>
-      {/each}
-
-      {#if executingTools.length > 0}
-        {#each executingTools as tool, i (i)}
-         🔧 {tool}
+      <div class="messages-list" bind:this={messagesListEl}>
+        {#each messages as message, i (i)}
+          {#if message.role === 'user'}
+            <UserMessage content={message.content} timestamp={message.timestamp} />
+          {:else if message.role === 'assistant'}
+            <AssistantMessage
+              content={message.content}
+              timestamp={message.timestamp}
+              isStreaming={isStreaming && i === messages.length - 1}
+            />
+          {/if}
         {/each}
-      {/if}
+
+        {#if isThinking && !isStreaming}
+          <ThinkingIndicator />
+        {/if}
+      </div>
+
+      <ToolExecutionBadge tools={executingTools} />
     </div>
   {/if}
 
-  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} />
+  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} disabled={isThinking || isStreaming} />
 </div>
