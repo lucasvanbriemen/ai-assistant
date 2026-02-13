@@ -8,6 +8,8 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Comprehensive memory system with entities, relationships, embeddings, and temporal tracking.
      */
     public function up(): void
     {
@@ -45,15 +47,38 @@ return new class extends Migration
             $table->string('name')->index(); // Full name or identifier
             $table->text('description')->nullable(); // Description or context
             $table->text('summary')->nullable(); // AI-generated summary of entity
-            $table->json('attributes')->nullable(); // Flexible schema: job_title, location, phone, etc.
+            $table->json('attributes')->nullable(); // Flexible schema: additional custom attributes
+
+            // Common person attributes as real columns (enforces consistency)
+            $table->string('email', 255)->nullable()->index();
+            $table->string('phone', 50)->nullable();
+            $table->string('job_title', 255)->nullable()->index();
+            $table->string('company', 255)->nullable()->index();
+            $table->string('department', 255)->nullable();
+            $table->string('work_location', 255)->nullable();
+            $table->date('birthday')->nullable();
+            $table->text('address')->nullable();
+            $table->string('relationship_type', 100)->nullable(); // For family: spouse, parent, sibling
+            $table->string('secondary_email', 255)->nullable();
+            $table->string('secondary_phone', 50)->nullable();
+
             $table->integer('mention_count')->default(1)->index(); // Track importance by mentions
             $table->timestamp('last_mentioned_at')->nullable(); // When last referenced
             $table->boolean('is_active')->default(true)->index(); // Archive inactive entities
+
+            // Temporal tracking
+            $table->date('start_date')->nullable()->comment('When this entity/relationship started');
+            $table->date('end_date')->nullable()->comment('When this entity/relationship ended or will end');
+
             $table->timestamps();
 
             // Composite indexes
             $table->index(['entity_type', 'is_active']);
             $table->index(['user_id', 'entity_type', 'is_active']);
+            $table->index(['entity_type', 'company']);
+            $table->index(['entity_type', 'job_title']);
+            $table->index(['entity_type', 'relationship_type']);
+            $table->index(['entity_type', 'end_date'], 'idx_entity_type_end_date');
 
             // Full-text search on name and description
             $table->fullText(['name', 'description']);
@@ -66,6 +91,11 @@ return new class extends Migration
             $table->unsignedBigInteger('to_entity_id')->index();
             $table->string('relationship_type', 100); // works_at, lives_at, reports_to, friend_of, etc.
             $table->json('metadata')->nullable(); // Additional context
+
+            // Temporal tracking for relationships
+            $table->date('started_at')->nullable()->comment('When this relationship started');
+            $table->date('ended_at')->nullable()->comment('When this relationship ended or will end');
+
             $table->timestamps();
 
             $table->foreign('from_entity_id')->references('id')->on('memory_entities')->onDelete('cascade');
@@ -74,8 +104,9 @@ return new class extends Migration
             // Ensure unique relationships
             $table->unique(['from_entity_id', 'to_entity_id', 'relationship_type'], 'unique_relationship');
 
-            // Index for reverse lookups
+            // Index for reverse lookups and temporal queries
             $table->index(['to_entity_id', 'relationship_type']);
+            $table->index(['relationship_type', 'ended_at'], 'idx_relationship_type_ended_at');
         });
 
         // Many-to-many junction table between memories and entities
@@ -116,6 +147,21 @@ return new class extends Migration
             // Ensure unique tag assignments
             $table->unique(['memory_id', 'tag_id']);
         });
+
+        // Separate table for vector embeddings to keep main memories table lean
+        Schema::create('memory_embeddings', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('memory_id')->unique()->index();
+            $table->json('embedding'); // Store 1536-dimensional vector as JSON array
+            $table->string('model', 100)->default('text-embedding-3-small'); // Track embedding model
+            $table->integer('dimensions')->default(1536); // Track vector dimensions
+            $table->timestamps();
+
+            $table->foreign('memory_id')->references('id')->on('memories')->onDelete('cascade');
+
+            // Index for faster lookups
+            $table->index(['model', 'created_at']);
+        });
     }
 
     /**
@@ -123,6 +169,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('memory_embeddings');
         Schema::dropIfExists('memory_tag_links');
         Schema::dropIfExists('memory_tags');
         Schema::dropIfExists('memory_entity_links');
