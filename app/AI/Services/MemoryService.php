@@ -242,7 +242,7 @@ class MemoryService
         }
     }
 
-    public function createRelationship(array $params): ServiceResult
+    public static function createRelationship(array $params): ServiceResult
     {
         try {
             DB::beginTransaction();
