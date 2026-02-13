@@ -19,7 +19,7 @@ class MemoryService
 {
     // ==================== STORAGE METHODS ====================
 
-    public function storePerson(array $params): ServiceResult
+    public static function storePerson(array $params): ServiceResult
     {
         try {
             DB::beginTransaction();
@@ -45,7 +45,7 @@ class MemoryService
             DB::commit();
 
             // Clear relevant caches
-            $this->clearEntityCache();
+            self::clearEntityCache();
 
             $action = $entity->wasRecentlyCreated ? 'stored' : 'updated';
 
@@ -64,7 +64,7 @@ class MemoryService
         }
     }
 
-    public function storeNote(array $params): ServiceResult
+    public static function storeNote(array $params): ServiceResult
     {
         try {
             DB::beginTransaction();
@@ -89,7 +89,7 @@ class MemoryService
 
             // Link entities if provided
             if (!empty($params['entity_names'])) {
-                $this->linkEntitiesToMemory($memory, $params['entity_names']);
+                self::linkEntitiesToMemory($memory, $params['entity_names']);
             }
 
             // Attach tags if provided
@@ -100,7 +100,7 @@ class MemoryService
             DB::commit();
 
             // Clear caches
-            $this->clearMemoryCache();
+            self::clearMemoryCache();
 
             $message = 'Note stored successfully';
             if (!empty($params['reminder_at'])) {
@@ -121,7 +121,7 @@ class MemoryService
         }
     }
 
-    public function storeTranscript(array $params): ServiceResult
+    public static function storeTranscript(array $params): ServiceResult
     {
         try {
             DB::beginTransaction();
@@ -152,13 +152,13 @@ class MemoryService
 
             // Link attendees
             if (!empty($params['attendees'])) {
-                $this->linkAttendeesToMemory($memory, $params['attendees']);
+                self::linkAttendeesToMemory($memory, $params['attendees']);
             }
 
             DB::commit();
 
             // Clear caches
-            $this->clearMemoryCache();
+            self::clearMemoryCache();
 
             return ServiceResult::success([
                 'message' => "Transcript '{$params['title']}' stored successfully",
@@ -175,7 +175,7 @@ class MemoryService
         }
     }
 
-    public function storePreference(array $params): ServiceResult
+    public static function storePreference(array $params): ServiceResult
     {
         try {
             DB::beginTransaction();
@@ -226,7 +226,7 @@ class MemoryService
             DB::commit();
 
             // Clear caches
-            $this->clearMemoryCache();
+            self::clearMemoryCache();
 
             return ServiceResult::success([
                 'message' => "Preference stored: {$params['category']} = {$params['value']}",
@@ -272,7 +272,7 @@ class MemoryService
             DB::commit();
 
             // Clear caches
-            $this->clearRelationshipCache();
+            self::clearRelationshipCache();
 
             return ServiceResult::success([
                 'message' => "Relationship created: {$params['from_entity_name']} {$params['relationship_type']} {$params['to_entity_name']}",
@@ -291,7 +291,7 @@ class MemoryService
 
     // ==================== RETRIEVAL METHODS ====================
 
-    public function recallInformation(array $params): ServiceResult
+    public static function recallInformation(array $params): ServiceResult
     {
         try {
             $query = $params['query'];
@@ -342,7 +342,7 @@ class MemoryService
         }
     }
 
-    public function getPersonDetails(array $params): ServiceResult
+    public static function getPersonDetails(array $params): ServiceResult
     {
         try {
             $entity = MemoryEntity::findByName($params['name'], 'person');
@@ -368,7 +368,7 @@ class MemoryService
         }
     }
 
-    public function getEntityDetails(array $params): ServiceResult
+    public static function getEntityDetails(array $params): ServiceResult
     {
         try {
             $name = $params['name'];
@@ -427,7 +427,7 @@ class MemoryService
         }
     }
 
-    public function getUpcomingReminders(array $params): ServiceResult
+    public static function getUpcomingReminders(array $params): ServiceResult
     {
         try {
             $timeframe = $params['timeframe'] ?? 'all';
@@ -485,7 +485,7 @@ class MemoryService
         }
     }
 
-    public function listAllPeople(array $params): ServiceResult
+    public static function listAllPeople(array $params): ServiceResult
     {
         try {
             $limit = $params['limit'] ?? 50;
@@ -567,7 +567,7 @@ class MemoryService
     /**
      * Link entity names to a memory
      */
-    private function linkEntitiesToMemory(Memory $memory, array $entityNames): void
+    private static function linkEntitiesToMemory(Memory $memory, array $entityNames): void
     {
         $entityIds = [];
         foreach ($entityNames as $name) {
@@ -585,7 +585,7 @@ class MemoryService
     /**
      * Link attendees to a memory (creates person entities if needed)
      */
-    private function linkAttendeesToMemory(Memory $memory, array $attendees): void
+    private static function linkAttendeesToMemory(Memory $memory, array $attendees): void
     {
         $entityIds = [];
         foreach ($attendees as $attendeeName) {
@@ -603,7 +603,7 @@ class MemoryService
     /**
      * Clear entity-related caches
      */
-    private function clearEntityCache(): void
+    private static function clearEntityCache(): void
     {
         try {
             Cache::tags(['entities'])->flush();
@@ -615,7 +615,7 @@ class MemoryService
     /**
      * Clear memory-related caches
      */
-    private function clearMemoryCache(): void
+    private static function clearMemoryCache(): void
     {
         try {
             Cache::tags(['memory', 'search'])->flush();
@@ -627,7 +627,7 @@ class MemoryService
     /**
      * Clear relationship-related caches
      */
-    private function clearRelationshipCache(): void
+    private static function clearRelationshipCache(): void
     {
         try {
             Cache::tags(['relationships'])->flush();

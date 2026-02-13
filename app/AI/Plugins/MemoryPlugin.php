@@ -9,12 +9,10 @@ use App\AI\Services\MemoryService;
 
 class MemoryPlugin extends PluginInterface
 {
-    private MemoryService $memoryService;
 
     public function __construct()
     {
         parent::__construct();
-        $this->memoryService = app(MemoryService::class);
     }
 
     protected function getApiConfig(): ApiConfig
@@ -315,42 +313,42 @@ class MemoryPlugin extends PluginInterface
 
     private function storePerson(array $params): ToolResult
     {
-        $result = $this->memoryService->storePerson($params);
+        $result = MemoryService::storePerson($params);
 
         return $this->returnResults($result);
     }
 
     private function storeNote(array $params): ToolResult
     {
-        $result = $this->memoryService->storeNote($params);
+        $result = MemoryService::storeNote($params);
 
         return $this->returnResults($result);
     }
 
     private function storeTranscript(array $params): ToolResult
     {
-        $result = $this->memoryService->storeTranscript($params);
+        $result = MemoryService::storeTranscript($params);
 
         return $this->returnResults($result);
     }
 
     private function storePreference(array $params): ToolResult
     {
-        $result = $this->memoryService->storePreference($params);
+        $result = MemoryService::storePreference($params);
 
         return $this->returnResults($result);
     }
 
     private function getPersonDetails(array $params): ToolResult
     {
-        $result = $this->memoryService->getPersonDetails($params);
+        $result = MemoryService::getPersonDetails($params);
 
         return $this->returnResults($result);
     }
 
     private function createRelationship(array $params): ToolResult
     {
-        $result = $this->memoryService->createRelationship($params);
+        $result = MemoryService::createRelationship($params);
 
         return $this->returnResults($result);
     }
@@ -359,28 +357,28 @@ class MemoryPlugin extends PluginInterface
 
     private function recallInformation(array $params): ToolResult
     {
-        $result = $this->memoryService->recallInformation($params);
+        $result = MemoryService::recallInformation($params);
 
         return $this->returnResults($result);
     }
 
     private function getEntityDetails(array $params): ToolResult
     {
-        $result = $this->memoryService->getEntityDetails($params);
+        $result = MemoryService::getEntityDetails($params);
 
         return $this->returnResults($result);
     }
 
     private function getUpcomingReminders(array $params): ToolResult
     {
-        $result = $this->memoryService->getUpcomingReminders($params);
+        $result = MemoryService::getUpcomingReminders($params);
 
         return $this->returnResults($result);
     }
 
     private function listAllPeople(array $params): ToolResult
     {
-        $result = $this->memoryService->listAllPeople($params);
+        $result = MemoryService::listAllPeople($params);
 
         return $this->returnResults($result);
     }
