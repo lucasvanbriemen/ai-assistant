@@ -47,20 +47,11 @@ return new class extends Migration
             $table->string('name')->index(); // Full name or identifier
             $table->text('description')->nullable(); // Description or context
             $table->text('summary')->nullable(); // AI-generated summary of entity
-            $table->json('attributes')->nullable(); // Flexible schema: additional custom attributes
+            $table->json('attributes')->nullable(); // Flexible JSON: job_title, company, birthday, address, etc.
 
-            // Common person attributes as real columns (enforces consistency)
+            // Only email and phone as real columns (most commonly queried)
             $table->string('email', 255)->nullable()->index();
             $table->string('phone', 50)->nullable();
-            $table->string('job_title', 255)->nullable()->index();
-            $table->string('company', 255)->nullable()->index();
-            $table->string('department', 255)->nullable();
-            $table->string('work_location', 255)->nullable();
-            $table->date('birthday')->nullable();
-            $table->text('address')->nullable();
-            $table->string('relationship_type', 100)->nullable(); // For family: spouse, parent, sibling
-            $table->string('secondary_email', 255)->nullable();
-            $table->string('secondary_phone', 50)->nullable();
 
             $table->integer('mention_count')->default(1)->index(); // Track importance by mentions
             $table->timestamp('last_mentioned_at')->nullable(); // When last referenced
@@ -75,9 +66,6 @@ return new class extends Migration
             // Composite indexes
             $table->index(['entity_type', 'is_active']);
             $table->index(['user_id', 'entity_type', 'is_active']);
-            $table->index(['entity_type', 'company']);
-            $table->index(['entity_type', 'job_title']);
-            $table->index(['entity_type', 'relationship_type']);
             $table->index(['entity_type', 'end_date'], 'idx_entity_type_end_date');
 
             // Full-text search on name and description
