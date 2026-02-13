@@ -5,13 +5,15 @@ namespace App\AI\Core;
 use App\AI\Contracts\PluginInterface;
 use App\AI\Contracts\ToolResult;
 use App\AI\Plugins\EmailPlugin;
+use App\AI\Plugins\MemoryPlugin;
 
 class PluginList
 {
     private static function getPlugins(): array
     {
         return [
-            new EmailPlugin()
+            new EmailPlugin(),
+            new MemoryPlugin()
         ];
     }
 
