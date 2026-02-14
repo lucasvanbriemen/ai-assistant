@@ -77,22 +77,6 @@ class EmbeddingService
     }
 
     /**
-     * Calculate cosine similarity between two embeddings
-     */
-    public function cosineSimilarity(array $embedding1, array $embedding2): float
-    {
-        return MemoryEmbedding::calculateCosineSimilarity($embedding1, $embedding2);
-    }
-
-    /**
-     * Find similar memories using vector search
-     */
-    public function findSimilar(array $queryEmbedding, int $limit = 10, float $minSimilarity = 0.5): array
-    {
-        return MemoryEmbedding::findSimilar($queryEmbedding, $limit, $minSimilarity);
-    }
-
-    /**
      * Generate and store embedding for a memory
      */
     public function generateForMemory(Memory $memory): MemoryEmbedding
@@ -128,7 +112,7 @@ class EmbeddingService
 
         // Find similar memories
         $minSimilarity = $options['min_similarity'] ?? 0.5;
-        $results = $this->findSimilar($queryEmbedding, $limit * 2, $minSimilarity);
+        $results = MemoryEmbedding::findSimilar($queryEmbedding, $limit * 2, $minSimilarity);
 
         // Apply additional filters if provided
         if (!empty($options['type'])) {
