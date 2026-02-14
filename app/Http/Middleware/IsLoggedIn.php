@@ -28,7 +28,19 @@ class IsLoggedIn
             return $next($request);
         }
 
-        // Prod only
+        // Check if token is provided in URL (for cross-domain authentication)
+        $tokenFromUrl = $request->query('auth_token');
+        if ($tokenFromUrl) {
+            // Set the token as a cookie for this domain
+            $cookieExpiry = time() + (10 * 24 * 60 * 60); // 10 days
+            setcookie('auth_token', $tokenFromUrl, $cookieExpiry, '/', '', true, true);
+
+            // Redirect to clean URL without the token parameter
+            $cleanUrl = $request->fullUrlWithoutQuery('auth_token');
+            return redirect($cleanUrl);
+        }
+
+        // Get auth token from cookie or config
         if (app()->environment('local')) {
             $authToken = config('app.user_token');
         } else {
