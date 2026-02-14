@@ -28,54 +28,42 @@ class ProcessEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
-        try {
-            // STEP 1: Ingest and normalize email data
-            $emailData = $this->webhookLog->payload;
+        $emailData = $this->webhookLog->payload;
+        $enrichedData = DataEnrichmentService::enrichEmail($emailData);
 
-            // STEP 2: Enrich with entity data
-            $enrichedData = DataEnrichmentService::enrichEmail($emailData);
-
-            // STEP 3: Create/update person entity for sender
-            if ($enrichedData['sender_name'] && $enrichedData['sender_email']) {
-                MemoryService::storePerson([
-                    'name' => $enrichedData['sender_name'],
-                    'entity_subtype' => 'contact',
-                    'description' => "Email contact",
-                    'attributes' => [
-                        'email' => $enrichedData['sender_email'],
-                    ],
-                ]);
-            }
-
-            // STEP 4: Use AI to extract structured information
-            $content = "FROM: {$enrichedData['from']}\n";
-            $content .= "SUBJECT: {$enrichedData['subject']}\n";
-            $content .= "DATE: {$enrichedData['date']}\n\n";
-            $content .= "BODY:\n{$enrichedData['body_clean']}";
-
-            $extracted = AutoMemoryExtractionService::extract($content, [
-                'source' => 'email',
-                'sender' => $enrichedData['sender_name'],
+        if ($enrichedData['sender_name'] && $enrichedData['sender_email']) {
+            MemoryService::storePerson([
+                'name' => $enrichedData['sender_name'],
+                'entity_subtype' => 'contact',
+                'description' => "Email contact",
+                'attributes' => [
+                    'email' => $enrichedData['sender_email'],
+                ],
             ]);
-
-            // STEP 5: Store memory with extracted information
-            $entityNames = array_merge(
-                [$enrichedData['sender_name']],
-                $extracted['people'] ?? []
-            );
-
-            $result = MemoryService::storeNote([
-                'content' => $extracted['summary'] ?? $content,
-                'type' => 'note',
-                'entity_names' => array_filter(array_unique($entityNames)),
-                'tags' => array_merge(['email'], $extracted['facts'] ?? []),
-            ]);
-
-            $this->webhookLog->markAsCompleted();
-
-        } catch (\Exception $e) {
-            $this->webhookLog->markAsFailed($e->getMessage());
-            throw $e;
         }
+
+        $content = "FROM: {$enrichedData['from']}\n";
+        $content .= "SUBJECT: {$enrichedData['subject']}\n";
+        $content .= "DATE: {$enrichedData['date']}\n\n";
+        $content .= "BODY:\n{$enrichedData['body_clean']}";
+
+        $extracted = AutoMemoryExtractionService::extract($content, [
+            'source' => 'email',
+            'sender' => $enrichedData['sender_name'],
+        ]);
+
+        $entityNames = array_merge(
+            [$enrichedData['sender_name']],
+            $extracted['people'] ?? []
+        );
+
+        MemoryService::storeNote([
+            'content' => $extracted['summary'] ?? $content,
+            'type' => 'note',
+            'entity_names' => array_filter(array_unique($entityNames)),
+            'tags' => array_merge(['email'], $extracted['facts'] ?? []),
+        ]);
+
+        $this->webhookLog->markAsCompleted();
     }
 }

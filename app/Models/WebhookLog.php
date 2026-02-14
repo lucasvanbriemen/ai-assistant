@@ -57,15 +57,6 @@ class WebhookLog extends Model
         ]);
     }
 
-    public function markAsFailed(string $errorMessage): void
-    {
-        $this->update([
-            'status' => self::STATUS_FAILED,
-            'error_message' => $errorMessage,
-            'processed_at' => now(),
-        ]);
-    }
-
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;

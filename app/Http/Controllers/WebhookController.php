@@ -6,8 +6,6 @@ use App\Models\WebhookLog;
 use App\Jobs\ProcessWebhookJob;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 
 class WebhookController extends Controller
 {
