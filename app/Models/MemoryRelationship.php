@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Cache;
 
 class MemoryRelationship extends Model
 {
@@ -20,11 +19,6 @@ class MemoryRelationship extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-    }
 
     public function fromEntity(): BelongsTo
     {
@@ -61,20 +55,5 @@ class MemoryRelationship extends Model
             'relationship_type' => $type,
             'metadata' => $metadata,
         ]);
-    }
-
-    /**
-     * Get all relationships for an entity
-     */
-    public static function getForEntity(int $entityId, ?string $type = null)
-    {
-        $query = static::where('from_entity_id', $entityId)
-            ->orWhere('to_entity_id', $entityId);
-
-        if ($type) {
-            $query->where('relationship_type', $type);
-        }
-
-        return $query->with(['fromEntity', 'toEntity'])->get();
     }
 }
