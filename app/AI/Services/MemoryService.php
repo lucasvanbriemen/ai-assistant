@@ -13,12 +13,9 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Service layer for memory management
- * Contains all business logic for storing and retrieving memories
  */
 class MemoryService
 {
-    // ==================== STORAGE METHODS ====================
-
     public static function storePerson(array $params): ServiceResult
     {
         try {
@@ -288,8 +285,6 @@ class MemoryService
             return ServiceResult::failure('Failed to create relationship: ' . $e->getMessage());
         }
     }
-
-    // ==================== RETRIEVAL METHODS ====================
 
     public static function recallInformation(array $params): ServiceResult
     {
@@ -562,11 +557,6 @@ class MemoryService
         }
     }
 
-    // ==================== HELPER METHODS ====================
-
-    /**
-     * Link entity names to a memory
-     */
     private static function linkEntitiesToMemory(Memory $memory, array $entityNames): void
     {
         $entityIds = [];
@@ -582,9 +572,6 @@ class MemoryService
         }
     }
 
-    /**
-     * Link attendees to a memory (creates person entities if needed)
-     */
     private static function linkAttendeesToMemory(Memory $memory, array $attendees): void
     {
         $entityIds = [];
@@ -600,9 +587,6 @@ class MemoryService
         $memory->attachEntities($entityIds, 'attendee');
     }
 
-    /**
-     * Clear entity-related caches
-     */
     private static function clearEntityCache(): void
     {
         try {
@@ -612,9 +596,6 @@ class MemoryService
         }
     }
 
-    /**
-     * Clear memory-related caches
-     */
     private static function clearMemoryCache(): void
     {
         try {
@@ -624,9 +605,6 @@ class MemoryService
         }
     }
 
-    /**
-     * Clear relationship-related caches
-     */
     private static function clearRelationshipCache(): void
     {
         try {

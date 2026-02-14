@@ -2,9 +2,6 @@
 
 namespace App\AI\Contracts;
 
-/**
- * Standard return type for service layer methods
- */
 class ServiceResult
 {
     public function __construct(
