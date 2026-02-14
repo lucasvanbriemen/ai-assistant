@@ -12,28 +12,16 @@ class AutoMemoryExtractionService
      */
     public static function extract(string $content, array $metadata = []): ServiceResult
     {
-        try {
-            $result = self::extractWithAI($content, $metadata);
+        $result = self::extractWithAI($content, $metadata);
 
-            return ServiceResult::success([
-                'people' => $result['people'] ?? [],
-                'tasks' => $result['tasks'] ?? [],
-                'facts' => $result['facts'] ?? [],
-                'relationships' => $result['relationships'] ?? [],
-                'summary' => $result['summary'] ?? self::generateSimpleSummary($content),
-                'importance' => $result['importance'] ?? 0.5,
-            ]);
-        } catch (\Exception $e) {
-            // Fallback to simple extraction
-            return ServiceResult::success([
-                'people' => self::extractPeopleSimple($content),
-                'tasks' => self::extractTasksSimple($content),
-                'facts' => [],
-                'relationships' => [],
-                'summary' => self::generateSimpleSummary($content),
-                'importance' => 0.5,
-            ]);
-        }
+        return ServiceResult::success([
+            'people' => $result['people'] ?? [],
+            'tasks' => $result['tasks'] ?? [],
+            'facts' => $result['facts'] ?? [],
+            'relationships' => $result['relationships'] ?? [],
+            'summary' => $result['summary'] ?? self::generateSimpleSummary($content),
+            'importance' => $result['importance'] ?? 0.5,
+        ]);
     }
 
     /**
@@ -90,38 +78,6 @@ Extract and return as JSON:
 
 Return ONLY the JSON, no other text.
 PROMPT;
-    }
-
-    /**
-     * Simple people extraction (fallback)
-     */
-    private static function extractPeopleSimple(string $content): array
-    {
-        // Basic name extraction using capitalized words
-        preg_match_all('/\b[A-Z][a-z]+ [A-Z][a-z]+\b/', $content, $matches);
-        return array_unique($matches[0] ?? []);
-    }
-
-    /**
-     * Simple task extraction (fallback)
-     */
-    private static function extractTasksSimple(string $content): array
-    {
-        $tasks = [];
-        $keywords = ['TODO', 'ASAP', 'action item', 'please', 'can you', 'need to', 'should'];
-
-        foreach ($keywords as $keyword) {
-            if (stripos($content, $keyword) !== false) {
-                $sentences = preg_split('/[.!?]+/', $content);
-                foreach ($sentences as $sentence) {
-                    if (stripos($sentence, $keyword) !== false) {
-                        $tasks[] = trim($sentence);
-                    }
-                }
-            }
-        }
-
-        return array_slice($tasks, 0, 5); // Max 5 tasks
     }
 
     /**
