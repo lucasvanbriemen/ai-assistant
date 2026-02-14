@@ -11,23 +11,6 @@ class AutoMemoryExtractionService
      */
     public static function extract(string $content, array $metadata = [])
     {
-        $result = self::extractWithAI($content, $metadata);
-
-        return [
-            'people' => $result['people'] ?? [],
-            'tasks' => $result['tasks'] ?? [],
-            'facts' => $result['facts'] ?? [],
-            'relationships' => $result['relationships'] ?? [],
-            'summary' => $result['summary'] ?? '',
-            'importance' => $result['importance'] ?? 0.5,
-        ];
-    }
-
-    /**
-     * Extract information using OpenAI
-     */
-    private static function extractWithAI(string $content, array $metadata): array
-    {
         $prompt = self::buildExtractionPrompt($content, $metadata);
 
         $response = Http::withToken(config('ai.openai.api_key'))
@@ -45,7 +28,16 @@ class AutoMemoryExtractionService
         $result = $response->json();
         $extractedText = $result['choices'][0]['message']['content'] ?? '{}';
 
-        return json_decode($extractedText, true) ?? [];
+        $result = json_decode($extractedText, true);
+
+        return [
+            'people' => $result['people'] ?? [],
+            'tasks' => $result['tasks'] ?? [],
+            'facts' => $result['facts'] ?? [],
+            'relationships' => $result['relationships'] ?? [],
+            'summary' => $result['summary'] ?? '',
+            'importance' => $result['importance'] ?? 0.5,
+        ];
     }
 
     /**
