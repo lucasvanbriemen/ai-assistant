@@ -20,15 +20,9 @@ class MemoryService
             'entity_subtype' => $params['entity_subtype'] ?? null,
             'description' => $params['description'] ?? null,
             'attributes' => $params['attributes'] ?? [],
+            'start_date' => $params['start_date'] ?? null,
+            'end_date' => $params['end_date'] ?? null,
         ];
-
-        // Add temporal tracking if provided
-        if (isset($params['start_date'])) {
-            $entityData['start_date'] = $params['start_date'];
-        }
-        if (isset($params['end_date'])) {
-            $entityData['end_date'] = $params['end_date'];
-        }
 
         $entity = MemoryEntity::findOrCreateEntity($entityData);
 

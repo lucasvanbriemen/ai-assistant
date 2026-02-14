@@ -239,18 +239,18 @@ class MemoryEntity extends Model
                 $entity->mergeAttributes($jsonAttributes);
             }
 
-            if (!empty($data['description'])) {
+            if ($data['description'] !== null) {
                 $entity->description = $data['description'];
             }
-            if (!empty($data['entity_subtype'])) {
+            if ($data['entity_subtype'] !== null) {
                 $entity->entity_subtype = $data['entity_subtype'];
             }
 
             // Update temporal fields if provided
-            if (isset($data['start_date'])) {
+            if ($data['start_date'] !== null) {
                 $entity->start_date = $data['start_date'];
             }
-            if (isset($data['end_date'])) {
+            if ($data['end_date'] !== null) {
                 $entity->end_date = $data['end_date'];
             }
 
