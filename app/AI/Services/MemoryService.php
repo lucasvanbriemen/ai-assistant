@@ -7,8 +7,6 @@ use App\Models\MemoryEntity;
 use App\Models\MemoryRelationship;
 use App\AI\Contracts\ToolResult;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class MemoryService
 {
@@ -39,22 +37,20 @@ class MemoryService
 
     public static function storeNote(array $params): ToolResult
     {
-        // Check for duplicate
-        $duplicate = Memory::findDuplicate($params['content']);
-        if ($duplicate) {
-            return ToolResult::success([
-                'message' => 'This note already exists in memory',
-                'memory_id' => $duplicate->id,
-                'created_at' => $duplicate->created_at->toDateTimeString(),
-            ]);
-        }
-
-        $memory = Memory::create([
-            'type' => $params['type'] ?? 'note',
-            'content' => $params['content'],
-            'reminder_at' => !empty($params['reminder_at']) ? $params['reminder_at'] : null,
+        $memory = Memory::firstOrCreate(['content_hash' => hash('sha256', $params['content']), 'is_archived'  => false], [
+            'type'            => $params['type'] ?? 'note',
+            'content'         => $params['content'],
+            'reminder_at'     => $params['reminder_at'] ?? null,
             'relevance_score' => 1.0,
         ]);
+
+        if (!$memory->wasRecentlyCreated) {
+            return ToolResult::success([
+                'message'    => 'This note already exists in memory',
+                'memory_id'  => $memory->id,
+                'created_at' => $memory->created_at->toDateTimeString(),
+            ]);
+        }
 
         // Link entities if provided
         if (!empty($params['entity_names'])) {

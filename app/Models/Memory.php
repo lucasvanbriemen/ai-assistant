@@ -211,17 +211,6 @@ class Memory extends Model
     }
 
     /**
-     * Find potential duplicates using content hash
-     */
-    public static function findDuplicate(string $content): ?self
-    {
-        $hash = hash('sha256', $content);
-        return static::where('content_hash', $hash)
-            ->where('is_archived', false)
-            ->first();
-    }
-
-    /**
      * Record access for relevance tracking
      */
     public function recordAccess(): void
