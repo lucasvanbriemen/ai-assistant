@@ -186,7 +186,6 @@ class Memory extends Model
 
             // If no results or empty, fallback to full-text search
             if (empty($results)) {
-                \Log::info("Semantic search returned no results, falling back to full-text search");
                 return static::search($query, ['limit' => $limit]);
             }
 
@@ -197,28 +196,8 @@ class Memory extends Model
                 return $memory;
             });
         } catch (\Exception $e) {
-            \Log::warning("Semantic search failed: {$e->getMessage()}, falling back to full-text search");
             return static::search($query, ['limit' => $limit]);
         }
-    }
-
-    /**
-     * Hybrid search combining full-text and semantic search
-     */
-    public static function searchHybrid(string $query, array $options = [])
-    {
-        $limit = $options['limit'] ?? 10;
-
-        // Get results from both methods
-        $fullTextResults = static::search($query, array_merge($options, ['limit' => $limit]));
-
-        // Combine and deduplicate by ID
-        $combined = $fullTextResults->unique('id');
-
-        // Sort by combined relevance score
-        return $combined->sortByDesc(function ($memory) {
-            return $memory->relevance_score * ($memory->relevance ?? 1);
-        })->take($limit)->values();
     }
 
     /**
