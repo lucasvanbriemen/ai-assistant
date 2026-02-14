@@ -30,11 +30,6 @@ class WebhookController extends Controller
                 'status' => WebhookLog::STATUS_PENDING,
             ]);
 
-            Log::info("Webhook received for service: {$service}", [
-                'webhook_log_id' => $webhookLog->id,
-                'payload_size' => strlen(json_encode($payload)),
-            ]);
-
             // Dispatch job to process webhook asynchronously
             ProcessWebhookJob::dispatch($webhookLog);
 
@@ -45,11 +40,6 @@ class WebhookController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error("Failed to log webhook for service: {$service}", [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Internal server error'
