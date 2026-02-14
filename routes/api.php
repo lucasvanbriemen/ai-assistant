@@ -8,8 +8,7 @@ use App\Http\Middleware\IsLoggedIn;
 // Chat endpoint
 Route::post('/chat/send', [ChatController::class, 'sendMessage'])->middleware(IsLoggedIn::class);
 
-// Webhook endpoints with rate limiting (100 requests per minute per service)
-Route::prefix('webhooks')->middleware('throttle:100,1')->group(function () {
+Route::prefix('webhooks')->group(function () {
     // Generic webhook handler
     Route::post('/{service}', [WebhookController::class, 'handle'])
         ->where('service', 'email|calendar|slack|spotify|generic');
