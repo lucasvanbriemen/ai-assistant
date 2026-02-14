@@ -20,16 +20,6 @@ class MemoryPlugin extends PluginInterface
         return new ApiConfig();
     }
 
-    public function getName()
-    {
-        return 'memory';
-    }
-
-    public function getDescription()
-    {
-        return 'Store and retrieve personal information, people, notes, reminders, preferences, and meeting transcripts';
-    }
-
     public function getTools()
     {
         return [
