@@ -82,10 +82,6 @@ class EmbeddingService
             return array_values($embeddings);
 
         } catch (\Exception $e) {
-            Log::error('Batch embedding generation failed', [
-                'error' => $e->getMessage(),
-                'count' => count($texts),
-            ]);
             throw $e;
         }
     }
