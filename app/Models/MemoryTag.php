@@ -23,23 +23,6 @@ class MemoryTag extends Model
     protected static function boot()
     {
         parent::boot();
-
-        // Clear cache on changes (if tagging is supported)
-        static::saved(function ($tag) {
-            try {
-                Cache::tags(['memory', 'tags'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
-        });
-
-        static::deleted(function ($tag) {
-            try {
-                Cache::tags(['memory', 'tags'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
-        });
     }
 
     public function memories(): BelongsToMany

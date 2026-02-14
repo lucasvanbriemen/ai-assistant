@@ -55,7 +55,6 @@ class MemoryService
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to store person', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to store person information: ' . $e->getMessage());
         }
     }
@@ -112,7 +111,6 @@ class MemoryService
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to store note', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to store note: ' . $e->getMessage());
         }
     }
@@ -166,7 +164,6 @@ class MemoryService
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to store transcript', ['error' => $e->getMessage()]);
             return ToolResult::failure('Failed to store transcript: ' . $e->getMessage());
         }
     }
@@ -233,7 +230,6 @@ class MemoryService
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to store preference', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to store preference: ' . $e->getMessage());
         }
     }
@@ -280,7 +276,6 @@ class MemoryService
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to create relationship', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to create relationship: ' . $e->getMessage());
         }
     }
@@ -331,7 +326,6 @@ class MemoryService
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to recall information', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to search memories: ' . $e->getMessage());
         }
     }
@@ -357,7 +351,6 @@ class MemoryService
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to get person details', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to retrieve person details: ' . $e->getMessage());
         }
     }
@@ -416,7 +409,6 @@ class MemoryService
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to get entity details', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to retrieve entity details: ' . $e->getMessage());
         }
     }
@@ -474,7 +466,6 @@ class MemoryService
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to get reminders', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to retrieve reminders: ' . $e->getMessage());
         }
     }
@@ -551,7 +542,6 @@ class MemoryService
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to list people', ['error' => $e->getMessage(), 'params' => $params]);
             return ToolResult::failure('Failed to list people: ' . $e->getMessage());
         }
     }

@@ -21,10 +21,8 @@ class MemoryEntity extends Model
         'mention_count',
         'last_mentioned_at',
         'is_active',
-        // Only universal columns (indexed for fast queries)
         'email',
         'phone',
-        // Temporal tracking
         'start_date',
         'end_date',
     ];
@@ -43,30 +41,21 @@ class MemoryEntity extends Model
     protected static function boot()
     {
         parent::boot();
-
-        // Clear cache on changes (if tagging is supported)
-        static::saved(function ($entity) {
-            try {
-                Cache::tags(['memory', 'entities'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
-        });
     }
 
-    public function memories(): BelongsToMany
+    public function memories()
     {
         return $this->belongsToMany(Memory::class, 'memory_entity_links', 'entity_id', 'memory_id')
             ->withPivot('link_type')
             ->withTimestamps();
     }
 
-    public function relationshipsFrom(): HasMany
+    public function relationshipsFrom()
     {
         return $this->hasMany(MemoryRelationship::class, 'from_entity_id');
     }
 
-    public function relationshipsTo(): HasMany
+    public function relationshipsTo()
     {
         return $this->hasMany(MemoryRelationship::class, 'to_entity_id');
     }

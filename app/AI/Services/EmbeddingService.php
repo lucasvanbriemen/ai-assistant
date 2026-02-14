@@ -40,10 +40,6 @@ class EmbeddingService
                 return $data['data'][0]['embedding'];
 
             } catch (\Exception $e) {
-                Log::error('Embedding generation failed', [
-                    'error' => $e->getMessage(),
-                    'text_length' => strlen($text),
-                ]);
                 throw $e;
             }
         });

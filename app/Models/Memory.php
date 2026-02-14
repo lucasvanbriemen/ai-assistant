@@ -54,29 +54,8 @@ class Memory extends Model
 
         // Generate embedding after creation (async via queue would be better in production)
         static::created(function ($memory) {
-            try {
-                $embeddingService = app(\App\AI\Services\EmbeddingService::class);
-                $embeddingService->generateForMemory($memory);
-            } catch (\Exception $e) {
-                \Log::warning("Failed to generate embedding for memory {$memory->id}: {$e->getMessage()}");
-            }
-        });
-
-        // Clear cache on changes (if tagging is supported)
-        static::saved(function ($memory) {
-            try {
-                Cache::tags(['memory', 'search'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush(); // Fallback for cache stores without tag support
-            }
-        });
-
-        static::deleted(function ($memory) {
-            try {
-                Cache::tags(['memory', 'search'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
+            $embeddingService = app(\App\AI\Services\EmbeddingService::class);
+            $embeddingService->generateForMemory($memory);
         });
     }
 
@@ -211,7 +190,6 @@ class Memory extends Model
                 return $memory;
             });
         } catch (\Exception $e) {
-            \Log::warning("Semantic search failed, falling back to full-text: {$e->getMessage()}");
             return static::search($query, ['limit' => $limit]);
         }
     }

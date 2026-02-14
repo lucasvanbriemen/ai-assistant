@@ -24,23 +24,6 @@ class MemoryRelationship extends Model
     protected static function boot()
     {
         parent::boot();
-
-        // Clear cache on changes (if tagging is supported)
-        static::saved(function ($relationship) {
-            try {
-                Cache::tags(['relationships'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
-        });
-
-        static::deleted(function ($relationship) {
-            try {
-                Cache::tags(['relationships'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
-        });
     }
 
     public function fromEntity(): BelongsTo
