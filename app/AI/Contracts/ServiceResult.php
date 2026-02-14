@@ -19,16 +19,4 @@ class ServiceResult
     {
         return new self(success: false, message: $message);
     }
-
-    /**
-     * Convert to array
-     */
-    public function toArray(): array
-    {
-        return [
-            'success' => $this->success,
-            'data' => $this->data,
-            'message' => $this->message,
-        ];
-    }
 }
