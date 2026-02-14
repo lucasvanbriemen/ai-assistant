@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Http;
 
 class AutoMemoryExtractionService
 {
-    /**
-     * Extract structured information from content using AI
-     */
     public static function extract(string $content, array $metadata = [])
     {
         $prompt = self::buildExtractionPrompt($content, $metadata);
@@ -40,9 +37,6 @@ class AutoMemoryExtractionService
         ];
     }
 
-    /**
-     * Build extraction prompt for AI
-     */
     private static function buildExtractionPrompt(string $content, array $metadata): string
     {
         $source = $metadata['source'] ?? 'unknown';
