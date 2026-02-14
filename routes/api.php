@@ -10,8 +10,7 @@ Route::post('/chat/send', [ChatController::class, 'sendMessage'])->middleware(Is
 
 Route::prefix('webhooks')->group(function () {
     // Generic webhook handler
-    Route::post('/{service}', [WebhookController::class, 'handle'])
-        ->where('service', 'email|calendar|slack|spotify|generic');
+    Route::post('/{service}', [WebhookController::class, 'handle']);
 
     // Stats endpoint (monitoring)
     Route::get('/stats', [WebhookController::class, 'stats']);
