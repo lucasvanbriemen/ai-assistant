@@ -52,23 +52,16 @@ class MemoryService
             ]);
         }
 
-        // Link entities if provided
         if (!empty($params['entity_names'])) {
             self::linkEntitiesToMemory($memory, $params['entity_names']);
         }
 
-        // Attach tags if provided
         if (!empty($params['tags'])) {
             $memory->attachTags($params['tags']);
         }
 
-        $message = 'Note stored successfully';
-        if (!empty($params['reminder_at'])) {
-            $message .= " with reminder set for {$params['reminder_at']}";
-        }
-
         return ToolResult::success([
-            'message' => $message,
+            'message' => 'Note stored successfully',
             'memory_id' => $memory->id,
             'type' => $memory->type,
             'content_preview' => substr($memory->content, 0, 100),
