@@ -216,11 +216,29 @@ class MemoryEntity extends Model
             }
         }
 
-        // Try to find existing entity by name and type
-        $entity = static::where('name', 'LIKE', $data['name'])
-            ->where('entity_type', $data['entity_type'])
-            ->where('is_active', true)
-            ->first();
+        // Try to find existing entity - prioritize email matching over name matching
+        $entity = null;
+
+        // FIRST: Try to match by email if provided (email is unique identifier)
+        if ($email !== null) {
+            $entity = static::where('email', $email)
+                ->where('entity_type', $data['entity_type'])
+                ->where('is_active', true)
+                ->first();
+
+            // If found by email, update the name if it's more complete
+            if ($entity && strlen($data['name']) > strlen($entity->name)) {
+                $entity->name = $data['name'];
+            }
+        }
+
+        // SECOND: Fall back to name matching if no email or no match found
+        if ($entity === null) {
+            $entity = static::where('name', 'LIKE', $data['name'])
+                ->where('entity_type', $data['entity_type'])
+                ->where('is_active', true)
+                ->first();
+        }
 
         if ($entity) {
             // Update existing entity
