@@ -80,8 +80,6 @@ class Memory extends Model
         });
     }
 
-    // ==================== Relationships ====================
-
     public function entities(): BelongsToMany
     {
         return $this->belongsToMany(MemoryEntity::class, 'memory_entity_links', 'memory_id', 'entity_id')
@@ -99,8 +97,6 @@ class Memory extends Model
     {
         return $this->hasOne(MemoryEmbedding::class);
     }
-
-    // ==================== Query Scopes ====================
 
     public function scopeActive($query)
     {
@@ -144,8 +140,6 @@ class Memory extends Model
 
         return $query->orderBy('reminder_at', 'asc');
     }
-
-    // ==================== Search Methods ====================
 
     /**
      * Full-text search on content and summary
@@ -251,8 +245,6 @@ class Memory extends Model
             ->where('is_archived', false)
             ->first();
     }
-
-    // ==================== Helper Methods ====================
 
     /**
      * Record access for relevance tracking

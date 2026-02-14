@@ -42,15 +42,11 @@ class MemoryTag extends Model
         });
     }
 
-    // ==================== Relationships ====================
-
     public function memories(): BelongsToMany
     {
         return $this->belongsToMany(Memory::class, 'memory_tag_links', 'tag_id', 'memory_id')
             ->withTimestamps();
     }
-
-    // ==================== Static Methods ====================
 
     /**
      * Find or create a tag by name

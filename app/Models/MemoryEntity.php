@@ -62,8 +62,6 @@ class MemoryEntity extends Model
         });
     }
 
-    // ==================== Relationships ====================
-
     public function memories(): BelongsToMany
     {
         return $this->belongsToMany(Memory::class, 'memory_entity_links', 'entity_id', 'memory_id')
@@ -80,8 +78,6 @@ class MemoryEntity extends Model
     {
         return $this->hasMany(MemoryRelationship::class, 'to_entity_id');
     }
-
-    // ==================== Query Scopes ====================
 
     public function scopeActive($query)
     {
@@ -160,8 +156,6 @@ class MemoryEntity extends Model
         });
     }
 
-    // ==================== Search Methods ====================
-
     /**
      * Full-text search on entity name and description
      */
@@ -212,8 +206,6 @@ class MemoryEntity extends Model
 
         return $query->first();
     }
-
-    // ==================== Entity Management ====================
 
     /**
      * Find or create an entity - UNIVERSAL for ANY entity type
@@ -382,8 +374,6 @@ class MemoryEntity extends Model
             return Cache::remember($cacheKey, 600, $cacheCallback);
         }
     }
-
-    // ==================== Helper Methods ====================
 
     /**
      * Check if entity is currently active (temporal)

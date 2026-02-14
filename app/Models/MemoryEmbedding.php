@@ -21,14 +21,10 @@ class MemoryEmbedding extends Model
         'updated_at' => 'datetime',
     ];
 
-    // ==================== Relationships ====================
-
     public function memory(): BelongsTo
     {
         return $this->belongsTo(Memory::class);
     }
-
-    // ==================== Similarity Methods ====================
 
     /**
      * Calculate cosine similarity between this embedding and another

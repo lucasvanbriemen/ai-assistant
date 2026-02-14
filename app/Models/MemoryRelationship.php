@@ -43,8 +43,6 @@ class MemoryRelationship extends Model
         });
     }
 
-    // ==================== Relationships ====================
-
     public function fromEntity(): BelongsTo
     {
         return $this->belongsTo(MemoryEntity::class, 'from_entity_id');
@@ -54,8 +52,6 @@ class MemoryRelationship extends Model
     {
         return $this->belongsTo(MemoryEntity::class, 'to_entity_id');
     }
-
-    // ==================== Static Methods ====================
 
     /**
      * Find or create a relationship between two entities
