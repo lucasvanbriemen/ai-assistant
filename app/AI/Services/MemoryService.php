@@ -2,11 +2,10 @@
 
 namespace App\AI\Services;
 
-use App\AI\Contracts\ServiceResult;
 use App\Models\Memory;
 use App\Models\MemoryEntity;
 use App\Models\MemoryRelationship;
-use App\Models\MemoryTag;
+use App\AI\Contracts\ToolResult;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +15,7 @@ use Illuminate\Support\Facades\Log;
  */
 class MemoryService
 {
-    public static function storePerson(array $params): ServiceResult
+    public static function storePerson(array $params): ToolResult
     {
         try {
             DB::beginTransaction();
@@ -46,7 +45,7 @@ class MemoryService
 
             $action = $entity->wasRecentlyCreated ? 'stored' : 'updated';
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Successfully {$action} information about {$params['name']}",
                 'entity_id' => $entity->id,
                 'name' => $entity->name,
@@ -57,11 +56,11 @@ class MemoryService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to store person', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to store person information: ' . $e->getMessage());
+            return ToolResult::failure('Failed to store person information: ' . $e->getMessage());
         }
     }
 
-    public static function storeNote(array $params): ServiceResult
+    public static function storeNote(array $params): ToolResult
     {
         try {
             DB::beginTransaction();
@@ -70,7 +69,7 @@ class MemoryService
             $duplicate = Memory::findDuplicate($params['content']);
             if ($duplicate) {
                 DB::commit();
-                return ServiceResult::success([
+                return ToolResult::success([
                     'message' => 'This note already exists in memory',
                     'memory_id' => $duplicate->id,
                     'created_at' => $duplicate->created_at->toDateTimeString(),
@@ -104,7 +103,7 @@ class MemoryService
                 $message .= " with reminder set for {$params['reminder_at']}";
             }
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => $message,
                 'memory_id' => $memory->id,
                 'type' => $memory->type,
@@ -114,11 +113,11 @@ class MemoryService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to store note', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to store note: ' . $e->getMessage());
+            return ToolResult::failure('Failed to store note: ' . $e->getMessage());
         }
     }
 
-    public static function storeTranscript(array $params): ServiceResult
+    public static function storeTranscript(array $params): ToolResult
     {
         try {
             DB::beginTransaction();
@@ -157,7 +156,7 @@ class MemoryService
             // Clear caches
             self::clearMemoryCache();
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Transcript '{$params['title']}' stored successfully",
                 'memory_id' => $memory->id,
                 'content_length' => $contentLength,
@@ -168,11 +167,11 @@ class MemoryService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to store transcript', ['error' => $e->getMessage()]);
-            return ServiceResult::failure('Failed to store transcript: ' . $e->getMessage());
+            return ToolResult::failure('Failed to store transcript: ' . $e->getMessage());
         }
     }
 
-    public static function storePreference(array $params): ServiceResult
+    public static function storePreference(array $params): ToolResult
     {
         try {
             DB::beginTransaction();
@@ -200,7 +199,7 @@ class MemoryService
                 ]);
                 DB::commit();
 
-                return ServiceResult::success([
+                return ToolResult::success([
                     'message' => "Updated preference for {$params['category']}",
                     'memory_id' => $existing->id,
                     'category' => $params['category'],
@@ -225,7 +224,7 @@ class MemoryService
             // Clear caches
             self::clearMemoryCache();
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Preference stored: {$params['category']} = {$params['value']}",
                 'memory_id' => $memory->id,
                 'category' => $params['category'],
@@ -235,11 +234,11 @@ class MemoryService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to store preference', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to store preference: ' . $e->getMessage());
+            return ToolResult::failure('Failed to store preference: ' . $e->getMessage());
         }
     }
 
-    public static function createRelationship(array $params): ServiceResult
+    public static function createRelationship(array $params): ToolResult
     {
         try {
             DB::beginTransaction();
@@ -250,7 +249,7 @@ class MemoryService
 
             if (!$fromEntity || !$toEntity) {
                 DB::rollBack();
-                return ServiceResult::failure('One or both entities not found. Please store them first using store_person.');
+                return ToolResult::failure('One or both entities not found. Please store them first using store_person.');
             }
 
             // Create relationship
@@ -271,7 +270,7 @@ class MemoryService
             // Clear caches
             self::clearRelationshipCache();
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Relationship created: {$params['from_entity_name']} {$params['relationship_type']} {$params['to_entity_name']}",
                 'relationship_id' => $relationship->id,
                 'from_entity' => $fromEntity->name,
@@ -282,11 +281,11 @@ class MemoryService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create relationship', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to create relationship: ' . $e->getMessage());
+            return ToolResult::failure('Failed to create relationship: ' . $e->getMessage());
         }
     }
 
-    public static function recallInformation(array $params): ServiceResult
+    public static function recallInformation(array $params): ToolResult
     {
         try {
             $query = $params['query'];
@@ -308,7 +307,7 @@ class MemoryService
             }
 
             if ($results->isEmpty()) {
-                return ServiceResult::success([
+                return ToolResult::success([
                     'message' => 'No matching memories found',
                     'query' => $query,
                     'results' => [],
@@ -325,7 +324,7 @@ class MemoryService
                 ];
             })->values()->all();
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Found {$results->count()} matching memories",
                 'query' => $query,
                 'results' => $formattedResults,
@@ -333,17 +332,17 @@ class MemoryService
 
         } catch (\Exception $e) {
             Log::error('Failed to recall information', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to search memories: ' . $e->getMessage());
+            return ToolResult::failure('Failed to search memories: ' . $e->getMessage());
         }
     }
 
-    public static function getPersonDetails(array $params): ServiceResult
+    public static function getPersonDetails(array $params): ToolResult
     {
         try {
             $entity = MemoryEntity::findByName($params['name'], 'person');
 
             if (!$entity) {
-                return ServiceResult::failure("Person '{$params['name']}' not found in memory");
+                return ToolResult::failure("Person '{$params['name']}' not found in memory");
             }
 
             // Record access
@@ -352,18 +351,18 @@ class MemoryService
             // Get full details
             $details = $entity->getFullDetails(20);
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Retrieved details for {$params['name']}",
                 'person' => $details,
             ]);
 
         } catch (\Exception $e) {
             Log::error('Failed to get person details', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to retrieve person details: ' . $e->getMessage());
+            return ToolResult::failure('Failed to retrieve person details: ' . $e->getMessage());
         }
     }
 
-    public static function getEntityDetails(array $params): ServiceResult
+    public static function getEntityDetails(array $params): ToolResult
     {
         try {
             $name = $params['name'];
@@ -382,7 +381,7 @@ class MemoryService
 
             if ($entities->isEmpty()) {
                 $typeFilter = $entityType ? " (type: {$entityType})" : "";
-                return ServiceResult::failure("Entity '{$name}'{$typeFilter} not found in memory");
+                return ToolResult::failure("Entity '{$name}'{$typeFilter} not found in memory");
             }
 
             // If multiple matches, return all
@@ -397,7 +396,7 @@ class MemoryService
                     ];
                 })->values()->all();
 
-                return ServiceResult::success([
+                return ToolResult::success([
                     'message' => "Found {$entities->count()} entities matching '{$name}'",
                     'multiple_matches' => true,
                     'entities' => $results,
@@ -411,18 +410,18 @@ class MemoryService
             // Get full details including linked memories
             $details = $entity->getFullDetails(20);
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Retrieved details for {$entity->name} ({$entity->entity_type})",
                 'entity' => $details,
             ]);
 
         } catch (\Exception $e) {
             Log::error('Failed to get entity details', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to retrieve entity details: ' . $e->getMessage());
+            return ToolResult::failure('Failed to retrieve entity details: ' . $e->getMessage());
         }
     }
 
-    public static function getUpcomingReminders(array $params): ServiceResult
+    public static function getUpcomingReminders(array $params): ToolResult
     {
         try {
             $timeframe = $params['timeframe'] ?? 'all';
@@ -450,7 +449,7 @@ class MemoryService
             $reminders = $query->get();
 
             if ($reminders->isEmpty()) {
-                return ServiceResult::success([
+                return ToolResult::success([
                     'message' => "No reminders found for {$timeframe}",
                     'timeframe' => $timeframe,
                     'results' => [],
@@ -468,7 +467,7 @@ class MemoryService
                 ];
             })->values()->all();
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Found {$reminders->count()} upcoming reminders",
                 'timeframe' => $timeframe,
                 'results' => $formattedResults,
@@ -476,11 +475,11 @@ class MemoryService
 
         } catch (\Exception $e) {
             Log::error('Failed to get reminders', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to retrieve reminders: ' . $e->getMessage());
+            return ToolResult::failure('Failed to retrieve reminders: ' . $e->getMessage());
         }
     }
 
-    public static function listAllPeople(array $params): ServiceResult
+    public static function listAllPeople(array $params): ToolResult
     {
         try {
             $limit = $params['limit'] ?? 50;
@@ -517,7 +516,7 @@ class MemoryService
             if ($people->isEmpty()) {
                 $filter = !empty($params['entity_subtype']) ? " ({$params['entity_subtype']})" : '';
                 $temporal = $temporalFilter !== 'all' ? " {$temporalFilter}" : '';
-                return ServiceResult::success([
+                return ToolResult::success([
                     'message' => "No{$temporal} people found{$filter}",
                     'count' => 0,
                     'results' => [],
@@ -544,7 +543,7 @@ class MemoryService
             $filter = !empty($params['entity_subtype']) ? " ({$params['entity_subtype']})" : '';
             $temporal = $temporalFilter !== 'all' ? " {$temporalFilter}" : '';
 
-            return ServiceResult::success([
+            return ToolResult::success([
                 'message' => "Found {$people->count()}{$temporal} people{$filter}",
                 'count' => $people->count(),
                 'temporal_filter' => $temporalFilter,
@@ -553,7 +552,7 @@ class MemoryService
 
         } catch (\Exception $e) {
             Log::error('Failed to list people', ['error' => $e->getMessage(), 'params' => $params]);
-            return ServiceResult::failure('Failed to list people: ' . $e->getMessage());
+            return ToolResult::failure('Failed to list people: ' . $e->getMessage());
         }
     }
 
