@@ -16,46 +16,11 @@ class WebhookController extends Controller
      */
     public function handle(Request $request, string $service): JsonResponse
     {
-        // Validate service is supported
-        $supportedServices = ['email', 'calendar', 'slack', 'spotify', 'generic'];
-        if (!in_array($service, $supportedServices)) {
-            return response()->json([
-                'success' => false,
-                'message' => "Unsupported service: {$service}"
-            ], 400);
+        if ($this->isInvalidRequest($request)) {
+            return response()->json([ 'success' => false, 'message' => 'Authentication failed'], 401);
         }
 
-        // Authenticate request
-        $authResult = $this->authenticateRequest($request, $service);
-        if (!$authResult['success']) {
-            Log::warning("Webhook authentication failed for service: {$service}", [
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication failed'
-            ], 401);
-        }
-
-        // Get payload
         $payload = $request->all();
-
-        // Special case: Slack URL verification challenge
-        if ($service === 'slack' && isset($payload['type']) && $payload['type'] === 'url_verification') {
-            return response()->json([
-                'challenge' => $payload['challenge']
-            ]);
-        }
-
-        // Validate payload is not empty
-        if (empty($payload)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Empty payload'
-            ], 400);
-        }
 
         // Log the webhook
         try {
@@ -95,38 +60,16 @@ class WebhookController extends Controller
     /**
      * Authenticate webhook request using token
      */
-    private function authenticateRequest(Request $request, string $service): array
+    private function isInvalidRequest(Request $request)
     {
         // Get token from header or query param
-        $token = $request->header('X-Webhook-Token')
-               ?? $request->input('token')
-               ?? null;
-
-        if (!$token) {
-            return ['success' => false, 'message' => 'No token provided'];
-        }
-
-        // Get expected token from env
-        $expectedToken = $this->getServiceToken($service);
-
-        if (!$expectedToken) {
-            return ['success' => false, 'message' => 'Service not configured'];
-        }
+        $token = $request->header('X-Webhook-Token') ?? $request->input('token') ?? '';
 
         // Compare tokens (timing-safe comparison)
-        if (!hash_equals($expectedToken, $token)) {
-            return ['success' => false, 'message' => 'Invalid token'];
+        if (!hash_equals(env('AGENT_TOKEN'), $token)) {
+            return true;
         }
 
-        return ['success' => true];
-    }
-
-    /**
-     * Get webhook token for a service from environment
-     */
-    private function getServiceToken(string $service): ?string
-    {
-        $envKey = 'WEBHOOK_' . strtoupper($service) . '_TOKEN';
-        return env($envKey);
+        return false;
     }
 }
