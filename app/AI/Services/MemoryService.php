@@ -39,55 +39,49 @@ class MemoryService
 
     public static function storeNote(array $params): ToolResult
     {
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            // Check for duplicate
-            $duplicate = Memory::findDuplicate($params['content']);
-            if ($duplicate) {
-                DB::commit();
-                return ToolResult::success([
-                    'message' => 'This note already exists in memory',
-                    'memory_id' => $duplicate->id,
-                    'created_at' => $duplicate->created_at->toDateTimeString(),
-                ]);
-            }
-
-            $memory = Memory::create([
-                'type' => $params['type'] ?? 'note',
-                'content' => $params['content'],
-                'reminder_at' => !empty($params['reminder_at']) ? $params['reminder_at'] : null,
-                'relevance_score' => 1.0,
-            ]);
-
-            // Link entities if provided
-            if (!empty($params['entity_names'])) {
-                self::linkEntitiesToMemory($memory, $params['entity_names']);
-            }
-
-            // Attach tags if provided
-            if (!empty($params['tags'])) {
-                $memory->attachTags($params['tags']);
-            }
-
+        // Check for duplicate
+        $duplicate = Memory::findDuplicate($params['content']);
+        if ($duplicate) {
             DB::commit();
-
-            $message = 'Note stored successfully';
-            if (!empty($params['reminder_at'])) {
-                $message .= " with reminder set for {$params['reminder_at']}";
-            }
-
             return ToolResult::success([
-                'message' => $message,
-                'memory_id' => $memory->id,
-                'type' => $memory->type,
-                'content_preview' => substr($memory->content, 0, 100),
+                'message' => 'This note already exists in memory',
+                'memory_id' => $duplicate->id,
+                'created_at' => $duplicate->created_at->toDateTimeString(),
             ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ToolResult::failure('Failed to store note: ' . $e->getMessage());
         }
+
+        $memory = Memory::create([
+            'type' => $params['type'] ?? 'note',
+            'content' => $params['content'],
+            'reminder_at' => !empty($params['reminder_at']) ? $params['reminder_at'] : null,
+            'relevance_score' => 1.0,
+        ]);
+
+        // Link entities if provided
+        if (!empty($params['entity_names'])) {
+            self::linkEntitiesToMemory($memory, $params['entity_names']);
+        }
+
+        // Attach tags if provided
+        if (!empty($params['tags'])) {
+            $memory->attachTags($params['tags']);
+        }
+
+        DB::commit();
+
+        $message = 'Note stored successfully';
+        if (!empty($params['reminder_at'])) {
+            $message .= " with reminder set for {$params['reminder_at']}";
+        }
+
+        return ToolResult::success([
+            'message' => $message,
+            'memory_id' => $memory->id,
+            'type' => $memory->type,
+            'content_preview' => substr($memory->content, 0, 100),
+        ]);
     }
 
     public static function storeTranscript(array $params): ToolResult
