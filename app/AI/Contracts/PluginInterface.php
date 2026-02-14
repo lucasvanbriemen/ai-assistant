@@ -21,8 +21,6 @@ abstract class PluginInterface
         $this->apiConfig = $this->getApiConfig();
     }
 
-    abstract public function getName();
-    abstract public function getDescription();
     abstract public function getTools();
     abstract public function executeTool(string $toolName, array $parameters);
 
