@@ -17,7 +17,6 @@ class MemoryPlugin extends PluginInterface
 
     protected function getApiConfig(): ApiConfig
     {
-        // No external API needed - uses database directly
         return new ApiConfig(
             baseUrl: '',
             endpoints: []
@@ -37,7 +36,6 @@ class MemoryPlugin extends PluginInterface
     public function getTools()
     {
         return [
-            // ========== STORAGE TOOLS ==========
             [
                 'name' => 'store_person',
                 'description' => 'Store or update information about a person (colleague, family, friend, contact)',
@@ -185,7 +183,6 @@ class MemoryPlugin extends PluginInterface
                 ],
             ],
 
-            // ========== RETRIEVAL TOOLS ==========
             [
                 'name' => 'recall_information',
                 'description' => 'Search memories using natural language. Supports semantic search for intelligent retrieval',

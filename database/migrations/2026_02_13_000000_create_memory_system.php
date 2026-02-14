@@ -13,20 +13,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Main memories table - stores notes, reminders, facts, preferences, transcripts
         Schema::create('memories', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable()->index(); // For future multi-user support
-            $table->string('type', 50)->index(); // note, reminder, fact, preference, transcript, etc.
-            $table->text('content'); // Main content
-            $table->text('summary')->nullable(); // AI-generated summary for large content
-            $table->integer('content_length')->default(0); // Character count
-            $table->string('content_hash', 64)->nullable()->index(); // SHA-256 for duplicate detection
-            $table->json('metadata')->nullable(); // Flexible JSON for type-specific data
-            $table->decimal('relevance_score', 5, 2)->default(1.00)->index(); // Importance/relevance (0-100)
-            $table->timestamp('reminder_at')->nullable()->index(); // For time-based reminders
-            $table->boolean('is_archived')->default(false)->index(); // Soft delete alternative
-            $table->timestamp('last_accessed_at')->nullable(); // Track usage for relevance decay
+            $table->unsignedBigInteger('user_id')->nullable()->index();
+            $table->string('type', 50)->index();
+            $table->text('content');
+            $table->text('summary')->nullable();
+            $table->integer('content_length')->default(0);
+            $table->string('content_hash', 64)->nullable()->index();
+            $table->json('metadata')->nullable();
+            $table->decimal('relevance_score', 5, 2)->default(1.00)->index();
+            $table->timestamp('reminder_at')->nullable()->index();
+            $table->boolean('is_archived')->default(false)->index();
+            $table->timestamp('last_accessed_at')->nullable();
             $table->timestamps();
 
             // Composite indexes for common queries
