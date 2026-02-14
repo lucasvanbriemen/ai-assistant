@@ -303,8 +303,6 @@ class MemoryPlugin extends PluginInterface
         };
     }
 
-    // ==================== STORAGE METHODS ====================
-
     private function storePerson(array $params): ToolResult
     {
         $result = MemoryService::storePerson($params);
