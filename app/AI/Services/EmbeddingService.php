@@ -11,14 +11,13 @@ use Illuminate\Support\Facades\Log;
 class EmbeddingService
 {
     private string $apiKey;
-    private string $model;
-    private int $dimensions;
+
+    private const MODEL = 'text-embedding-3-small';
+    private const DIMENSIONS = 1536;
 
     public function __construct()
     {
         $this->apiKey = config('ai.openai.api_key');
-        $this->model = config('ai.embedding_model', 'text-embedding-3-small');
-        $this->dimensions = config('ai.embedding_dimensions', 1536);
     }
 
     /**
@@ -37,7 +36,7 @@ class EmbeddingService
                 ])
                 ->timeout(30)
                 ->post('https://api.openai.com/v1/embeddings', [
-                    'model' => $this->model,
+                    'model' => self::MODEL,
                     'input' => $text,
                 ]);
 
@@ -75,7 +74,7 @@ class EmbeddingService
             ])
             ->timeout(60)
             ->post('https://api.openai.com/v1/embeddings', [
-                'model' => $this->model,
+                'model' => self::MODEL,
                 'input' => $texts,
             ]);
 
@@ -139,8 +138,8 @@ class EmbeddingService
             ['memory_id' => $memory->id],
             [
                 'embedding' => $embedding,
-                'model' => $this->model,
-                'dimensions' => $this->dimensions,
+                'model' => self::MODEL,
+                'dimensions' => self::DIMENSIONS,
             ]
         );
     }
