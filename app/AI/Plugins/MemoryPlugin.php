@@ -17,10 +17,7 @@ class MemoryPlugin extends PluginInterface
 
     protected function getApiConfig(): ApiConfig
     {
-        return new ApiConfig(
-            baseUrl: '',
-            endpoints: []
-        );
+        return new ApiConfig();
     }
 
     public function getName()

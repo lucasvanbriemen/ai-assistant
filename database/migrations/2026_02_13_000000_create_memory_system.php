@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Comprehensive memory system with entities, relationships, embeddings, and temporal tracking.
-     */
     public function up(): void
     {
         Schema::create('memories', function (Blueprint $table) {

@@ -10,7 +10,7 @@ class ApiConfig
     public string $baseUrl;
     public array $endpoints;
 
-    public function __construct($baseUrl, $endpoints = [])
+    public function __construct($baseUrl = '', $endpoints = [])
     {
         $this->baseUrl = $baseUrl;
         $this->endpoints = $endpoints;
