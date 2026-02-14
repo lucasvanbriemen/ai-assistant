@@ -22,26 +22,17 @@ class EmbeddingService
         $cacheKey = 'embedding:' . hash('sha256', $text);
 
         return Cache::remember($cacheKey, 86400, function () use ($text) {
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
-                    'Content-Type' => 'application/json',
-                ])
-                ->post('https://api.openai.com/v1/embeddings', [
-                    'model' => self::MODEL,
-                    'input' => $text,
-                ]);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
+                'Content-Type' => 'application/json',
+            ])
+            ->post('https://api.openai.com/v1/embeddings', [
+                'model' => self::MODEL,
+                'input' => $text,
+            ]);
 
-                if (!$response->successful()) {
-                    throw new \Exception('OpenAI API error: ' . $response->body());
-                }
-
-                $data = $response->json();
-                return $data['data'][0]['embedding'];
-
-            } catch (\Exception $e) {
-                throw $e;
-            }
+            $data = $response->json();
+            return $data['data'][0]['embedding'];
         });
     }
 
