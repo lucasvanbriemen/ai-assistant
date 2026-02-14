@@ -63,8 +63,6 @@ class WebhookController extends Controller
                 'service' => $service,
                 'payload' => $payload,
                 'status' => WebhookLog::STATUS_PENDING,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
             ]);
 
             Log::info("Webhook received for service: {$service}", [

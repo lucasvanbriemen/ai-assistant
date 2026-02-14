@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('status', 20)->default('pending')->index();
             $table->text('error_message')->nullable();
             $table->string('ip_address', 45)->nullable();
-            $table->string('user_agent')->nullable();
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
