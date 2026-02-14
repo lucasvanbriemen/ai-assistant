@@ -14,7 +14,6 @@ return new class extends Migration
             $table->json('payload');
             $table->string('status', 20)->default('pending')->index();
             $table->text('error_message')->nullable();
-            $table->string('ip_address', 45)->nullable();
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
