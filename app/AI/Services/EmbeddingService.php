@@ -173,41 +173,4 @@ class EmbeddingService
         // Return top N after filtering
         return array_slice($results, 0, $limit);
     }
-
-    /**
-     * Regenerate embeddings for all memories (maintenance task)
-     */
-    public function regenerateAll(int $batchSize = 50): void
-    {
-        Memory::where('is_archived', false)
-            ->chunk($batchSize, function ($memories) {
-                foreach ($memories as $memory) {
-                    try {
-                        $this->generateForMemory($memory);
-                        Log::info("Generated embedding for memory {$memory->id}");
-                    } catch (\Exception $e) {
-                        Log::error("Failed to generate embedding for memory {$memory->id}: {$e->getMessage()}");
-                    }
-                }
-            });
-    }
-
-    /**
-     * Get embedding service statistics
-     */
-    public function getStatistics(): array
-    {
-        $totalMemories = Memory::where('is_archived', false)->count();
-        $totalEmbeddings = MemoryEmbedding::count();
-        $missingEmbeddings = $totalMemories - $totalEmbeddings;
-
-        return [
-            'total_memories' => $totalMemories,
-            'total_embeddings' => $totalEmbeddings,
-            'missing_embeddings' => max(0, $missingEmbeddings),
-            'coverage_percentage' => $totalMemories > 0 ? round(($totalEmbeddings / $totalMemories) * 100, 2) : 0,
-            'model' => $this->model,
-            'dimensions' => $this->dimensions,
-        ];
-    }
 }
