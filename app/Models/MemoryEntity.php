@@ -52,14 +52,6 @@ class MemoryEntity extends Model
                 Cache::flush();
             }
         });
-
-        static::deleted(function ($entity) {
-            try {
-                Cache::tags(['memory', 'entities'])->flush();
-            } catch (\BadMethodCallException $e) {
-                Cache::flush();
-            }
-        });
     }
 
     public function memories(): BelongsToMany
