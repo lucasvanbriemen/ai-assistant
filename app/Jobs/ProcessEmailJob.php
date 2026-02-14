@@ -32,11 +32,7 @@ class ProcessEmailJob implements ShouldQueue
     {
         try {
             // STEP 1: Ingest and normalize email data
-            $ingestResult = EventIngestionService::processEmail($this->webhookLog->payload);
-            if (!$ingestResult->success) {
-                throw new \Exception("Failed to ingest email: " . $ingestResult->message);
-            }
-            $emailData = $ingestResult->data;
+            $emailData = EventIngestionService::processEmail($this->webhookLog->payload);
 
             // STEP 2: Enrich with entity data
             $enrichedData = DataEnrichmentService::enrichEmail($emailData);
@@ -59,16 +55,10 @@ class ProcessEmailJob implements ShouldQueue
             $content .= "DATE: {$enrichedData['date']}\n\n";
             $content .= "BODY:\n{$enrichedData['body_clean']}";
 
-            $extractionResult = AutoMemoryExtractionService::extract($content, [
+            $extracted = AutoMemoryExtractionService::extract($content, [
                 'source' => 'email',
                 'sender' => $enrichedData['sender_name'],
             ]);
-
-            if (!$extractionResult->success) {
-                throw new \Exception("Failed to extract memories: " . $extractionResult->message);
-            }
-
-            $extracted = $extractionResult->data;
 
             // STEP 5: Store memory with extracted information
             $entityNames = array_merge(

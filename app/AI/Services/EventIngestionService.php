@@ -2,11 +2,9 @@
 
 namespace App\AI\Services;
 
-use App\AI\Contracts\ServiceResult;
-
 class EventIngestionService
 {
-    public static function processEmail(array $rawData): ServiceResult
+    public static function processEmail(array $rawData)
     {
         $normalized = [
             'from' => $rawData['from'] ?? $rawData['sender'] ?? 'unknown',
@@ -18,6 +16,6 @@ class EventIngestionService
 
         $normalized['body_clean'] = strip_tags($normalized['body']);
 
-        return ServiceResult::success($normalized);
+        return $normalized;
     }
 }

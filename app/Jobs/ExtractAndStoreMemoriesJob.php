@@ -26,15 +26,9 @@ class ExtractAndStoreMemoriesJob implements ShouldQueue
         $content = is_string($this->data) ? $this->data : json_encode($this->data, JSON_PRETTY_PRINT);
 
         // Use AI to extract structured information
-        $extractionResult = AutoMemoryExtractionService::extract($content, [
+        $extracted = AutoMemoryExtractionService::extract($content, [
             'source' => $this->source,
         ]);
-
-        if (!$extractionResult->success) {
-            throw new \Exception("Failed to extract memories: " . $extractionResult->message);
-        }
-
-        $extracted = $extractionResult->data;
 
         // Store memory with extracted information
         $result = MemoryService::storeNote([

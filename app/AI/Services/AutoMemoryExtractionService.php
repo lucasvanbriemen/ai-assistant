@@ -2,7 +2,6 @@
 
 namespace App\AI\Services;
 
-use App\AI\Contracts\ServiceResult;
 use Illuminate\Support\Facades\Http;
 
 class AutoMemoryExtractionService
@@ -10,18 +9,18 @@ class AutoMemoryExtractionService
     /**
      * Extract structured information from content using AI
      */
-    public static function extract(string $content, array $metadata = []): ServiceResult
+    public static function extract(string $content, array $metadata = [])
     {
         $result = self::extractWithAI($content, $metadata);
 
-        return ServiceResult::success([
+        return [
             'people' => $result['people'] ?? [],
             'tasks' => $result['tasks'] ?? [],
             'facts' => $result['facts'] ?? [],
             'relationships' => $result['relationships'] ?? [],
             'summary' => $result['summary'] ?? '',
             'importance' => $result['importance'] ?? 0.5,
-        ]);
+        ];
     }
 
     /**
