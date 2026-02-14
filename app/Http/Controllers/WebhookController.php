@@ -11,13 +11,10 @@ use Illuminate\Support\Facades\Validator;
 
 class WebhookController extends Controller
 {
-    /**
-     * Handle incoming webhook for a specific service
-     */
     public function handle(Request $request, string $service): JsonResponse
     {
-        if ($this->isInvalidRequest($request)) {
-            return response()->json([ 'success' => false, 'message' => 'Authentication failed'], 401);
+        if (!$this->isValidRequest($request)) {
+            return response()->json(['success' => false, 'message' => 'Authentication failed'], 401);
         }
 
         $payload = $request->all();
@@ -38,16 +35,11 @@ class WebhookController extends Controller
         ], 200);
     }
 
-    /**
-     * Authenticate webhook request using token
-     */
-    private function isInvalidRequest(Request $request)
+    private function isValidRequest(Request $request)
     {
-        // Get token from header or query param
         $token = $request->header('X-Webhook-Token') ?? $request->input('token') ?? '';
 
-        // Compare tokens (timing-safe comparison)
-        if (!hash_equals(env('AGENT_TOKEN'), $token)) {
+        if (env('AGENT_TOKEN') === $token) {
             return true;
         }
 
