@@ -361,4 +361,9 @@ return [
 
     // Maximum tokens for response
     'max_tokens' => env('AI_MAX_TOKENS', 1024),
+
+    // Embedding search configuration (scalability)
+    // When embeddings exceed this count, use chunked processing instead of loading all
+    // Recommended: 5000 (can adjust based on server memory)
+    'max_embeddings_for_search' => env('AI_MAX_EMBEDDINGS_SEARCH', 5000),
 ];

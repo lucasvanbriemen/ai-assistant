@@ -173,12 +173,22 @@ class Memory extends Model
 
     /**
      * Semantic search using vector embeddings
+     * Uses hybrid approach by default: full-text first (fast), then semantic (precise)
+     * Automatically falls back to full-text only if embeddings fail
      */
-    public static function searchSemantic(string $query, int $limit = 10)
+    public static function searchSemantic(string $query, int $limit = 10, bool $hybrid = true)
     {
         try {
             $embeddingService = app(\App\AI\Services\EmbeddingService::class);
-            $results = $embeddingService->searchMemories($query, $limit);
+            $results = $embeddingService->searchMemories($query, $limit, [
+                'hybrid' => $hybrid
+            ]);
+
+            // If no results or empty, fallback to full-text search
+            if (empty($results)) {
+                \Log::info("Semantic search returned no results, falling back to full-text search");
+                return static::search($query, ['limit' => $limit]);
+            }
 
             // Extract memory objects from results
             return collect($results)->map(function ($result) {
@@ -187,6 +197,7 @@ class Memory extends Model
                 return $memory;
             });
         } catch (\Exception $e) {
+            \Log::warning("Semantic search failed: {$e->getMessage()}, falling back to full-text search");
             return static::search($query, ['limit' => $limit]);
         }
     }
