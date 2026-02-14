@@ -6,7 +6,6 @@ use App\Models\Memory;
 use App\Models\MemoryEntity;
 use App\Models\MemoryRelationship;
 use App\AI\Contracts\ToolResult;
-use Illuminate\Support\Facades\DB;
 
 class MemoryService
 {
@@ -37,17 +36,17 @@ class MemoryService
 
     public static function storeNote(array $params): ToolResult
     {
-        $memory = Memory::firstOrCreate(['content_hash' => hash('sha256', $params['content']), 'is_archived'  => false], [
-            'type'            => $params['type'] ?? 'note',
-            'content'         => $params['content'],
-            'reminder_at'     => $params['reminder_at'] ?? null,
+        $memory = Memory::firstOrCreate(['content_hash' => hash('sha256', $params['content']), 'is_archived' => false], [
+            'type' => $params['type'] ?? 'note',
+            'content' => $params['content'],
+            'reminder_at' => $params['reminder_at'] ?? null,
             'relevance_score' => 1.0,
         ]);
 
         if (!$memory->wasRecentlyCreated) {
             return ToolResult::success([
-                'message'    => 'This note already exists in memory',
-                'memory_id'  => $memory->id,
+                'message' => 'This note already exists in memory',
+                'memory_id' => $memory->id,
                 'created_at' => $memory->created_at->toDateTimeString(),
             ]);
         }
@@ -167,7 +166,6 @@ class MemoryService
         $toEntity = MemoryEntity::findByName($params['to_entity_name']);
 
         if (!$fromEntity || !$toEntity) {
-            DB::rollBack();
             return ToolResult::failure('One or both entities not found. Please store them first using store_person.');
         }
 
