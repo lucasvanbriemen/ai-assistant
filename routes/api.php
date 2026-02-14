@@ -2,6 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\IsLoggedIn;
 
+// Chat endpoint
 Route::post('/chat/send', [ChatController::class, 'sendMessage'])->middleware(IsLoggedIn::class);
+
+// Webhook endpoints with rate limiting (100 requests per minute per service)
+Route::prefix('webhooks')->middleware('throttle:100,1')->group(function () {
+    // Generic webhook handler
+    Route::post('/{service}', [WebhookController::class, 'handle'])
+        ->where('service', 'email|calendar|slack|spotify|generic');
+
+    // Stats endpoint (monitoring)
+    Route::get('/stats', [WebhookController::class, 'stats']);
+
+    // Health check endpoint
+    Route::get('/health', [WebhookController::class, 'health']);
+});
