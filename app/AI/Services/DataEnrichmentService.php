@@ -2,8 +2,6 @@
 
 namespace App\AI\Services;
 
-use App\AI\Contracts\ServiceResult;
-use App\Models\MemoryEntity;
 
 class DataEnrichmentService
 {

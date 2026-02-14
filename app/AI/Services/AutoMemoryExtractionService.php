@@ -19,7 +19,7 @@ class AutoMemoryExtractionService
             'tasks' => $result['tasks'] ?? [],
             'facts' => $result['facts'] ?? [],
             'relationships' => $result['relationships'] ?? [],
-            'summary' => $result['summary'] ?? self::generateSimpleSummary($content),
+            'summary' => $result['summary'] ?? '',
             'importance' => $result['importance'] ?? 0.5,
         ]);
     }
@@ -42,10 +42,6 @@ class AutoMemoryExtractionService
                 'temperature' => 0.3,
                 'max_tokens' => 500,
             ]);
-
-        if (!$response->successful()) {
-            throw new \Exception("OpenAI API request failed: " . $response->body());
-        }
 
         $result = $response->json();
         $extractedText = $result['choices'][0]['message']['content'] ?? '{}';
@@ -78,20 +74,5 @@ Extract and return as JSON:
 
 Return ONLY the JSON, no other text.
 PROMPT;
-    }
-
-    /**
-     * Generate simple summary
-     */
-    private static function generateSimpleSummary(string $content): string
-    {
-        $sentences = preg_split('/[.!?]+/', $content);
-        $firstSentence = trim($sentences[0] ?? '');
-
-        if (strlen($firstSentence) > 200) {
-            $firstSentence = substr($firstSentence, 0, 197) . '...';
-        }
-
-        return $firstSentence;
     }
 }
