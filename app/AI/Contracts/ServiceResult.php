@@ -31,16 +31,4 @@ class ServiceResult
             'message' => $this->message,
         ];
     }
-
-    /**
-     * Convert to ToolResult for plugin compatibility
-     */
-    public function toToolResult(): ToolResult
-    {
-        return new ToolResult(
-            success: $this->success,
-            data: $this->data,
-            error: $this->message,
-        );
-    }
 }
