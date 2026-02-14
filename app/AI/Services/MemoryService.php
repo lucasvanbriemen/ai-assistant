@@ -39,12 +39,9 @@ class MemoryService
 
     public static function storeNote(array $params): ToolResult
     {
-        DB::beginTransaction();
-
         // Check for duplicate
         $duplicate = Memory::findDuplicate($params['content']);
         if ($duplicate) {
-            DB::commit();
             return ToolResult::success([
                 'message' => 'This note already exists in memory',
                 'memory_id' => $duplicate->id,
@@ -69,8 +66,6 @@ class MemoryService
             $memory->attachTags($params['tags']);
         }
 
-        DB::commit();
-
         $message = 'Note stored successfully';
         if (!empty($params['reminder_at'])) {
             $message .= " with reminder set for {$params['reminder_at']}";
@@ -86,59 +81,45 @@ class MemoryService
 
     public static function storeTranscript(array $params): ToolResult
     {
-        try {
-            DB::beginTransaction();
+        $content = $params['content'];
+        $contentLength = mb_strlen($content);
 
-            $content = $params['content'];
-            $contentLength = mb_strlen($content);
-
-            // Generate summary for long content (would use AI in production)
-            $summary = null;
-            if ($contentLength > 1000) {
-                $summary = substr($content, 0, 500) . '... [Transcript truncated]';
-            }
-
-            // Store metadata including title and date
-            $metadata = [
-                'title' => $params['title'],
-                'date' => $params['date'] ?? now()->toDateString(),
-                'attendee_count' => count($params['attendees'] ?? []),
-            ];
-
-            $memory = Memory::create([
-                'type' => 'transcript',
-                'content' => $content,
-                'summary' => $summary,
-                'metadata' => $metadata,
-                'relevance_score' => 1.0,
-            ]);
-
-            // Link attendees
-            if (!empty($params['attendees'])) {
-                self::linkAttendeesToMemory($memory, $params['attendees']);
-            }
-
-            DB::commit();
-
-            return ToolResult::success([
-                'message' => "Transcript '{$params['title']}' stored successfully",
-                'memory_id' => $memory->id,
-                'content_length' => $contentLength,
-                'attendees' => $params['attendees'] ?? [],
-                'has_summary' => !empty($summary),
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ToolResult::failure('Failed to store transcript: ' . $e->getMessage());
+        $summary = null;
+        if ($contentLength > 1000) {
+            $summary = substr($content, 0, 500) . '... [Transcript truncated]';
         }
+
+        // Store metadata including title and date
+        $metadata = [
+            'title' => $params['title'],
+            'date' => $params['date'] ?? now()->toDateString(),
+            'attendee_count' => count($params['attendees'] ?? []),
+        ];
+
+        $memory = Memory::create([
+            'type' => 'transcript',
+            'content' => $content,
+            'summary' => $summary,
+            'metadata' => $metadata,
+            'relevance_score' => 1.0,
+        ]);
+
+        // Link attendees
+        if (!empty($params['attendees'])) {
+            self::linkAttendeesToMemory($memory, $params['attendees']);
+        }
+
+        return ToolResult::success([
+            'message' => "Transcript '{$params['title']}' stored successfully",
+            'memory_id' => $memory->id,
+            'content_length' => $contentLength,
+            'attendees' => $params['attendees'] ?? [],
+            'has_summary' => !empty($summary),
+        ]);
     }
 
     public static function storePreference(array $params): ToolResult
     {
-        try {
-            DB::beginTransaction();
-
             $content = "{$params['category']}: {$params['value']}";
             if (!empty($params['notes'])) {
                 $content .= " - {$params['notes']}";
@@ -160,7 +141,6 @@ class MemoryService
                         'notes' => $params['notes'] ?? null,
                     ],
                 ]);
-                DB::commit();
 
                 return ToolResult::success([
                     'message' => "Updated preference for {$params['category']}",
@@ -182,7 +162,6 @@ class MemoryService
                 'relevance_score' => 1.0,
             ]);
 
-            DB::commit();
 
             return ToolResult::success([
                 'message' => "Preference stored: {$params['category']} = {$params['value']}",
@@ -190,18 +169,10 @@ class MemoryService
                 'category' => $params['category'],
                 'value' => $params['value'],
             ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ToolResult::failure('Failed to store preference: ' . $e->getMessage());
-        }
     }
 
     public static function createRelationship(array $params): ToolResult
     {
-        try {
-            DB::beginTransaction();
-
             // Find or create entities
             $fromEntity = MemoryEntity::findByName($params['from_entity_name']);
             $toEntity = MemoryEntity::findByName($params['to_entity_name']);
@@ -224,8 +195,6 @@ class MemoryService
                 $metadata
             );
 
-            DB::commit();
-
             return ToolResult::success([
                 'message' => "Relationship created: {$params['from_entity_name']} {$params['relationship_type']} {$params['to_entity_name']}",
                 'relationship_id' => $relationship->id,
@@ -233,16 +202,10 @@ class MemoryService
                 'to_entity' => $toEntity->name,
                 'type' => $params['relationship_type'],
             ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ToolResult::failure('Failed to create relationship: ' . $e->getMessage());
-        }
     }
 
     public static function recallInformation(array $params): ToolResult
     {
-        try {
             $query = $params['query'];
             $limit = $params['limit'] ?? 10;
 
@@ -284,15 +247,10 @@ class MemoryService
                 'query' => $query,
                 'results' => $formattedResults,
             ]);
-
-        } catch (\Exception $e) {
-            return ToolResult::failure('Failed to search memories: ' . $e->getMessage());
-        }
     }
 
     public static function getPersonDetails(array $params): ToolResult
     {
-        try {
             $entity = MemoryEntity::findByName($params['name'], 'person');
 
             if (!$entity) {
@@ -309,15 +267,10 @@ class MemoryService
                 'message' => "Retrieved details for {$params['name']}",
                 'person' => $details,
             ]);
-
-        } catch (\Exception $e) {
-            return ToolResult::failure('Failed to retrieve person details: ' . $e->getMessage());
-        }
     }
 
     public static function getEntityDetails(array $params): ToolResult
     {
-        try {
             $name = $params['name'];
             $entityType = $params['entity_type'] ?? null;
 
@@ -367,15 +320,10 @@ class MemoryService
                 'message' => "Retrieved details for {$entity->name} ({$entity->entity_type})",
                 'entity' => $details,
             ]);
-
-        } catch (\Exception $e) {
-            return ToolResult::failure('Failed to retrieve entity details: ' . $e->getMessage());
-        }
     }
 
     public static function getUpcomingReminders(array $params): ToolResult
     {
-        try {
             $timeframe = $params['timeframe'] ?? 'all';
             $startDate = $params['start_date'] ?? null;
             $endDate = $params['end_date'] ?? null;
@@ -424,15 +372,10 @@ class MemoryService
                 'timeframe' => $timeframe,
                 'results' => $formattedResults,
             ]);
-
-        } catch (\Exception $e) {
-            return ToolResult::failure('Failed to retrieve reminders: ' . $e->getMessage());
-        }
     }
 
     public static function listAllPeople(array $params): ToolResult
     {
-        try {
             $limit = $params['limit'] ?? 50;
             $temporalFilter = $params['temporal_filter'] ?? 'current';
 
@@ -500,10 +443,6 @@ class MemoryService
                 'temporal_filter' => $temporalFilter,
                 'results' => $formattedResults,
             ]);
-
-        } catch (\Exception $e) {
-            return ToolResult::failure('Failed to list people: ' . $e->getMessage());
-        }
     }
 
     private static function linkEntitiesToMemory(Memory $memory, array $entityNames): void
