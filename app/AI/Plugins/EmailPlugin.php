@@ -24,16 +24,6 @@ class EmailPlugin extends PluginInterface
         );
     }
 
-    public function getName()
-    {
-        return 'email';
-    }
-
-    public function getDescription()
-    {
-        return 'Get Information from emails, searching emails and reading them';
-    }
-
     public function getTools()
     {
         return [
