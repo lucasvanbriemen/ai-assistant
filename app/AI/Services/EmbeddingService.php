@@ -27,7 +27,6 @@ class EmbeddingService
                     'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
                     'Content-Type' => 'application/json',
                 ])
-                ->timeout(30)
                 ->post('https://api.openai.com/v1/embeddings', [
                     'model' => self::MODEL,
                     'input' => $text,
