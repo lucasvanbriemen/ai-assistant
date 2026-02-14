@@ -4,6 +4,9 @@ namespace App\Jobs;
 
 use App\Models\WebhookLog;
 use App\AI\Services\MemoryService;
+use App\AI\Services\EventIngestionService;
+use App\AI\Services\DataEnrichmentService;
+use App\AI\Services\AutoMemoryExtractionService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -28,56 +31,66 @@ class ProcessEmailJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $payload = $this->webhookLog->payload;
-
-            // Extract email data
-            $from = $payload['from'] ?? $payload['sender'] ?? 'unknown';
-            $to = $payload['to'] ?? $payload['recipient'] ?? null;
-            $subject = $payload['subject'] ?? '(no subject)';
-            $body = $payload['body'] ?? $payload['content'] ?? '';
-            $date = $payload['date'] ?? now()->toIso8601String();
-
-            // Build content for AI extraction
-            $content = "FROM: {$from}\n";
-            if ($to) {
-                $content .= "TO: {$to}\n";
+            // STEP 1: Ingest and normalize email data
+            $ingestResult = EventIngestionService::processEmail($this->webhookLog->payload);
+            if (!$ingestResult->success) {
+                throw new \Exception("Failed to ingest email: " . $ingestResult->message);
             }
-            $content .= "SUBJECT: {$subject}\n";
-            $content .= "DATE: {$date}\n\n";
-            $content .= "BODY:\n{$body}";
+            $emailData = $ingestResult->data;
 
-            // Extract sender name and email
-            $senderEmail = $this->extractEmail($from);
-            $senderName = $this->extractName($from, $senderEmail);
+            // STEP 2: Enrich with entity data
+            $enrichedData = DataEnrichmentService::enrichEmail($emailData);
 
-            // Create/update person entity for sender
-            if ($senderName && $senderEmail) {
+            // STEP 3: Create/update person entity for sender
+            if ($enrichedData['sender_name'] && $enrichedData['sender_email']) {
                 MemoryService::storePerson([
-                    'name' => $senderName,
+                    'name' => $enrichedData['sender_name'],
                     'entity_subtype' => 'contact',
                     'description' => "Email contact",
                     'attributes' => [
-                        'email' => $senderEmail,
+                        'email' => $enrichedData['sender_email'],
                     ],
                 ]);
             }
 
-            // Store as note with AI extraction
-            // TODO: Use AutoMemoryExtractionService (Step 1.4)
-            // For now, store directly
+            // STEP 4: Use AI to extract structured information
+            $content = "FROM: {$enrichedData['from']}\n";
+            $content .= "SUBJECT: {$enrichedData['subject']}\n";
+            $content .= "DATE: {$enrichedData['date']}\n\n";
+            $content .= "BODY:\n{$enrichedData['body_clean']}";
+
+            $extractionResult = AutoMemoryExtractionService::extract($content, [
+                'source' => 'email',
+                'sender' => $enrichedData['sender_name'],
+            ]);
+
+            if (!$extractionResult->success) {
+                throw new \Exception("Failed to extract memories: " . $extractionResult->message);
+            }
+
+            $extracted = $extractionResult->data;
+
+            // STEP 5: Store memory with extracted information
+            $entityNames = array_merge(
+                [$enrichedData['sender_name']],
+                $extracted['people'] ?? []
+            );
+
             $result = MemoryService::storeNote([
-                'content' => "Email from {$senderName}: {$subject}\n\n{$body}",
+                'content' => $extracted['summary'] ?? $content,
                 'type' => 'note',
-                'entity_names' => $senderName ? [$senderName] : [],
-                'tags' => ['email'],
+                'entity_names' => array_filter(array_unique($entityNames)),
+                'tags' => array_merge(['email'], $extracted['facts'] ?? []),
             ]);
 
             if ($result->success) {
                 $this->webhookLog->markAsCompleted();
-                Log::info("Email processed successfully", [
+                Log::info("Email processed with AI extraction", [
                     'webhook_id' => $this->webhookLog->id,
-                    'from' => $from,
-                    'subject' => $subject,
+                    'from' => $enrichedData['sender_name'],
+                    'subject' => $enrichedData['subject'],
+                    'extracted_people' => count($extracted['people'] ?? []),
+                    'extracted_tasks' => count($extracted['tasks'] ?? []),
                 ]);
             } else {
                 throw new \Exception("Failed to store email: " . $result->message);
@@ -91,37 +104,5 @@ class ProcessEmailJob implements ShouldQueue
             ]);
             throw $e;
         }
-    }
-
-    /**
-     * Extract email address from string like "John Doe <john@example.com>"
-     */
-    private function extractEmail(string $from): ?string
-    {
-        if (preg_match('/<(.+?)>/', $from, $matches)) {
-            return $matches[1];
-        }
-        if (filter_var($from, FILTER_VALIDATE_EMAIL)) {
-            return $from;
-        }
-        return null;
-    }
-
-    /**
-     * Extract name from string like "John Doe <john@example.com>"
-     */
-    private function extractName(string $from, ?string $email): ?string
-    {
-        $name = preg_replace('/<.+?>/', '', $from);
-        $name = trim($name);
-
-        if (empty($name) && $email) {
-            // Extract name from email (before @)
-            $name = explode('@', $email)[0];
-            $name = str_replace(['.', '_', '-'], ' ', $name);
-            $name = ucwords($name);
-        }
-
-        return $name ?: null;
     }
 }
