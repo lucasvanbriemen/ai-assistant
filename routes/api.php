@@ -10,7 +10,4 @@ Route::post('/chat/send', [ChatController::class, 'sendMessage'])->middleware(Is
 
 Route::prefix('webhooks')->group(function () {
     Route::post('/{service}', [WebhookController::class, 'handle']);
-
-    Route::get('/stats', [WebhookController::class, 'stats']);
-    Route::get('/health', [WebhookController::class, 'health']);
 });
