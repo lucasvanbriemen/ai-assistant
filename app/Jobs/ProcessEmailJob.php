@@ -4,12 +4,10 @@ namespace App\Jobs;
 
 use App\Models\WebhookLog;
 use App\AI\Services\MemoryService;
-use App\AI\Services\EventIngestionService;
 use App\AI\Services\DataEnrichmentService;
 use App\AI\Services\AutoMemoryExtractionService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
 
 class ProcessEmailJob implements ShouldQueue
 {
@@ -32,7 +30,7 @@ class ProcessEmailJob implements ShouldQueue
     {
         try {
             // STEP 1: Ingest and normalize email data
-            $emailData = EventIngestionService::processEmail($this->webhookLog->payload);
+            $emailData = $this->webhookLog->payload;
 
             // STEP 2: Enrich with entity data
             $enrichedData = DataEnrichmentService::enrichEmail($emailData);

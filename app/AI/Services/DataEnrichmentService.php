@@ -2,6 +2,7 @@
 
 namespace App\AI\Services;
 
+use App\Models\MemoryEntity;
 
 class DataEnrichmentService
 {
