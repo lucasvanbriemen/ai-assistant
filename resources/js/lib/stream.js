@@ -4,6 +4,7 @@ export class StreamHandler {
         this.data = data;
         this.callbacks = callbacks;
         this.accumulator = '';
+        this.currentEvent = 'message'; // Track event type across lines
     }
 
     async connect() {
@@ -48,9 +49,8 @@ export class StreamHandler {
     processLine(line) {
         const trimmedLine = line.trim();
 
-        let currentEvent = 'message'; // default event type
         if (trimmedLine.startsWith('event: ')) {
-            currentEvent = trimmedLine.substring(7).trim();
+            this.currentEvent = trimmedLine.substring(7).trim();
             return; // Store event type for next data line
         }
 
