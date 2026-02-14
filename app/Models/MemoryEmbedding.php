@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MemoryEmbedding extends Model
 {
@@ -21,7 +20,7 @@ class MemoryEmbedding extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function memory(): BelongsTo
+    public function memory()
     {
         return $this->belongsTo(Memory::class);
     }

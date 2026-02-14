@@ -3,10 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class Memory extends Model
 {
@@ -59,20 +56,20 @@ class Memory extends Model
         });
     }
 
-    public function entities(): BelongsToMany
+    public function entities()
     {
         return $this->belongsToMany(MemoryEntity::class, 'memory_entity_links', 'memory_id', 'entity_id')
             ->withPivot('link_type')
             ->withTimestamps();
     }
 
-    public function tags(): BelongsToMany
+    public function tags()
     {
         return $this->belongsToMany(MemoryTag::class, 'memory_tag_links', 'memory_id', 'tag_id')
             ->withTimestamps();
     }
 
-    public function embedding(): HasOne
+    public function embedding()
     {
         return $this->hasOne(MemoryEmbedding::class);
     }

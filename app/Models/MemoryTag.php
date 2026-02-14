@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Cache;
 
 class MemoryTag extends Model
@@ -25,7 +24,7 @@ class MemoryTag extends Model
         parent::boot();
     }
 
-    public function memories(): BelongsToMany
+    public function memories()
     {
         return $this->belongsToMany(Memory::class, 'memory_tag_links', 'tag_id', 'memory_id')
             ->withTimestamps();
