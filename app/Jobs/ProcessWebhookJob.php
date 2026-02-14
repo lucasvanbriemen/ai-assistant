@@ -39,12 +39,6 @@ class ProcessWebhookJob implements ShouldQueue
             // Dispatch to appropriate service-specific job
             match ($this->webhookLog->service) {
                 'email' => ProcessEmailJob::dispatch($this->webhookLog),
-                'calendar' => ProcessCalendarEventJob::dispatch($this->webhookLog),
-                'slack' => ProcessSlackMessageJob::dispatch($this->webhookLog),
-                'spotify', 'generic' => ExtractAndStoreMemoriesJob::dispatch(
-                    $this->webhookLog->payload,
-                    $this->webhookLog->service
-                ),
                 default => throw new \Exception("Unknown service: {$this->webhookLog->service}")
             };
 
