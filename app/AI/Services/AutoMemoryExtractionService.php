@@ -48,22 +48,22 @@ class AutoMemoryExtractionService
         $source = $metadata['source'] ?? 'unknown';
 
         return <<<PROMPT
-Analyze this {$source} content and extract structured information.
+            Analyze this {$source} content and extract structured information.
 
-Content:
-{$content}
+            Content:
+            {$content}
 
-Extract and return as JSON:
-{
-  "people": ["Name 1", "Name 2"],
-  "tasks": ["Task 1", "Task 2"],
-  "facts": ["Fact 1", "Fact 2"],
-  "relationships": [{"from": "Person", "to": "Company", "type": "works_at"}],
-  "summary": "Brief summary in 1-2 sentences",
-  "importance": 0.8
-}
+            Extract and return as JSON:
+            {
+                "people": ["Name 1", "Name 2"],
+                "tasks": ["Task 1", "Task 2"],
+                "facts": ["Fact 1", "Fact 2"],
+                "relationships": [{"from": "Person", "to": "Company", "type": "works_at"}],
+                "summary": "Brief summary in 1-2 sentences",
+                "importance": 0.8
+            }
 
-Return ONLY the JSON, no other text.
-PROMPT;
+            Return ONLY the JSON, no other text.
+        PROMPT;
     }
 }
