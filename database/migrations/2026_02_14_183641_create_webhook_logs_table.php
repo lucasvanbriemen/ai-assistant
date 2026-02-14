@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('webhook_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('service', 50)->index(); // email, calendar, slack, etc.
-            $table->json('payload'); // The webhook payload
-            $table->string('status', 20)->default('pending')->index(); // pending, processing, completed, failed
-            $table->text('error_message')->nullable(); // Error details if failed
-            $table->string('ip_address', 45)->nullable(); // IPv4 or IPv6
-            $table->string('user_agent')->nullable(); // Request user agent
-            $table->timestamp('processed_at')->nullable(); // When job was processed
+            $table->string('service', 50)->index();
+            $table->json('payload');
+            $table->string('status', 20)->default('pending')->index();
+            $table->text('error_message')->nullable();
+            $table->string('ip_address', 45)->nullable();
+            $table->string('user_agent')->nullable();
+            $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
             $table->index(['service', 'status', 'created_at']);
