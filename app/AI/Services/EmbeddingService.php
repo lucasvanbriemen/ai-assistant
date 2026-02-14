@@ -54,36 +54,26 @@ class EmbeddingService
             return [];
         }
 
-        // OpenAI supports batch embedding generation
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
-                'Content-Type' => 'application/json',
-            ])
-            ->timeout(60)
-            ->post('https://api.openai.com/v1/embeddings', [
-                'model' => self::MODEL,
-                'input' => $texts,
-            ]);
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
+            'Content-Type' => 'application/json',
+        ])
+        ->timeout(60)
+        ->post('https://api.openai.com/v1/embeddings', [
+            'model' => self::MODEL,
+            'input' => $texts,
+        ]);
 
-            if (!$response->successful()) {
-                throw new \Exception('OpenAI API error: ' . $response->body());
-            }
+        $data = $response->json();
 
-            $data = $response->json();
-
-            // Extract embeddings in the same order as input
-            $embeddings = [];
-            foreach ($data['data'] as $item) {
-                $embeddings[$item['index']] = $item['embedding'];
-            }
-
-            ksort($embeddings); // Ensure correct order
-            return array_values($embeddings);
-
-        } catch (\Exception $e) {
-            throw $e;
+        // Extract embeddings in the same order as input
+        $embeddings = [];
+        foreach ($data['data'] as $item) {
+            $embeddings[$item['index']] = $item['embedding'];
         }
+
+        ksort($embeddings); // Ensure correct order
+        return array_values($embeddings);
     }
 
     /**
