@@ -10,50 +10,37 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Service layer for memory management
- */
 class MemoryService
 {
     public static function storePerson(array $params): ToolResult
     {
-        try {
-            DB::beginTransaction();
+        $entityData = [
+            'name' => $params['name'],
+            'entity_type' => 'person',
+            'entity_subtype' => $params['entity_subtype'] ?? null,
+            'description' => $params['description'] ?? null,
+            'attributes' => $params['attributes'] ?? [],
+        ];
 
-            $entityData = [
-                'name' => $params['name'],
-                'entity_type' => 'person',
-                'entity_subtype' => $params['entity_subtype'] ?? null,
-                'description' => $params['description'] ?? null,
-                'attributes' => $params['attributes'] ?? [],
-            ];
-
-            // Add temporal tracking if provided
-            if (isset($params['start_date'])) {
-                $entityData['start_date'] = $params['start_date'];
-            }
-            if (isset($params['end_date'])) {
-                $entityData['end_date'] = $params['end_date'];
-            }
-
-            $entity = MemoryEntity::findOrCreateEntity($entityData);
-
-            DB::commit();
-
-            $action = $entity->wasRecentlyCreated ? 'stored' : 'updated';
-
-            return ToolResult::success([
-                'message' => "Successfully {$action} information about {$params['name']}",
-                'entity_id' => $entity->id,
-                'name' => $entity->name,
-                'type' => $entity->entity_subtype ?? 'person',
-                'attributes' => $entity->attributes,
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ToolResult::failure('Failed to store person information: ' . $e->getMessage());
+        // Add temporal tracking if provided
+        if (isset($params['start_date'])) {
+            $entityData['start_date'] = $params['start_date'];
         }
+        if (isset($params['end_date'])) {
+            $entityData['end_date'] = $params['end_date'];
+        }
+
+        $entity = MemoryEntity::findOrCreateEntity($entityData);
+
+        $action = $entity->wasRecentlyCreated ? 'stored' : 'updated';
+
+        return ToolResult::success([
+            'message' => "Successfully {$action} information about {$params['name']}",
+            'entity_id' => $entity->id,
+            'name' => $entity->name,
+            'type' => $entity->entity_subtype ?? 'person',
+            'attributes' => $entity->attributes,
+        ]);
     }
 
     public static function storeNote(array $params): ToolResult
