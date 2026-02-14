@@ -22,29 +22,20 @@ class WebhookController extends Controller
 
         $payload = $request->all();
 
-        // Log the webhook
-        try {
-            $webhookLog = WebhookLog::create([
-                'service' => $service,
-                'payload' => $payload,
-                'status' => WebhookLog::STATUS_PENDING,
-            ]);
+        $webhookLog = WebhookLog::create([
+            'service' => $service,
+            'payload' => $payload,
+            'status' => WebhookLog::STATUS_PENDING,
+        ]);
 
-            // Dispatch job to process webhook asynchronously
-            ProcessWebhookJob::dispatch($webhookLog);
+        // Dispatch job to process webhook asynchronously
+        ProcessWebhookJob::dispatch($webhookLog);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Webhook received',
-                'webhook_id' => $webhookLog->id,
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Internal server error'
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Webhook received',
+            'webhook_id' => $webhookLog->id,
+        ], 200);
     }
 
     /**
