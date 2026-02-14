@@ -24,6 +24,7 @@ class MemoryEmbedding extends Model
     {
         return $this->belongsTo(Memory::class);
     }
+
     /**
      * Find similar embeddings using cosine similarity
      */
