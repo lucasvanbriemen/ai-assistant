@@ -83,25 +83,10 @@ class ProcessEmailJob implements ShouldQueue
                 'tags' => array_merge(['email'], $extracted['facts'] ?? []),
             ]);
 
-            if ($result->success) {
-                $this->webhookLog->markAsCompleted();
-                Log::info("Email processed with AI extraction", [
-                    'webhook_id' => $this->webhookLog->id,
-                    'from' => $enrichedData['sender_name'],
-                    'subject' => $enrichedData['subject'],
-                    'extracted_people' => count($extracted['people'] ?? []),
-                    'extracted_tasks' => count($extracted['tasks'] ?? []),
-                ]);
-            } else {
-                throw new \Exception("Failed to store email: " . $result->message);
-            }
+            $this->webhookLog->markAsCompleted();
 
         } catch (\Exception $e) {
             $this->webhookLog->markAsFailed($e->getMessage());
-            Log::error("Failed to process email", [
-                'webhook_id' => $this->webhookLog->id,
-                'error' => $e->getMessage(),
-            ]);
             throw $e;
         }
     }
