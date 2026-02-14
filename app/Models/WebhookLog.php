@@ -27,33 +27,21 @@ class WebhookLog extends Model
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
 
-    /**
-     * Scope: Get pending webhooks
-     */
     public function scopePending($query)
     {
         return $query->where('status', self::STATUS_PENDING);
     }
 
-    /**
-     * Scope: Get failed webhooks
-     */
     public function scopeFailed($query)
     {
         return $query->where('status', self::STATUS_FAILED);
     }
 
-    /**
-     * Scope: Get webhooks by service
-     */
     public function scopeForService($query, string $service)
     {
         return $query->where('service', $service);
     }
 
-    /**
-     * Mark as processing
-     */
     public function markAsProcessing(): void
     {
         $this->update([
@@ -61,9 +49,6 @@ class WebhookLog extends Model
         ]);
     }
 
-    /**
-     * Mark as completed
-     */
     public function markAsCompleted(): void
     {
         $this->update([
@@ -72,9 +57,6 @@ class WebhookLog extends Model
         ]);
     }
 
-    /**
-     * Mark as failed with error message
-     */
     public function markAsFailed(string $errorMessage): void
     {
         $this->update([
@@ -84,33 +66,21 @@ class WebhookLog extends Model
         ]);
     }
 
-    /**
-     * Check if webhook is pending
-     */
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;
     }
 
-    /**
-     * Check if webhook is processing
-     */
     public function isProcessing(): bool
     {
         return $this->status === self::STATUS_PROCESSING;
     }
 
-    /**
-     * Check if webhook is completed
-     */
     public function isCompleted(): bool
     {
         return $this->status === self::STATUS_COMPLETED;
     }
 
-    /**
-     * Check if webhook failed
-     */
     public function isFailed(): bool
     {
         return $this->status === self::STATUS_FAILED;
