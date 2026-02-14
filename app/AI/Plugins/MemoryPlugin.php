@@ -279,94 +279,17 @@ class MemoryPlugin extends PluginInterface
     public function executeTool(string $toolName, array $parameters)
     {
         return match ($toolName) {
-            'store_person' => $this->storePerson($parameters),
-            'store_note' => $this->storeNote($parameters),
-            'store_transcript' => $this->storeTranscript($parameters),
-            'store_preference' => $this->storePreference($parameters),
-            'create_relationship' => $this->createRelationship($parameters),
-            'recall_information' => $this->recallInformation($parameters),
-            'get_person_details' => $this->getPersonDetails($parameters),
-            'get_upcoming_reminders' => $this->getUpcomingReminders($parameters),
-            'list_all_people' => $this->listAllPeople($parameters),
-            'get_entity_details' => $this->getEntityDetails($parameters),
+            'store_person' => MemoryService::storePerson($parameters),
+            'store_note' => MemoryService::storeNote($parameters),
+            'store_transcript' => MemoryService::storeTranscript($parameters),
+            'store_preference' => MemoryService::storePreference($parameters),
+            'create_relationship' => MemoryService::createRelationship($parameters),
+            'recall_information' => MemoryService::recallInformation($parameters),
+            'get_person_details' => MemoryService::getPersonDetails($parameters),
+            'get_upcoming_reminders' => MemoryService::getUpcomingReminders($parameters),
+            'list_all_people' => MemoryService::listAllPeople($parameters),
+            'get_entity_details' => MemoryService::getEntityDetails($parameters),
             default => ToolResult::failure("Tool '{$toolName}' not found in MemoryPlugin"),
         };
-    }
-
-    private function storePerson(array $params): ToolResult
-    {
-        $result = MemoryService::storePerson($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function storeNote(array $params): ToolResult
-    {
-        $result = MemoryService::storeNote($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function storeTranscript(array $params): ToolResult
-    {
-        $result = MemoryService::storeTranscript($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function storePreference(array $params): ToolResult
-    {
-        $result = MemoryService::storePreference($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function getPersonDetails(array $params): ToolResult
-    {
-        $result = MemoryService::getPersonDetails($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function createRelationship(array $params): ToolResult
-    {
-        $result = MemoryService::createRelationship($params);
-
-        return $this->returnResults($result);
-    }
-
-    // ==================== RETRIEVAL METHODS ====================
-
-    private function recallInformation(array $params): ToolResult
-    {
-        $result = MemoryService::recallInformation($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function getEntityDetails(array $params): ToolResult
-    {
-        $result = MemoryService::getEntityDetails($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function getUpcomingReminders(array $params): ToolResult
-    {
-        $result = MemoryService::getUpcomingReminders($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function listAllPeople(array $params): ToolResult
-    {
-        $result = MemoryService::listAllPeople($params);
-
-        return $this->returnResults($result);
-    }
-
-    private function returnResults($result): ToolResult
-    {
-        return $result->success ? ToolResult::success($result->data) : ToolResult::failure($result->message);
     }
 }
