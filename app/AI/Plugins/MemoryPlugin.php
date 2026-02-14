@@ -9,7 +9,6 @@ use App\AI\Services\MemoryService;
 
 class MemoryPlugin extends PluginInterface
 {
-
     public function __construct()
     {
         parent::__construct();
