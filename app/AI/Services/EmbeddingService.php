@@ -10,15 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 class EmbeddingService
 {
-    private string $apiKey;
-
     private const MODEL = 'text-embedding-3-small';
     private const DIMENSIONS = 1536;
-
-    public function __construct()
-    {
-        $this->apiKey = config('ai.openai.api_key');
-    }
 
     /**
      * Generate embedding for a single text
@@ -31,7 +24,7 @@ class EmbeddingService
         return Cache::remember($cacheKey, 86400, function () use ($text) {
             try {
                 $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
                     'Content-Type' => 'application/json',
                 ])
                 ->timeout(30)
@@ -69,7 +62,7 @@ class EmbeddingService
         // OpenAI supports batch embedding generation
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer ' . config('ai.openai.api_key'),
                 'Content-Type' => 'application/json',
             ])
             ->timeout(60)
