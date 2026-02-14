@@ -7,10 +7,6 @@ return [
         'api_key' => env('OPENAI_API_KEY')
     ],
 
-    // Embedding configuration for semantic search
-    'embedding_model' => env('AI_EMBEDDING_MODEL', 'text-embedding-3-small'),
-    'embedding_dimensions' => env('AI_EMBEDDING_DIMENSIONS', 1536),
-
     // System prompt for the AI chatbot
     'system_prompt' =>  <<<SYSTEM_PROMPT
         You are PRIME, a helpful AI assistant designed to help users manage their entire life - including emails, notes, reminders, and daily tasks.
