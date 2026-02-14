@@ -14,12 +14,7 @@ class CleanupWebhooksCommand extends Command
     {
         $days = $this->option('days');
         $cutoffDate = now()->subDays($days);
-
-        $this->info("Cleaning up webhooks older than {$days} days ({$cutoffDate->toDateString()})...");
-
-        $deleted = WebhookLog::where('created_at', '<', $cutoffDate)->delete();
-
-        $this->info("Deleted {$deleted} webhook logs.");
+        WebhookLog::where('created_at', '<', $cutoffDate)->delete();
 
         return Command::SUCCESS;
     }
