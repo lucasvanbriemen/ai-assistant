@@ -39,10 +39,8 @@ class AutoMemoryExtractionService
 
     private static function buildExtractionPrompt(string $content, array $metadata): string
     {
-        $source = $metadata['source'] ?? 'unknown';
-
         return <<<PROMPT
-            Analyze this {$source} content and extract structured information.
+            Analyze this {$metadata['source']} content and extract structured information.
 
             Content:
             {$content}
