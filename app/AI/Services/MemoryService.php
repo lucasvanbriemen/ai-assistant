@@ -40,9 +40,6 @@ class MemoryService
 
             DB::commit();
 
-            // Clear relevant caches
-            self::clearEntityCache();
-
             $action = $entity->wasRecentlyCreated ? 'stored' : 'updated';
 
             return ToolResult::success([
@@ -93,9 +90,6 @@ class MemoryService
             }
 
             DB::commit();
-
-            // Clear caches
-            self::clearMemoryCache();
 
             $message = 'Note stored successfully';
             if (!empty($params['reminder_at'])) {
@@ -150,9 +144,6 @@ class MemoryService
             }
 
             DB::commit();
-
-            // Clear caches
-            self::clearMemoryCache();
 
             return ToolResult::success([
                 'message' => "Transcript '{$params['title']}' stored successfully",
@@ -218,9 +209,6 @@ class MemoryService
 
             DB::commit();
 
-            // Clear caches
-            self::clearMemoryCache();
-
             return ToolResult::success([
                 'message' => "Preference stored: {$params['category']} = {$params['value']}",
                 'memory_id' => $memory->id,
@@ -262,9 +250,6 @@ class MemoryService
             );
 
             DB::commit();
-
-            // Clear caches
-            self::clearRelationshipCache();
 
             return ToolResult::success([
                 'message' => "Relationship created: {$params['from_entity_name']} {$params['relationship_type']} {$params['to_entity_name']}",
@@ -574,32 +559,5 @@ class MemoryService
             $entity->recordMention();
         }
         $memory->attachEntities($entityIds, 'attendee');
-    }
-
-    private static function clearEntityCache(): void
-    {
-        try {
-            Cache::tags(['entities'])->flush();
-        } catch (\BadMethodCallException $e) {
-            Cache::flush();
-        }
-    }
-
-    private static function clearMemoryCache(): void
-    {
-        try {
-            Cache::tags(['memory', 'search'])->flush();
-        } catch (\BadMethodCallException $e) {
-            Cache::flush();
-        }
-    }
-
-    private static function clearRelationshipCache(): void
-    {
-        try {
-            Cache::tags(['relationships'])->flush();
-        } catch (\BadMethodCallException $e) {
-            Cache::flush();
-        }
     }
 }
