@@ -18,7 +18,10 @@ class ProcessEmailJob implements ShouldQueue
 
     public function handle(): void
     {
-        $emailData = $this->webhookLog->payload;
+        $emailData = array_map(
+            fn($value) => is_array($value) ? implode(', ', $value) : ($value ?? ''),
+            $this->webhookLog->payload
+        );
 
         $content = "You received an email. Analyze it and take all appropriate actions.\n\n";
         $content .= "FROM: {$emailData['sender_name']} <{$emailData['sender_email']}>\n";
