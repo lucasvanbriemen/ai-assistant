@@ -405,11 +405,6 @@ class AIService
             }
 
             if (empty($choice['tool_calls'])) {
-                Log::info('AIService::processAutonomously completed', [
-                    'tools_used' => $toolsUsed,
-                    'message' => $choice['content'] ?? '',
-                ]);
-
                 return [
                     'message' => $choice['content'] ?? '',
                     'tools_used' => $toolsUsed,
@@ -428,11 +423,6 @@ class AIService
                 ];
             }
         }
-
-        Log::info('AIService::processAutonomously completed', [
-            'tools_used' => $toolsUsed,
-            'iterations' => $maxIterations,
-        ]);
 
         return [
             'message' => 'Max iterations reached',
