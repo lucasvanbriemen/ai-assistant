@@ -13,19 +13,10 @@ class ProcessEmailJob implements ShouldQueue
 {
     use Queueable;
 
-    public $tries = 3;
-    public $timeout = 90;
-
-    /**
-     * Create a new job instance.
-     */
     public function __construct(
         public WebhookLog $webhookLog
     ) {}
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         $emailData = $this->webhookLog->payload;

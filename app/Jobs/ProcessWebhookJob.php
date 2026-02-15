@@ -22,9 +22,6 @@ class ProcessWebhookJob implements ShouldQueue
         public WebhookLog $webhookLog
     ) {}
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         // Mark as processing
