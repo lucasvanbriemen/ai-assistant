@@ -22,14 +22,44 @@ class ProcessEmailJob implements ShouldQueue
         $emailData = $this->webhookLog->payload;
         $enrichedData = DataEnrichmentService::enrichEmail($emailData);
 
+        // Extract structured info from email body FIRST so we can enrich the entity
+        $content = "FROM: {$enrichedData['from']}\n";
+        $content .= "SUBJECT: {$enrichedData['subject']}\n";
+        $content .= "DATE: {$enrichedData['date']}\n\n";
+        $content .= "BODY:\n{$enrichedData['body_clean']}";
+
+        $extracted = AutoMemoryExtractionService::extract($content, [
+            'source' => 'email',
+            'sender' => $enrichedData['sender_name'],
+        ]);
+
+        // Store/update sender entity with enriched data from extraction
         if ($enrichedData['sender_name'] && $enrichedData['sender_email']) {
+            $attributes = [
+                'email' => $enrichedData['sender_email'],
+            ];
+
+            // Merge contact details extracted from email body (phone, title, company, etc.)
+            $senderDetails = $extracted['contact_details'][$enrichedData['sender_name']] ?? [];
+            if (!empty($senderDetails)) {
+                $attributes = array_merge($attributes, $senderDetails);
+            }
+
             $personData = [
                 'name' => $enrichedData['sender_name'],
                 'entity_subtype' => 'contact',
-                'attributes' => [
-                    'email' => $enrichedData['sender_email'],
-                ],
+                'attributes' => $attributes,
             ];
+
+            // Build description from extracted facts that mention the sender
+            $senderFacts = array_filter(
+                $extracted['facts'] ?? [],
+                fn ($fact) => stripos($fact, $enrichedData['sender_name']) !== false
+                    || stripos($fact, explode(' ', $enrichedData['sender_name'])[0]) !== false
+            );
+            if (!empty($senderFacts)) {
+                $personData['description'] = implode('. ', $senderFacts);
+            }
 
             if (isset($enrichedData['existing_entity'])) {
                 $personData = DataEnrichmentService::mergeEntityData(
@@ -41,16 +71,7 @@ class ProcessEmailJob implements ShouldQueue
             MemoryService::storePerson($personData);
         }
 
-        $content = "FROM: {$enrichedData['from']}\n";
-        $content .= "SUBJECT: {$enrichedData['subject']}\n";
-        $content .= "DATE: {$enrichedData['date']}\n\n";
-        $content .= "BODY:\n{$enrichedData['body_clean']}";
-
-        $extracted = AutoMemoryExtractionService::extract($content, [
-            'source' => 'email',
-            'sender' => $enrichedData['sender_name'],
-        ]);
-
+        // Store memory note and link all mentioned people (including new ones)
         $entityNames = array_merge(
             [$enrichedData['sender_name']],
             $extracted['people'] ?? []

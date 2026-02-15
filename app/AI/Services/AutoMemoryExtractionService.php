@@ -31,6 +31,7 @@ class AutoMemoryExtractionService
             'tasks' => $result['tasks'] ?? [],
             'facts' => $result['facts'] ?? [],
             'relationships' => $result['relationships'] ?? [],
+            'contact_details' => $result['contact_details'] ?? [],
             'summary' => $result['summary'] ?? '',
             'importance' => $result['importance'] ?? 0.5,
         ];
@@ -50,9 +51,12 @@ class AutoMemoryExtractionService
                 "tasks": ["Task 1", "Task 2"],
                 "facts": ["Fact 1", "Fact 2"],
                 "relationships": [{"from": "Person", "to": "Company", "type": "works_at"}],
+                "contact_details": {"Person Name": {"phone": "+1-555-0142", "title": "VP of Operations", "company": "TestCorp"}},
                 "summary": "Brief summary in 1-2 sentences",
                 "importance": 0.8
             }
+
+            For contact_details: extract any phone numbers, job titles, company names, or addresses mentioned for specific people. Key by person name. Only include fields that are explicitly stated.
 
             Return ONLY the JSON, no other text.
         PROMPT;
