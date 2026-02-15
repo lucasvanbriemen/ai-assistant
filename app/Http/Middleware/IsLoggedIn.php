@@ -26,6 +26,8 @@ class IsLoggedIn
             ];
             app()->instance('current_user', $current_user);
             return $next($request);
+        } elseif (app()->environment('local')) {
+            return $next($request);
         }
 
         // Check if token is provided in URL (for cross-domain authentication)

@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'google' => [
+        'service_account_file' => env('GOOGLE_SERVICE_ACCOUNT_FILE', 'google-credentials.json'),
+        'calendar_ids' => env('GOOGLE_CALENDAR_IDS', ''),
+    ],
+
 ];
