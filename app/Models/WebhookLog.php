@@ -10,7 +10,6 @@ class WebhookLog extends Model
         'service',
         'payload',
         'status',
-        'error_message',
         'processed_at',
     ];
 
@@ -21,26 +20,10 @@ class WebhookLog extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Status constants
-    const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_FAILED = 'failed';
-
-    public function scopePending($query)
-    {
-        return $query->where('status', self::STATUS_PENDING);
-    }
-
-    public function scopeFailed($query)
-    {
-        return $query->where('status', self::STATUS_FAILED);
-    }
-
-    public function scopeForService($query, string $service)
-    {
-        return $query->where('service', $service);
-    }
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_PROCESSING = 'processing';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_FAILED = 'failed';
 
     public function markAsProcessing(): void
     {
@@ -55,25 +38,5 @@ class WebhookLog extends Model
             'status' => self::STATUS_COMPLETED,
             'processed_at' => now(),
         ]);
-    }
-
-    public function isPending(): bool
-    {
-        return $this->status === self::STATUS_PENDING;
-    }
-
-    public function isProcessing(): bool
-    {
-        return $this->status === self::STATUS_PROCESSING;
-    }
-
-    public function isCompleted(): bool
-    {
-        return $this->status === self::STATUS_COMPLETED;
-    }
-
-    public function isFailed(): bool
-    {
-        return $this->status === self::STATUS_FAILED;
     }
 }

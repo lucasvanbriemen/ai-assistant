@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('service', 50)->index();
             $table->json('payload');
             $table->string('status', 20)->default('pending')->index();
-            $table->text('error_message')->nullable();
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
