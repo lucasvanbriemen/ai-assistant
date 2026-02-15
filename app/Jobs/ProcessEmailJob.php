@@ -32,14 +32,22 @@ class ProcessEmailJob implements ShouldQueue
         $enrichedData = DataEnrichmentService::enrichEmail($emailData);
 
         if ($enrichedData['sender_name'] && $enrichedData['sender_email']) {
-            MemoryService::storePerson([
+            $personData = [
                 'name' => $enrichedData['sender_name'],
                 'entity_subtype' => 'contact',
-                'description' => "Email contact",
                 'attributes' => [
                     'email' => $enrichedData['sender_email'],
                 ],
-            ]);
+            ];
+
+            if (isset($enrichedData['existing_entity'])) {
+                $personData = DataEnrichmentService::mergeEntityData(
+                    $enrichedData['existing_entity'],
+                    $personData,
+                );
+            }
+
+            MemoryService::storePerson($personData);
         }
 
         $content = "FROM: {$enrichedData['from']}\n";
