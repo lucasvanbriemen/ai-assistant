@@ -10,14 +10,9 @@ use Google\Service\Calendar\EventDateTime;
 
 class CalendarService
 {
-    private static function getCalendarService(): Calendar|ToolResult
+    private static function getCalendarService()
     {
         $credentialsPath = base_path(config('services.google.service_account_file'));
-
-        if (!file_exists($credentialsPath)) {
-            return ToolResult::failure('Google service account credentials file not found. Place your JSON key file at: ' . $credentialsPath);
-        }
-
         $client = new GoogleClient();
         $client->setAuthConfig($credentialsPath);
         $client->addScope(Calendar::CALENDAR);
@@ -31,17 +26,10 @@ class CalendarService
         return array_filter(array_map('trim', explode(',', $ids)));
     }
 
-    public static function listEvents(array $params): ToolResult
+    public static function listEvents(array $params)
     {
         $service = self::getCalendarService();
-        if ($service instanceof ToolResult) {
-            return $service;
-        }
-
         $calendarIds = self::getCalendarIds();
-        if (empty($calendarIds)) {
-            return ToolResult::failure('No calendar IDs configured. Set GOOGLE_CALENDAR_IDS in .env (comma-separated email addresses).');
-        }
 
         $optParams = [
             'singleEvents' => true,
