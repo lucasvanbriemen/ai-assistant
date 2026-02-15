@@ -6,6 +6,7 @@ use App\AI\Contracts\PluginInterface;
 use App\AI\Contracts\ToolResult;
 use App\AI\Plugins\EmailPlugin;
 use App\AI\Plugins\MemoryPlugin;
+use App\AI\Plugins\CalendarPlugin;
 
 class PluginList
 {
@@ -13,7 +14,8 @@ class PluginList
     {
         return [
             new EmailPlugin(),
-            new MemoryPlugin()
+            new MemoryPlugin(),
+            new CalendarPlugin(),
         ];
     }
 
