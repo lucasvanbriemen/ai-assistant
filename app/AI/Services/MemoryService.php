@@ -437,10 +437,21 @@ class MemoryService
         $entityIds = [];
         foreach ($entityNames as $name) {
             $entity = MemoryEntity::findByName($name);
-            if ($entity) {
-                $entityIds[] = $entity->id;
+
+            if (!$entity) {
+                $entity = MemoryEntity::findOrCreateEntity([
+                    'name' => $name,
+                    'entity_type' => 'person',
+                    'entity_subtype' => null,
+                    'description' => null,
+                    'start_date' => null,
+                    'end_date' => null,
+                ]);
+            } else {
                 $entity->recordMention();
             }
+
+            $entityIds[] = $entity->id;
         }
         if (!empty($entityIds)) {
             $memory->attachEntities($entityIds);
