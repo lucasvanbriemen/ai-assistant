@@ -4,6 +4,7 @@ namespace App\AI\Services;
 
 use App\AI\Core\PluginList;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\Response;
 
 class AIService
@@ -359,6 +360,82 @@ class AIService
             'message' => $fullMessage,
             'chunks' => $chunks,
             'hasMoreToolCalls' => $hasMoreToolCalls,
+        ];
+    }
+
+    public static function processAutonomously(string $content): array
+    {
+        $todayYMD = date('Y-m-d');
+        $today = date('l, F j, Y');
+
+        $systemPrompt = "You are a background processing agent. Today is {$today} ({$todayYMD}).\n\n"
+            . "Analyze the following content and take appropriate actions using your available tools.\n"
+            . "You MUST use tools to store information — do NOT just summarize.\n\n"
+            . "Guidelines:\n"
+            . "- Store people/contacts using store_person\n"
+            . "- Store important facts, notes, and summaries using store_note\n"
+            . "- Create calendar events for dates/appointments using create_calendar_event\n"
+            . "- Create relationships between entities using create_relationship\n"
+            . "- You may call multiple tools in sequence\n"
+            . "- After taking all actions, respond with a brief summary of what you did";
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $content],
+        ];
+
+        $tools = PluginList::formatToolsForOpenAI();
+        $toolsUsed = [];
+        $maxIterations = 10;
+
+        for ($i = 0; $i < $maxIterations; $i++) {
+            $response = self::makeRequest(self::BASE_URL . '/chat/completions', [
+                'model' => self::MODEL,
+                'messages' => $messages,
+                'temperature' => self::TEMPERATURE,
+                'max_tokens' => config('ai.max_tokens'),
+                'tools' => $tools,
+            ])->json();
+
+            $choice = $response['choices'][0]['message'] ?? null;
+
+            if (!$choice) {
+                break;
+            }
+
+            if (empty($choice['tool_calls'])) {
+                Log::info('AIService::processAutonomously completed', [
+                    'tools_used' => $toolsUsed,
+                    'message' => $choice['content'] ?? '',
+                ]);
+
+                return [
+                    'message' => $choice['content'] ?? '',
+                    'tools_used' => $toolsUsed,
+                ];
+            }
+
+            $messages[] = $choice;
+
+            $toolResults = self::executeToolCalls($choice['tool_calls']);
+            foreach ($toolResults as $result) {
+                $toolsUsed[] = $result['name'];
+                $messages[] = [
+                    'role' => 'tool',
+                    'tool_call_id' => $result['tool_call_id'],
+                    'content' => $result['content'],
+                ];
+            }
+        }
+
+        Log::info('AIService::processAutonomously completed', [
+            'tools_used' => $toolsUsed,
+            'iterations' => $maxIterations,
+        ]);
+
+        return [
+            'message' => 'Max iterations reached',
+            'tools_used' => $toolsUsed,
         ];
     }
 
