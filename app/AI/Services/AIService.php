@@ -375,7 +375,7 @@ class AIService
             . "- Store people/contacts using store_person\n"
             . "- Store important facts, notes, and summaries using store_note\n"
             . "- Create calendar events for dates/appointments using create_calendar_event\n"
-            . "- For cancellations/refunds, find and delete the matching calendar event using list_calendar_events + delete_calendar_event\n"
+            . "- For cancellations/refunds, find and delete the matching calendar event using list_calendar_events + delete_calendar_event. IMPORTANT: search for UPCOMING events (not the cancellation date), using no query filter or a broad time range (next 30 days). Match by reservation number, event title, or venue name.\n"
             . "- Create relationships between entities using create_relationship\n"
             . "- You may call multiple tools in sequence\n"
             . "- After taking all actions, respond with a brief summary of what you did";
