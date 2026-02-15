@@ -12,9 +12,6 @@ class ExtractAndStoreMemoriesJob implements ShouldQueue
 {
     use Queueable;
 
-    public $tries = 3;
-    public $timeout = 90;
-
     public function __construct(
         public array $data,
         public string $source
