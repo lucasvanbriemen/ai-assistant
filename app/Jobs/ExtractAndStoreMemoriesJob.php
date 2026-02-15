@@ -23,7 +23,7 @@ class ExtractAndStoreMemoriesJob implements ShouldQueue
     public function handle(): void
     {
         // Convert data to string content
-        $content = is_string($this->data) ? $this->data : json_encode($this->data, JSON_PRETTY_PRINT);
+        $content = json_encode($this->data, JSON_PRETTY_PRINT);
 
         // Use AI to extract structured information
         $extracted = AutoMemoryExtractionService::extract($content, [
@@ -31,7 +31,7 @@ class ExtractAndStoreMemoriesJob implements ShouldQueue
         ]);
 
         // Store memory with extracted information
-        $result = MemoryService::storeNote([
+        MemoryService::storeNote([
             'content' => $extracted['summary'] ?? $content,
             'type' => 'note',
             'entity_names' => $extracted['people'] ?? [],
