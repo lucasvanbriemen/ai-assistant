@@ -6,6 +6,7 @@ use App\Models\WebhookLog;
 use App\AI\Services\AIService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class ProcessEmailJob implements ShouldQueue
 {
@@ -25,7 +26,14 @@ class ProcessEmailJob implements ShouldQueue
         $content .= "DATE: {$emailData['date']}\n\n";
         $content .= "BODY:\n{$emailData['body_clean']}";
 
-        AIService::processAutonomously($content);
+        $result = AIService::processAutonomously($content);
+
+        Log::info('ProcessEmailJob completed', [
+            'webhook_id' => $this->webhookLog->id,
+            'subject' => $emailData['subject'],
+            'tools_used' => $result['tools_used'] ?? [],
+            'ai_message' => $result['message'] ?? '',
+        ]);
 
         $this->webhookLog->markAsCompleted();
     }
