@@ -23,7 +23,7 @@ class ProcessEmailJob implements ShouldQueue
         $enrichedData = DataEnrichmentService::enrichEmail($emailData);
 
         // Extract structured info from email body FIRST so we can enrich the entity
-        $content = "FROM: {$enrichedData['from']}\n";
+        $content = "FROM: {$enrichedData['sender_email']}\n";
         $content .= "SUBJECT: {$enrichedData['subject']}\n";
         $content .= "DATE: {$enrichedData['date']}\n\n";
         $content .= "BODY:\n{$enrichedData['body_clean']}";
