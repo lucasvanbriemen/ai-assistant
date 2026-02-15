@@ -41,7 +41,6 @@ class DataEnrichmentService
         $prompt = self::buildMergePrompt($existingData, $newData);
 
         $response = Http::withToken(config('ai.openai.api_key'))
-            ->timeout(15)
             ->post('https://api.openai.com/v1/chat/completions', [
                 'model' => 'gpt-4o-mini',
                 'messages' => [

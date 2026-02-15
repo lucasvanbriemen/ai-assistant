@@ -11,7 +11,6 @@ class AutoMemoryExtractionService
         $prompt = self::buildExtractionPrompt($content, $metadata);
 
         $response = Http::withToken(config('ai.openai.api_key'))
-            ->timeout(30)
             ->post('https://api.openai.com/v1/chat/completions', [
                 'model' => 'gpt-4o-mini',
                 'messages' => [
