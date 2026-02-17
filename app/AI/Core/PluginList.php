@@ -7,6 +7,7 @@ use App\AI\Contracts\ToolResult;
 use App\AI\Plugins\EmailPlugin;
 use App\AI\Plugins\MemoryPlugin;
 use App\AI\Plugins\CalendarPlugin;
+use App\AI\Plugins\SlackPlugin;
 
 class PluginList
 {
@@ -16,6 +17,7 @@ class PluginList
             new EmailPlugin(),
             new MemoryPlugin(),
             new CalendarPlugin(),
+            new SlackPlugin(),
         ];
     }
 
