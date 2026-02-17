@@ -179,26 +179,7 @@ class SlackPlugin extends PluginInterface
                     ],
                     'required' => [],
                 ],
-            ],
-
-            [
-                'name' => 'get_slack_file',
-                'description' => 'Get details about a specific Slack file by ID. Optionally download the file content (images returned as base64).',
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'file_id' => [
-                            'type' => 'string',
-                            'description' => 'The Slack file ID',
-                        ],
-                        'download' => [
-                            'type' => 'boolean',
-                            'description' => 'Whether to download the file content (default: false). Images under 5MB are returned as base64.',
-                        ],
-                    ],
-                    'required' => ['file_id'],
-                ],
-            ],
+            ]
         ];
     }
 
@@ -211,7 +192,6 @@ class SlackPlugin extends PluginInterface
             'get_slack_conversation_history' => SlackService::getConversationHistory($parameters),
             'send_slack_message' => SlackService::sendMessage($parameters),
             'search_slack_files' => SlackService::searchFiles($parameters),
-            'get_slack_file' => SlackService::getFile($parameters),
             default => ToolResult::failure("Tool '{$toolName}' not found in SlackPlugin"),
         };
     }

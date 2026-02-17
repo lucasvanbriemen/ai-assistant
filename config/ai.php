@@ -408,8 +408,6 @@ return [
         6. **Sending messages**: Use send_slack_message. For DMs, provide user_id. For channels, provide the channel name or ID.
            - Always confirm with the user before sending messages.
 
-        7. **Files and images**: Use search_slack_files to find files, then get_slack_file to get details or download content.
-
         8. **Cross-referencing memory and Slack**: Combine memory and Slack for richer answers:
            - When user asks about a colleague → check memory for their details, then search Slack for their messages
            - When user asks about team activity → read the relevant channel directly by name

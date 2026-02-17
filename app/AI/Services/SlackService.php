@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 class SlackService
 {
     private const BASE_URL = 'https://slack.com/api';
-    private const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
     private static function getToken(): string
     {
@@ -545,69 +544,6 @@ class SlackService
             'message' => "Found {$total} file(s)" . (!empty($params['query']) ? " matching \"{$params['query']}\"" : '') . " (showing " . count($formattedFiles) . ")",
             'total' => $total,
             'files' => $formattedFiles,
-        ]);
-    }
-
-    public static function getFile(array $params): ToolResult
-    {
-        if (empty($params['file_id'])) {
-            return ToolResult::failure('file_id is required');
-        }
-
-        $response = self::api('files.info', [
-            'file' => $params['file_id'],
-        ]);
-
-        if (!$response['ok']) {
-            return ToolResult::failure('Failed to get file info: ' . ($response['error'] ?? 'Unknown error'));
-        }
-
-        $file = $response['file'];
-
-        $fileInfo = [
-            'id' => $file['id'],
-            'name' => $file['name'] ?? null,
-            'title' => $file['title'] ?? null,
-            'filetype' => $file['filetype'] ?? null,
-            'mimetype' => $file['mimetype'] ?? null,
-            'size' => $file['size'] ?? null,
-            'user' => $file['user'] ?? null,
-            'created' => isset($file['created']) ? date('Y-m-d H:i:s', $file['created']) : null,
-            'permalink' => $file['permalink'] ?? null,
-            'channels' => $file['channels'] ?? [],
-            'url_private' => $file['url_private'] ?? null,
-        ];
-
-        // If download is requested and file has a private URL
-        $download = $params['download'] ?? false;
-
-        if ($download && !empty($file['url_private'])) {
-            $fileSize = $file['size'] ?? 0;
-            $isImage = str_starts_with($file['mimetype'] ?? '', 'image/');
-
-            if ($fileSize > self::MAX_IMAGE_SIZE) {
-                $fileInfo['download_note'] = 'File is too large to download inline (' . round($fileSize / 1024 / 1024, 1) . 'MB). Use the url_private with authorization to download externally.';
-            } else {
-                $downloadResponse = Http::withToken(self::getToken())
-                    ->get($file['url_private']);
-
-                if ($downloadResponse->successful()) {
-                    if ($isImage) {
-                        $fileInfo['content_base64'] = base64_encode($downloadResponse->body());
-                        $fileInfo['content_type'] = 'base64_image';
-                    } else {
-                        $fileInfo['content'] = $downloadResponse->body();
-                        $fileInfo['content_type'] = 'text';
-                    }
-                } else {
-                    $fileInfo['download_error'] = 'Failed to download file: HTTP ' . $downloadResponse->status();
-                }
-            }
-        }
-
-        return ToolResult::success([
-            'message' => 'File info retrieved' . ($download ? ' with content' : ''),
-            'file' => $fileInfo,
         ]);
     }
 }
