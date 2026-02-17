@@ -24,23 +24,11 @@ class SlackService
     {
         $token = self::getToken();
 
-        if (empty($token)) {
-            return ['ok' => false, 'error' => 'SLACK_USER_OAUTH_TOKEN is not configured'];
-        }
-
         $response = Http::withToken($token)
             ->asForm()
             ->post(self::BASE_URL . '/' . $method, $params);
 
-        if (!$response->successful()) {
-            return ['ok' => false, 'error' => 'HTTP error: ' . $response->status()];
-        }
-
         $data = $response->json();
-
-        if (!($data['ok'] ?? false)) {
-            return ['ok' => false, 'error' => $data['error'] ?? 'Unknown Slack API error'];
-        }
 
         return $data;
     }
