@@ -12,13 +12,10 @@ class SlackService
 
     private static function api(string $method, array $params = []): array
     {
-        $response = Http::withToken(config('services.slack.user_oauth_token', ''))
+        return Http::withToken(config('services.slack.user_oauth_token', ''))
             ->asForm()
-            ->post(self::BASE_URL . '/' . $method, $params);
-
-        $data = $response->json();
-
-        return $data;
+            ->post(self::BASE_URL . '/' . $method, $params)
+            ->json();
     }
 
     private static function openDmChannel(string $userId): ?string
