@@ -5,25 +5,14 @@ namespace App\AI\Services;
 use App\AI\Contracts\ToolResult;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class SlackService
 {
     private const BASE_URL = 'https://slack.com/api';
 
-    private static function getToken(): string
-    {
-        return config('services.slack.user_oauth_token', '');
-    }
-
-    /**
-     * Central Slack Web API caller with auth and error handling.
-     */
     private static function api(string $method, array $params = []): array
     {
-        $token = self::getToken();
-
-        $response = Http::withToken($token)
+        $response = Http::withToken(config('services.slack.user_oauth_token', ''))
             ->asForm()
             ->post(self::BASE_URL . '/' . $method, $params);
 
@@ -32,23 +21,13 @@ class SlackService
         return $data;
     }
 
-    /**
-     * Open a DM channel with a user.
-     */
     private static function openDmChannel(string $userId): ?string
     {
         $response = self::api('conversations.open', ['users' => $userId]);
 
-        if (!$response['ok']) {
-            return null;
-        }
-
         return $response['channel']['id'] ?? null;
     }
 
-    /**
-     * Resolve a channel name to a channel ID. Cached for 1 hour.
-     */
     private static function resolveChannelByName(string $channelName): ?string
     {
         $channelName = ltrim($channelName, '#');
@@ -63,9 +42,6 @@ class SlackService
         return null;
     }
 
-    /**
-     * Get the workspace channel map (name → ID), cached for 1 hour.
-     */
     private static function getChannelMap(): array
     {
         return Cache::remember('slack_channel_map', 3600, function () {
@@ -98,9 +74,6 @@ class SlackService
         });
     }
 
-    /**
-     * Get the workspace user map (ID → name), cached for 24 hours.
-     */
     private static function getUserMap(): array
     {
         return Cache::remember('slack_user_map', 86400, function () {
@@ -121,18 +94,12 @@ class SlackService
         });
     }
 
-    /**
-     * Resolve a user ID to a display name.
-     */
     private static function resolveUserName(string $userId): string
     {
         $userMap = self::getUserMap();
         return $userMap[$userId] ?? $userId;
     }
 
-    /**
-     * Convert a Slack timestamp to a readable datetime string.
-     */
     private static function formatTimestamp(?string $ts): ?string
     {
         if (!$ts) {
@@ -142,17 +109,11 @@ class SlackService
         return date('Y-m-d H:i:s', (int) floatval($ts));
     }
 
-    /**
-     * Strip null/empty values from an array to reduce token usage.
-     */
     private static function compact(array $data): array
     {
         return array_filter($data, fn($v) => $v !== null && $v !== '' && $v !== []);
     }
 
-    /**
-     * Format a Slack message for AI consumption. Compact output to minimize tokens.
-     */
     private static function formatMessage(array $message): array
     {
         $userId = $message['user'] ?? $message['bot_id'] ?? null;
@@ -191,9 +152,6 @@ class SlackService
         return $formatted;
     }
 
-    /**
-     * Format a Slack channel for AI consumption. Compact output.
-     */
     private static function formatChannel(array $channel): array
     {
         // Determine type as a single string instead of multiple booleans
@@ -219,8 +177,6 @@ class SlackService
         return self::compact($formatted);
     }
 
-    // ==================== Public Tool Methods ====================
-
     public static function listChannels(array $params): ToolResult
     {
         $types = $params['types'] ?? 'public_channel,private_channel,mpim,im';
@@ -232,10 +188,6 @@ class SlackService
             'limit' => $limit,
             'exclude_archived' => $excludeArchived ? 'true' : 'false',
         ]);
-
-        if (!$response['ok']) {
-            return ToolResult::failure('Failed to list channels: ' . ($response['error'] ?? 'Unknown error'));
-        }
 
         $rawChannels = $response['channels'] ?? [];
         $channels = array_map([self::class, 'formatChannel'], $rawChannels);
@@ -272,10 +224,6 @@ class SlackService
         $response = self::api('users.list', [
             'limit' => $limit,
         ]);
-
-        if (!$response['ok']) {
-            return ToolResult::failure('Failed to list users: ' . ($response['error'] ?? 'Unknown error'));
-        }
 
         $users = [];
         foreach ($response['members'] ?? [] as $member) {
@@ -319,10 +267,6 @@ class SlackService
             'sort_dir' => $sort === 'timestamp' ? 'desc' : 'desc',
         ]);
 
-        if (!$response['ok']) {
-            return ToolResult::failure('Failed to search messages: ' . ($response['error'] ?? 'Unknown error'));
-        }
-
         $matches = $response['messages']['matches'] ?? [];
         $total = $response['messages']['total'] ?? 0;
 
@@ -355,13 +299,6 @@ class SlackService
 
         if (empty($channelId) && !empty($params['channel_name'])) {
             $channelId = self::resolveChannelByName($params['channel_name']);
-            if (!$channelId) {
-                return ToolResult::failure("Channel '{$params['channel_name']}' not found. Use list_slack_channels to see available channels.");
-            }
-        }
-
-        if (empty($channelId)) {
-            return ToolResult::failure('Either channel_id or channel_name is required');
         }
 
         $excludeBots = $params['exclude_bots'] ?? true;
@@ -384,10 +321,6 @@ class SlackService
         }
 
         $response = self::api('conversations.history', $apiParams);
-
-        if (!$response['ok']) {
-            return ToolResult::failure('Failed to get conversation history: ' . ($response['error'] ?? 'Unknown error'));
-        }
 
         $rawMessages = $response['messages'] ?? [];
 
@@ -433,23 +366,15 @@ class SlackService
         // If user_id is provided, open a DM channel first
         if (!empty($params['user_id'])) {
             $channelId = self::openDmChannel($params['user_id']);
-            if (!$channelId) {
-                return ToolResult::failure('Failed to open DM channel with user: ' . $params['user_id']);
-            }
-        } elseif (!empty($params['channel'])) {
+        } else (!empty($params['channel'])) {
             $channel = $params['channel'];
             // If it looks like a channel name (not an ID), resolve it
             if (!str_starts_with($channel, 'C') && !str_starts_with($channel, 'D') && !str_starts_with($channel, 'G')) {
                 $resolved = self::resolveChannelByName($channel);
-                if (!$resolved) {
-                    return ToolResult::failure("Channel '{$channel}' not found");
-                }
                 $channelId = $resolved;
             } else {
                 $channelId = $channel;
             }
-        } else {
-            return ToolResult::failure('Either channel or user_id is required');
         }
 
         $apiParams = [
@@ -462,10 +387,6 @@ class SlackService
         }
 
         $response = self::api('chat.postMessage', $apiParams);
-
-        if (!$response['ok']) {
-            return ToolResult::failure('Failed to send message: ' . ($response['error'] ?? 'Unknown error'));
-        }
 
         return ToolResult::success([
             'message' => 'Message sent successfully',
@@ -503,10 +424,6 @@ class SlackService
 
             $response = self::api('search.files', $apiParams);
 
-            if (!$response['ok']) {
-                return ToolResult::failure('Failed to search files: ' . ($response['error'] ?? 'Unknown error'));
-            }
-
             $files = $response['files']['matches'] ?? [];
             $total = $response['files']['total'] ?? 0;
         } else {
@@ -519,10 +436,6 @@ class SlackService
             }
 
             $response = self::api('files.list', $apiParams);
-
-            if (!$response['ok']) {
-                return ToolResult::failure('Failed to list files: ' . ($response['error'] ?? 'Unknown error'));
-            }
 
             $files = $response['files'] ?? [];
             $total = count($files);
