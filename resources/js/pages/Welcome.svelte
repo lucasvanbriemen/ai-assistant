@@ -12,11 +12,11 @@
         fetch('/api/test', {
             method: 'POST',
             body: JSON.stringify({ prompt }),
-            headers: {'Content-Type': 'application/json',},
+            headers: {'Content-Type': 'application/json'},
         }).then((response) => {
-                reader = response.body.getReader();
-                read();
-            })
+            reader = response.body.getReader();
+            read();
+        })
     }
 
     function read() {
