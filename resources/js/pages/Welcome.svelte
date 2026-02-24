@@ -31,6 +31,6 @@
 </AppHead>
 
 <input type="text" placeholder="Type something..." bind:value={prompt} />
-<button onclick={click}>click me</button>
+<button onclick={click}>submit</button>
 <br>
 output: {result}
