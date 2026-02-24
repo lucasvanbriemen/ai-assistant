@@ -2,10 +2,11 @@
     import AppHead from '@/components/AppHead.svelte';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
+    let result = $state('');
 
     let decoder = new TextDecoder();
     let reader;
-    let result = $state('');
+    let lastIncompleteLine = '';
 
     function click() {
         fetch('/api/test', {
@@ -20,10 +21,34 @@
 
     function read() {
         reader.read().then(({ done, value }) => {
-            if (done) { return; }
-            result += decoder.decode(value, { stream: true });
+            if (done) {
+                processLine(lastIncompleteLine);
+                return;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            lastIncompleteLine += chunk;
+
+            // split on newline, leave last partial line in buffer
+            const lines = lastIncompleteLine.split('\n');
+            lastIncompleteLine = lines.pop();
+
+            lines.forEach(processLine);
+
             read();
         });
+    }
+
+    function processLine(line) {
+        line = line.trim();
+        if (!line.startsWith('data:')) return;
+
+        // We need to remove the event: part of the line to get the JSON string
+        const json = JSON.parse(line.substring(5).trim());
+
+        if (json.type === 'content_block_delta') {
+            result += json.delta.text || '';
+        }
     }
 </script>
 
