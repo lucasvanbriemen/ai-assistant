@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Http;
 
 class AiController extends Controller
 {
+    private const MODEL = 'claude-opus-4-6';
+    private const API_URL = 'https://api.anthropic.com/v1/messages'; 
+
     public function index(Request $request)
     {
         $response = Http::withHeaders([
@@ -16,8 +19,8 @@ class AiController extends Controller
             'anthropic-beta' => 'oauth-2025-04-20',
         ])->withOptions([
             'stream' => true,
-        ])->post('https://api.anthropic.com/v1/messages', [
-            'model' => 'claude-opus-4-6',
+        ])->post(self::API_URL, [
+            'model' => self::MODEL,
             'max_tokens' => 1024,
             'stream' => true,
             'messages' => [
