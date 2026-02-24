@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\IsLoggedIn;
+use Inertia\Inertia;
 
-Route::get('/{any}', function () {
-    return view('index');
-})->where('any', '.*')->name('spa.catchall')->middleware(IsLoggedIn::class);
+Route::get('/', function () {
+    return Inertia::render('Welcome');
+})->name('home');
+
+Route::get('/test', function () {
+    return Inertia::render('Welcome2');
+})->name('test');
