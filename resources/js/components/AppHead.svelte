@@ -1,12 +1,7 @@
-<script lang="ts">
-    import type { Snippet } from 'svelte';
-
+<script>
     let {
         title = '',
         children,
-    }: {
-        title?: string;
-        children?: Snippet;
     } = $props();
 
     const appName = import.meta.env.VITE_APP_NAME || 'Laravel';

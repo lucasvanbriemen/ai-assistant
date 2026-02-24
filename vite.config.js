@@ -1,20 +1,20 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import path from 'path';
+import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import tailwindcss from '@tailwindcss/vite';
+import laravel from 'laravel-vite-plugin';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
     plugins: [
-        svelte(),
         laravel({
-            input: ['resources/js/main.js'],
+            input: ['resources/js/app.js'],
+            ssr: 'resources/js/ssr.js',
             refresh: true,
         }),
+        tailwindcss(),
+        svelte(),
+        wayfinder({
+            formVariants: true,
+        }),
     ],
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './resources/js'),
-            '@styles': path.resolve(__dirname, './resources/scss'),
-        },
-    },
 });
