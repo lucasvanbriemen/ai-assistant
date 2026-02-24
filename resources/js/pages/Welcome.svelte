@@ -1,31 +1,24 @@
 <script>
     import AppHead from '@/components/AppHead.svelte';
 
+    let decoder = new TextDecoder();
+    let reader;
     let result = $state('');
 
     function click() {
         fetch('/api/test')
             .then((response) => {
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-
-                function read() {
-                    reader.read().then(({ done, value }) => {
-                        if (done) {
-                            console.log('Stream complete:', result);
-                            return;
-                        }
-                        result += decoder.decode(value, { stream: true });
-                        console.log('Received chunk:', result);
-                        read();
-                    });
-                }
-
+                reader = response.body.getReader();
                 read();
             })
-            .catch((error) => {
-                console.error('Error fetching stream:', error);
-            });
+    }
+
+    function read() {
+        reader.read().then(({ done, value }) => {
+            if (done) { return; }
+            result += decoder.decode(value, { stream: true });
+            read();
+        });
     }
 </script>
 
