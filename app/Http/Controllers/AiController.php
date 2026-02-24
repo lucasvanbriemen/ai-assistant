@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class AiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -21,7 +21,7 @@ class AiController extends Controller
             'max_tokens' => 1024,
             'stream' => true,
             'messages' => [
-                ['role' => 'user', 'content' => 'Explain the theory of relativity in 1 paragraph.'],
+                ['role' => 'user', 'content' => $request->input('prompt')],
             ],
         ]);
 
@@ -29,9 +29,7 @@ class AiController extends Controller
 
         return response()->stream(function () use ($body) {
             while (! $body->eof()) {
-                echo $body->read(1024);
-                ob_flush();
-                flush();
+                yield $body->read(1024);
             }
         }, 200, [
             'X-Accel-Buffering' => 'no',
