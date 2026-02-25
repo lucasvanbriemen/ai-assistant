@@ -75,17 +75,21 @@
 </AppHead>
 
 <div class="home-page">
+
     <StatusCard />
-    {#each messages as message}
-        <h2>{message.role}</h2>
-        <p>{message.text}</p>
+    
+    <div class="chat-container">
+        {#each messages as message}
+            <h2>{message.role}</h2>
+            <p>{message.text}</p>
+            <br>
+        {/each}
+
         <br>
-    {/each}
 
-    <br>
-
-    <div class="prompt-inputs">
-        <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
-        <button onclick={submitPrompt} disabled={isSending}>submit</button>
+        <div class="prompt-inputs">
+            <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
+            <button onclick={submitPrompt} disabled={isSending}>submit</button>
+        </div>
     </div>
 </div>
