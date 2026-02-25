@@ -11,6 +11,10 @@
     margin-top: 5rem;
   }
 
+  >* {
+    min-width: 33%;
+  }
+
   .chat-container {
     width: calc(min(100ch, 90%));
     display: flex;
