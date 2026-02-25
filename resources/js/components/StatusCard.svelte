@@ -55,20 +55,20 @@
     const rand = Math.random();
     // 30% - Time-based greeting with username
     if (rand < 0.3) {
-      return `${timeBaseGreeting}, ${randomName}! ${randomIntro}${randomHelp}`;
+      return `${timeBaseGreeting} ${randomName} ${randomIntro} ${randomHelp}`;
     }
     // 20% - Simple greeting with username
     else if (rand < 0.5) {
-      return `${randomGreeting}, ${randomName}! ${randomIntro}${randomHelp}`;
+      return `${randomGreeting} ${randomName} ${randomIntro} ${randomHelp}`;
     }
     // 15% - Time-based greeting only
     else if (rand < 0.65) {
-      return `${timeBaseGreeting}! ${randomIntro}${randomHelp}`;
+      return `${timeBaseGreeting} ${randomIntro} ${randomHelp}`;
     }
     // 35% - Just the help message (with Prime intro more likely here)
     else {
       const soloIntro = Math.random() < 0.6 ? `${randomIntro} ` : '';
-      return `${soloIntro}${randomHelp}`;
+      return `${soloIntro} ${randomHelp}`;
     }
   }
 
@@ -91,6 +91,6 @@
   });
 </script>
 
-<div class="greeting-card">
+<div class="status-card">
   <h1>{greeting}</h1>
 </div>
