@@ -20,7 +20,7 @@ class AiController extends Controller
 
     public function index(Request $request)
     {
-        $history = $request->input('history', []);
+        $history = $this->formatMessages($request->input('history', []));
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -34,7 +34,7 @@ class AiController extends Controller
             'max_tokens' => 1024,
             'stream' => true,
             'system' => self::SYSTEM_PROMPT,
-            'messages' => $this->formatMessages($history),
+            'messages' => $history,
         ]);
 
         $body = $response->toPsrResponse()->getBody();
