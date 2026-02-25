@@ -3,12 +3,14 @@
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
     let result = $state('');
+    let isThinking = $state(false);
 
     let decoder = new TextDecoder();
     let reader;
     let lastIncompleteLine = '';
 
     function click() {
+        isThinking = true;
         fetch('/api/test', {
             method: 'POST',
             body: JSON.stringify({ prompt }),
@@ -23,6 +25,7 @@
         reader.read().then(({ done, value }) => {
             if (done) {
                 processLine(lastIncompleteLine);
+                isThinking = false;
                 return;
             }
 
@@ -58,4 +61,8 @@
 <textarea placeholder="Type something..." bind:value={prompt}></textarea>
 <button onclick={click}>submit</button>
 <br>
+
 output: {result}
+{#if isThinking}
+    IS thinking
+{/if}
