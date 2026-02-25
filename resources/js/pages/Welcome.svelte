@@ -1,5 +1,6 @@
 <script>
     import AppHead from '@/components/AppHead.svelte';
+    import '../../scss/pages/welcome.scss';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
     let result = $state('');
@@ -55,8 +56,10 @@
 <AppHead title="Home">
 </AppHead>
 
-<textarea placeholder="Type something..." bind:value={prompt}></textarea>
-<button onclick={click}>submit</button>
-<br>
+<div class="welcome-page">
+    <textarea placeholder="Type something..." bind:value={prompt}></textarea>
+    <button onclick={click}>submit</button>
+    <br>
 
-output: {result}
+    output: {result}
+</div>
