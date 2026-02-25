@@ -3,7 +3,8 @@
     import '../../scss/pages/welcome.scss';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
-    let result = $state('');
+
+    let messages = $state([]);
 
     let decoder = new TextDecoder();
     let reader;
@@ -16,6 +17,7 @@
             headers: {'Content-Type': 'application/json'},
         }).then((response) => {
             reader = response.body.getReader();
+            messages.push('');
             read();
         })
     }
@@ -48,7 +50,9 @@
         const json = JSON.parse(line.substring(5).trim());
 
         if (json.type === 'content_block_delta') {
-            result += json.delta.text || '';
+            messages[messages.length - 1] += json.delta.text || '';
+            console.log(json.delta.text);
+            console.log(messages);
         }
     }
 </script>
@@ -57,9 +61,12 @@
 </AppHead>
 
 <div class="welcome-page">
-    <textarea placeholder="Type something..." bind:value={prompt}></textarea>
-    <button onclick={click}>submit</button>
+    {#each messages as message}
+        <p>{message}</p>
+    {/each}
+
     <br>
 
-    output: {result}
+    <textarea placeholder="Type something..." bind:value={prompt}></textarea>
+    <button onclick={click}>submit</button>
 </div>
