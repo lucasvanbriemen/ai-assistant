@@ -51,13 +51,21 @@
   let rimMesh; // Reference to rim glow for dynamic opacity
   let glassSphere; // Reference to glass sphere for displacement
   let originalPositions = null; // Store original vertex positions
+  let originalRimPositions = null; // Store original rim vertex positions
+  let originalNucleusPositions = []; // Store original nucleus vertex positions (one per particle)
   let currentDisplacementAmp = 0; // Current displacement amplitude (lerped)
   let currentNucleusJitter = 0; // Current nucleus jitter amplitude (lerped)
+  let currentRimDisplacementAmp = 0; // Current rim displacement amplitude (lerped)
+  let currentNucleusDeformAmp = 0; // Current nucleus deform amplitude (lerped)
 
   const NORMAL_DISPLACEMENT_AMP = 0;
   const THINKING_DISPLACEMENT_AMP = 0.15;
   const NORMAL_NUCLEUS_JITTER = 0;
   const THINKING_NUCLEUS_JITTER = 0.04;
+  const NORMAL_RIM_DISPLACEMENT_AMP = 0;
+  const THINKING_RIM_DISPLACEMENT_AMP = 0.2;
+  const NORMAL_NUCLEUS_DEFORM_AMP = 0;
+  const THINKING_NUCLEUS_DEFORM_AMP = 0.06;
 
   $effect(() => {
     // Only depend on container and animate — NOT thinking
@@ -139,7 +147,7 @@
 
     nucleusPositions.forEach((pos, index) => {
       // Create nucleus particle with highly reflective material
-      const nucleusGeometry = new THREE.SphereGeometry(0.35, 64, 64); // Higher segments for better reflections
+      const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32); // Reduced segments (still smooth, fewer vertices to displace)
       const nucleusMaterial = new THREE.MeshPhongMaterial({
         color: nucleusColors[index].color,
         emissive: nucleusColors[index].emissive,
@@ -167,6 +175,11 @@
 
       // Add to group instead of scene
       nucleusGroup.add(nucleusParticle);
+
+      // Store original vertex positions for deformation
+      const origNucPos = new Float32Array(nucleusGeometry.attributes.position.array);
+      originalNucleusPositions.push(origNucPos);
+
       nucleusParticles.push({
         mesh: nucleusParticle,
         basePos: { x: pos.x, y: pos.y, z: pos.z },
@@ -251,6 +264,9 @@
     rimMesh = new THREE.Mesh(rimGeometry, rimMaterial);
     scene.add(rimMesh);
 
+    // Store original rim vertex positions for displacement
+    originalRimPositions = new Float32Array(rimGeometry.attributes.position.array);
+
     // Initial render
     renderer.render(scene, camera);
   }
@@ -274,6 +290,8 @@
 
     const targetDisplacementAmp = thinking ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
     const targetNucleusJitter = thinking ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
+    const targetRimDisplacementAmp = thinking ? THINKING_RIM_DISPLACEMENT_AMP : NORMAL_RIM_DISPLACEMENT_AMP;
+    const targetNucleusDeformAmp = thinking ? THINKING_NUCLEUS_DEFORM_AMP : NORMAL_NUCLEUS_DEFORM_AMP;
 
     currentElectronSpeed = lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
     currentSceneSpeed = lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
@@ -284,6 +302,8 @@
     currentRimOpacity = lerp(currentRimOpacity, targetRimOpacity, lerpSpeed);
     currentDisplacementAmp = lerp(currentDisplacementAmp, targetDisplacementAmp, lerpSpeed);
     currentNucleusJitter = lerp(currentNucleusJitter, targetNucleusJitter, lerpSpeed);
+    currentRimDisplacementAmp = lerp(currentRimDisplacementAmp, targetRimDisplacementAmp, lerpSpeed);
+    currentNucleusDeformAmp = lerp(currentNucleusDeformAmp, targetNucleusDeformAmp, lerpSpeed);
 
     // Rotate entire scene for 3D effect
     scene.rotation.y += 0.002 * currentSceneSpeed;
@@ -330,6 +350,44 @@
       }
     }
 
+    // Rim sphere vertex displacement (wobbly container when thinking)
+    if (rimMesh && originalRimPositions) {
+      const rimPositions = rimMesh.geometry.attributes.position;
+      const rimArr = rimPositions.array;
+
+      if (currentRimDisplacementAmp > 0.001) {
+        const t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
+        for (let i = 0; i < rimArr.length; i += 3) {
+          const ox = originalRimPositions[i];
+          const oy = originalRimPositions[i + 1];
+          const oz = originalRimPositions[i + 2];
+          const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+          const nx = ox / len;
+          const ny = oy / len;
+          const nz = oz / len;
+          const d = displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
+          rimArr[i] = ox + nx * d;
+          rimArr[i + 1] = oy + ny * d;
+          rimArr[i + 2] = oz + nz * d;
+        }
+        rimPositions.needsUpdate = true;
+        rimMesh.geometry.computeVertexNormals();
+      } else if (currentRimDisplacementAmp <= 0.001 && currentRimDisplacementAmp > -0.001) {
+        let needsRestore = false;
+        for (let i = 0; i < rimArr.length; i++) {
+          if (rimArr[i] !== originalRimPositions[i]) {
+            needsRestore = true;
+            break;
+          }
+        }
+        if (needsRestore) {
+          rimArr.set(originalRimPositions);
+          rimPositions.needsUpdate = true;
+          rimMesh.geometry.computeVertexNormals();
+        }
+      }
+    }
+
     // Rotate the entire nucleus group so particles swap positions in 3D
     nucleusGroup.rotation.x += 0.008 * currentNucleusSpeed;
     nucleusGroup.rotation.y += 0.012 * currentNucleusSpeed;
@@ -357,6 +415,45 @@
         );
       } else {
         particle.mesh.position.set(particle.basePos.x, particle.basePos.y, particle.basePos.z);
+      }
+
+      // Nucleus particle vertex deformation (organic protrusions/arms when thinking)
+      if (originalNucleusPositions[index]) {
+        const nucPositions = particle.mesh.geometry.attributes.position;
+        const nucArr = nucPositions.array;
+        const origNuc = originalNucleusPositions[index];
+
+        if (currentNucleusDeformAmp > 0.001) {
+          const t = Date.now() * 0.001 + particle.phase; // Phase offset per particle
+          for (let i = 0; i < nucArr.length; i += 3) {
+            const ox = origNuc[i];
+            const oy = origNuc[i + 1];
+            const oz = origNuc[i + 2];
+            const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+            const nx = ox / len;
+            const ny = oy / len;
+            const nz = oz / len;
+            const d = displacementNoise(ox, oy, oz, t) * currentNucleusDeformAmp;
+            nucArr[i] = ox + nx * d;
+            nucArr[i + 1] = oy + ny * d;
+            nucArr[i + 2] = oz + nz * d;
+          }
+          nucPositions.needsUpdate = true;
+          particle.mesh.geometry.computeVertexNormals();
+        } else if (currentNucleusDeformAmp <= 0.001 && currentNucleusDeformAmp > -0.001) {
+          let needsRestore = false;
+          for (let i = 0; i < nucArr.length; i++) {
+            if (nucArr[i] !== origNuc[i]) {
+              needsRestore = true;
+              break;
+            }
+          }
+          if (needsRestore) {
+            nucArr.set(origNuc);
+            nucPositions.needsUpdate = true;
+            particle.mesh.geometry.computeVertexNormals();
+          }
+        }
       }
     });
 
