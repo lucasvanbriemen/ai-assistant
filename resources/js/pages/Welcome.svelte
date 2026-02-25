@@ -3,6 +3,7 @@
     import '../../scss/pages/welcome.scss';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
+    let isSending = $state(false);
 
     let messages = $state([]);
 
@@ -11,6 +12,8 @@
     let lastIncompleteLine = '';
 
     function submitPrompt() {
+        isSending = true;
+
         fetch('/api/test', {
             method: 'POST',
             body: JSON.stringify({ prompt }),
@@ -35,6 +38,7 @@
         reader.read().then(({ done, value }) => {
             if (done) {
                 processLine(lastIncompleteLine);
+                isSending = false;
                 return;
             }
 
@@ -78,6 +82,6 @@
 
     <div class="prompt-inputs">
         <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
-        <button onclick={submitPrompt}>submit</button>
+        <button onclick={submitPrompt} disabled={isSending}>submit</button>
     </div>
 </div>

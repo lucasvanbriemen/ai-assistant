@@ -23,6 +23,11 @@
       background-color: var(--primary-color);
       border-radius: 1rem 3rem 3rem 1rem;
       cursor: pointer;
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.37;
+      }
     }
   }
 }
