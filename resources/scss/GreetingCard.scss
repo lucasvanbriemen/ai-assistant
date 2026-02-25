@@ -61,6 +61,41 @@
     transition: none;
   }
 
+  .atom-logo-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .thinking-toggle {
+    margin-top: 0.5rem;
+    padding: 0.4rem 1.2rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.5);
+      color: var(--text-color);
+    }
+
+    &.active {
+      background: rgba(139, 92, 246, 0.25);
+      border-color: rgba(139, 92, 246, 0.6);
+      color: #a78bfa;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    }
+  }
+
   .ai-identity {
     display: flex;
     flex-direction: column;

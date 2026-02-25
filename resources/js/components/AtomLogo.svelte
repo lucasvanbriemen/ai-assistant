@@ -2,11 +2,36 @@
   import * as THREE from 'three';
   import '@styles/AtomLogo.scss';
 
-  let { size = 280, animate = true } = $props();
+  import { untrack } from 'svelte';
 
-  const ELECTRON_ORBIT_SPEED_MULTIPLIER = 2.0;
-  const SCENE_ROTATION_SPEED = 25.0;
-  const NUCLEUS_ROTATION_SPEED = 5.0;
+  let { size = 280, animate = true, thinking = false } = $props();
+
+  // Normal state speeds
+  const NORMAL_ELECTRON_SPEED = 2.0;
+  const NORMAL_SCENE_SPEED = 25.0;
+  const NORMAL_NUCLEUS_SPEED = 5.0;
+  const NORMAL_PULSE_AMPLITUDE = 0.06;
+  const NORMAL_EMISSIVE_INTENSITY = 0.4;
+  const NORMAL_ELECTRON_LIGHT_INTENSITY = 125.0;
+  const NORMAL_RIM_OPACITY = 0.1;
+
+  // Thinking state speeds
+  const THINKING_ELECTRON_SPEED = 6.0;
+  const THINKING_SCENE_SPEED = 50.0;
+  const THINKING_NUCLEUS_SPEED = 12.0;
+  const THINKING_PULSE_AMPLITUDE = 0.15;
+  const THINKING_EMISSIVE_INTENSITY = 0.8;
+  const THINKING_ELECTRON_LIGHT_INTENSITY = 250.0;
+  const THINKING_RIM_OPACITY = 0.25;
+
+  // Interpolated values (smoothly transition between states)
+  let currentElectronSpeed = NORMAL_ELECTRON_SPEED;
+  let currentSceneSpeed = NORMAL_SCENE_SPEED;
+  let currentNucleusSpeed = NORMAL_NUCLEUS_SPEED;
+  let currentPulseAmplitude = NORMAL_PULSE_AMPLITUDE;
+  let currentEmissiveIntensity = NORMAL_EMISSIVE_INTENSITY;
+  let currentElectronLightIntensity = NORMAL_ELECTRON_LIGHT_INTENSITY;
+  let currentRimOpacity = NORMAL_RIM_OPACITY;
   const ORBIT_RADIUS = 3.2;
   const ORBIT_TUBE_THICKNESS = 0.06;
   const ORBIT_CONFIGS = [
@@ -23,13 +48,20 @@
   let electrons = [];
   let orbits = [];
   let animationId;
+  let rimMesh; // Reference to rim glow for dynamic opacity
 
   $effect(() => {
-    if (container) {
-      initThreeJS();
-      if (animate) {
-        animateScene();
-      }
+    // Only depend on container and animate — NOT thinking
+    const el = container;
+    const shouldAnimate = animate;
+
+    if (el) {
+      untrack(() => {
+        initThreeJS();
+        if (shouldAnimate) {
+          animateScene();
+        }
+      });
     }
 
     return () => {
@@ -185,37 +217,62 @@
     const rimMaterial = new THREE.MeshBasicMaterial({
       color: 0x8b5cf6,
       transparent: true,
-      opacity: 0.1,
+      opacity: currentRimOpacity,
       side: THREE.BackSide
     });
-    const rim = new THREE.Mesh(rimGeometry, rimMaterial);
-    scene.add(rim);
+    rimMesh = new THREE.Mesh(rimGeometry, rimMaterial);
+    scene.add(rimMesh);
 
     // Initial render
     renderer.render(scene, camera);
   }
 
+  function lerp(current, target, speed) {
+    return current + (target - current) * speed;
+  }
+
   function animateScene() {
     animationId = requestAnimationFrame(animateScene);
 
+    // Smoothly interpolate all values toward target state
+    const lerpSpeed = 0.03;
+    const targetElectronSpeed = thinking ? THINKING_ELECTRON_SPEED : NORMAL_ELECTRON_SPEED;
+    const targetSceneSpeed = thinking ? THINKING_SCENE_SPEED : NORMAL_SCENE_SPEED;
+    const targetNucleusSpeed = thinking ? THINKING_NUCLEUS_SPEED : NORMAL_NUCLEUS_SPEED;
+    const targetPulseAmplitude = thinking ? THINKING_PULSE_AMPLITUDE : NORMAL_PULSE_AMPLITUDE;
+    const targetEmissiveIntensity = thinking ? THINKING_EMISSIVE_INTENSITY : NORMAL_EMISSIVE_INTENSITY;
+    const targetElectronLightIntensity = thinking ? THINKING_ELECTRON_LIGHT_INTENSITY : NORMAL_ELECTRON_LIGHT_INTENSITY;
+    const targetRimOpacity = thinking ? THINKING_RIM_OPACITY : NORMAL_RIM_OPACITY;
+
+    currentElectronSpeed = lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
+    currentSceneSpeed = lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
+    currentNucleusSpeed = lerp(currentNucleusSpeed, targetNucleusSpeed, lerpSpeed);
+    currentPulseAmplitude = lerp(currentPulseAmplitude, targetPulseAmplitude, lerpSpeed);
+    currentEmissiveIntensity = lerp(currentEmissiveIntensity, targetEmissiveIntensity, lerpSpeed);
+    currentElectronLightIntensity = lerp(currentElectronLightIntensity, targetElectronLightIntensity, lerpSpeed);
+    currentRimOpacity = lerp(currentRimOpacity, targetRimOpacity, lerpSpeed);
+
     // Rotate entire scene for 3D effect
-    scene.rotation.y += 0.002 * SCENE_ROTATION_SPEED;
-    scene.rotation.x += 0.001 * SCENE_ROTATION_SPEED;
+    scene.rotation.y += 0.002 * currentSceneSpeed;
+    scene.rotation.x += 0.001 * currentSceneSpeed;
 
     // Rotate the entire nucleus group so particles swap positions in 3D
-    nucleusGroup.rotation.x += 0.008 * NUCLEUS_ROTATION_SPEED;
-    nucleusGroup.rotation.y += 0.012 * NUCLEUS_ROTATION_SPEED;
-    nucleusGroup.rotation.z += 0.006 * NUCLEUS_ROTATION_SPEED;
+    nucleusGroup.rotation.x += 0.008 * currentNucleusSpeed;
+    nucleusGroup.rotation.y += 0.012 * currentNucleusSpeed;
+    nucleusGroup.rotation.z += 0.006 * currentNucleusSpeed;
 
-    // Subtle pulse for each nucleus particle
+    // Pulse for each nucleus particle (amplitude changes with thinking state)
     nucleusParticles.forEach((particle, index) => {
-      const pulse = Math.sin(Date.now() * 0.002 + index) * 0.06 + 1;
+      const pulse = Math.sin(Date.now() * 0.002 + index) * currentPulseAmplitude + 1;
       particle.mesh.scale.set(pulse, pulse, pulse);
+
+      // Update emissive intensity
+      particle.mesh.material.emissiveIntensity = currentEmissiveIntensity;
     });
 
-    // Animate electrons along their orbits (position only - no scaling/pulsing)
+    // Animate electrons along their orbits
     electrons.forEach((electron) => {
-      electron.angle += electron.speed * ELECTRON_ORBIT_SPEED_MULTIPLIER;
+      electron.angle += electron.speed * currentElectronSpeed;
 
       // Calculate position on orbital path
       const x = Math.cos(electron.angle) * electron.radius;
@@ -227,13 +284,19 @@
 
       electron.mesh.position.copy(position);
 
-      // Electrons remain completely static - only position changes, no scaling or pulsing
+      // Update electron light intensity
+      electron.mesh.children[0].intensity = currentElectronLightIntensity;
     });
 
     // Slowly rotate orbits
     orbits.forEach((orbit, index) => {
-      orbit.rotation.z += 0.001 * (index + 1) * SCENE_ROTATION_SPEED;
+      orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
     });
+
+    // Update rim glow opacity
+    if (rimMesh) {
+      rimMesh.material.opacity = currentRimOpacity;
+    }
 
     renderer.render(scene, camera);
   }

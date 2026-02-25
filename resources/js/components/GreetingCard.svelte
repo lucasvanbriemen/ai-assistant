@@ -7,9 +7,14 @@
   let rotateY = $state(0);
   let cardElement = $state(null);
   let isHovering = $state(false);
+  let isThinking = $state(false);
 
   const username = "Lucas";
   const displayMessage = buildGreetingMessage(username);
+
+  function toggleThinking() {
+    isThinking = !isThinking;
+  }
 
   function handleMouseMove(e) {
     if (!cardElement) return;
@@ -50,7 +55,12 @@
   <div class="gradient-shadow"></div>
 
   <div class="greeting-card" class:hovering={isHovering} bind:this={cardElement} onmouseenter={handleMouseEnter} onmousemove={handleMouseMove} onmouseleave={handleMouseLeave} style="transform: perspective(1000px) rotateX({rotateX}deg) rotateY({rotateY}deg);">
-    <AtomLogo size={350} />
+    <div class="atom-logo-wrapper">
+      <AtomLogo size={350} thinking={isThinking} />
+      <button class="thinking-toggle" class:active={isThinking} onclick={toggleThinking}>
+        {isThinking ? 'Thinking...' : 'Idle'}
+      </button>
+    </div>
 
     <div class="ai-identity">
       <div class="ai-name">Prime</div>
