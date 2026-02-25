@@ -20,6 +20,8 @@ class AiController extends Controller
 
     public function index(Request $request)
     {
+        $history = $request->input('history', []);
+
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . env('TOKEN'),
@@ -32,9 +34,7 @@ class AiController extends Controller
             'max_tokens' => 1024,
             'stream' => true,
             'system' => self::SYSTEM_PROMPT,
-            'messages' => [
-                ['role' => 'user', 'content' => $request->input('prompt')],
-            ],
+            'messages' => $this->formatMessages($history),
         ]);
 
         $body = $response->toPsrResponse()->getBody();
@@ -47,5 +47,20 @@ class AiController extends Controller
             'X-Accel-Buffering' => 'no',
             'Cache-Control' => 'no-cache',
         ]);
+    }
+
+    private function formatMessages($history)
+    {
+        return array_map(function ($message) {
+            return [
+                'role' => $message['role'],
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => $message['text'],
+                    ],
+                ],
+            ];
+        }, $history);
     }
 }

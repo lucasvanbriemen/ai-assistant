@@ -18,7 +18,7 @@
 
         fetch('/api/test', {
             method: 'POST',
-            body: JSON.stringify({ prompt }),
+            body: JSON.stringify({ history: messages, prompt: prompt }),
             headers: {'Content-Type': 'application/json'},
         }).then((response) => {
             reader = response.body.getReader();
