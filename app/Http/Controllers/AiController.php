@@ -9,7 +9,11 @@ class AiController extends Controller
 {
     private const MODEL = 'claude-opus-4-6';
     private const API_URL = 'https://api.anthropic.com/v1/messages';
+    private const SYSTEM_PROMPT = <<<SYSTEM
+        Your name is Prime, that stands for "Personal Responsive Intelligent Manager for Everything"
+    SYSTEM;
 
+    
     public function index(Request $request)
     {
         $response = Http::withHeaders([
@@ -23,6 +27,7 @@ class AiController extends Controller
             'model' => self::MODEL,
             'max_tokens' => 1024,
             'stream' => true,
+            'system' => self::SYSTEM_PROMPT,
             'messages' => [
                 ['role' => 'user', 'content' => $request->input('prompt')],
             ],
