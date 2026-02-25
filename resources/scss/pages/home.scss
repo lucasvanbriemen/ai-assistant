@@ -2,6 +2,15 @@
   display: flex;
   margin: 0 auto;
 
+  &.no-messages {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    height: calc(100vmin - 10rem);
+    margin-top: 5rem;
+  }
+
   .chat-container {
     width: calc(min(100ch, 90%));
     display: flex;

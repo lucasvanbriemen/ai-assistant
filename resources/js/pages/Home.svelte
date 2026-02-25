@@ -74,7 +74,7 @@
 <AppHead title="Home">
 </AppHead>
 
-<div class="home-page">
+<div class="home-page" class:no-messages={messages.length == 0}>
 
     <StatusCard />
     
