@@ -55,7 +55,7 @@
 <AppHead title="Home">
 </AppHead>
 
-<textarea placeholder="Type something..." bind:value={prompt} />
+<textarea placeholder="Type something..." bind:value={prompt}></textarea>
 <button onclick={click}>submit</button>
 <br>
 output: {result}
