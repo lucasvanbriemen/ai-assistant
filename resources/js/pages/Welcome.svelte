@@ -10,7 +10,7 @@
     let reader;
     let lastIncompleteLine = '';
 
-    function click() {
+    function submitPrompt() {
         fetch('/api/test', {
             method: 'POST',
             body: JSON.stringify({ prompt }),
@@ -30,7 +30,7 @@
         console.log(event.key);
 
         if (event.key === 'Enter' && event.shiftKey) {
-            click();
+            submitPrompt();
         }
     }
 
@@ -81,6 +81,6 @@
 
     <div class="prompt-inputs">
         <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
-        <button onclick={click}>submit</button>
+        <button onclick={submitPrompt}>submit</button>
     </div>
 </div>
