@@ -34,7 +34,6 @@ const POSSABLE_NAMES = [
 ];
 
 export default {
-
   // We generate a greeting card text
   // This can consist of the following:
   // - A greeting
