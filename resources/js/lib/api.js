@@ -1,4 +1,4 @@
-import { StreamHandler } from './stream.js';
+const currentDomain = window.location.origin;
 
 export default {
   defaultHeaders: {
@@ -25,13 +25,6 @@ export default {
 
   delete(url, headers = {}) {
     return this.makeRequest("DELETE", url, null, headers);
-  },
-
-  stream(url, data, onChunk, onComplete, onTool, onThinking) {
-    const fullUrl = currentDomain + url;
-
-    const handler = new StreamHandler(fullUrl, data, {onChunk, onComplete, onTool, onThinking});
-    handler.connect();
   },
 
   makeRequest(method, url, data = null, headers = {}) {

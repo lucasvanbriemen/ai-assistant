@@ -1,6 +1,7 @@
 import { createInertiaApp } from '@inertiajs/svelte';
 import { hydrate, mount } from 'svelte';
 import '../css/app.css';
+import theme from './lib/theme.js';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -20,6 +21,8 @@ createInertiaApp({
         } else {
             mount(App, { target: el, props });
         }
+
+        theme.applyTheme();
     },
     progress: {
         color: '#4B5563',

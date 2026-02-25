@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 class AiController extends Controller
 {
     private const MODEL = 'claude-opus-4-6';
-    private const API_URL = 'https://api.anthropic.com/v1/messages'; 
+    private const API_URL = 'https://api.anthropic.com/v1/messages';
 
     public function index(Request $request)
     {
