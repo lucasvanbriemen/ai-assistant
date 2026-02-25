@@ -24,12 +24,9 @@
 
     function promptInput(event) {
         // If it was the enter key, call the click function (unless shift is pressed)
-        event.stopPropagation();
-        event.preventDefault();
-
-        console.log(event.key);
-
         if (event.key === 'Enter' && event.shiftKey) {
+            event.stopPropagation();
+            event.preventDefault();
             submitPrompt();
         }
     }
