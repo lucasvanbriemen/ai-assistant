@@ -1,7 +1,7 @@
 <script>
     import AppHead from '@/components/AppHead.svelte';
-    import GreetingCard from '@/components/GreetingCard.svelte';
-    import '../../scss/pages/welcome.scss';
+    import StatusCard from '@/components/StatusCard.svelte';
+    import '../../scss/pages/home.scss';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
     let isSending = $state(false);
@@ -74,8 +74,8 @@
 <AppHead title="Home">
 </AppHead>
 
-<div class="welcome-page">
-    <GreetingCard />
+<div class="home-page">
+    <StatusCard />
     {#each messages as message}
         <h2>{message.role}</h2>
         <p>{message.text}</p>
