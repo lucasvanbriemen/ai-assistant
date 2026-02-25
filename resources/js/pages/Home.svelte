@@ -1,101 +1,89 @@
 <script>
-  import GreetingCard from '@/components/GreetingCard.svelte';
-  import MessageInput from '@/components/MessageInput.svelte';
-  import Message from '@/components/Message.svelte';
-  import '@styles/Home.scss';
+    import AppHead from '@/components/AppHead.svelte';
+    import '../../scss/pages/welcome.scss';
 
-  let messages = $state([]);
-  let input = $state('');
-  let executingTools = $state([]);
-  let isThinking = $state(false);
-  let isStreaming = $state(false);
-  let messagesListEl = $state(null);
+    let prompt = $state('Explain the theory of relativity in 1 paragraph.');
+    let isSending = $state(false);
 
-  // Track if we have any messages
-  let hasMessages = $derived(messages.length > 0);
+    let messages = $state([]);
 
-  // Auto-scroll to bottom when messages change or when thinking/streaming
-  $effect(() => {
-    if (messagesListEl && (messages.length > 0 || isThinking || isStreaming)) {
-      messagesListEl.scrollTop = messagesListEl.scrollHeight;
+    let decoder = new TextDecoder();
+    let reader;
+    let lastIncompleteLine = '';
+
+    function submitPrompt() {
+        isSending = true;
+
+        messages.push({ text: prompt, role: 'user' });
+
+        fetch('/api/test', {
+            method: 'POST',
+            body: JSON.stringify({ history: messages }),
+            headers: {'Content-Type': 'application/json'},
+        }).then((response) => {
+            reader = response.body.getReader();
+            messages.push({ text: '', role: 'assistant' });
+            read();
+        })
     }
-  });
 
-  async function sendMessage() {
-    const userMessage = input.trim();
-    if (!userMessage) return;
-
-    input = '';
-    messages.push({role: 'user', content: userMessage, timestamp: new Date()});
-    messages = messages;
-
-    // Add placeholder for streaming response
-    const placeholderIndex = messages.length;
-    messages.push({role: 'assistant', content: '', timestamp: new Date()});
-    messages = messages;
-
-    api.stream('/api/chat/send', {
-        message: userMessage,
-        history: messages
-          .filter(m => m.role !== 'system' && m.role !== 'error')
-          .map(m => ({
-            role: m.role,
-            content: m.content,
-          })),
-      },
-      // onChunk
-      (chunk, fullMessage) => {
-        isThinking = false;
-        isStreaming = true;
-        messages[placeholderIndex].content = fullMessage;
-        messages = messages; // Trigger reactivity
-      },
-      // onComplete
-      (finalMessage) => {
-        messages[placeholderIndex].content = finalMessage;
-        executingTools = [];
-        isStreaming = false;
-        isThinking = false;
-        messages = messages;
-      },
-      // onTool
-      (toolName, action) => {
-        if (action === 'start') {
-          executingTools.push(toolName);
-        } else if (action === 'complete') {
-          executingTools = executingTools.filter(t => t !== toolName);
+    function promptInput(event) {
+        // If it was the enter key, call the click function (unless shift is pressed)
+        if (event.key === 'Enter' && event.shiftKey) {
+            event.stopPropagation();
+            event.preventDefault();
+            submitPrompt();
         }
-        executingTools = executingTools; // Trigger reactivity
-      },
-      // onThinking
-      (status) => {
-        if (status === 'start') {
-          isThinking = true;
-        } else if (status === 'end') {
-          isThinking = false;
-        }
-      }
-    );
-  }
-
-  function handleKeydown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
     }
-  }
+
+    function read() {
+        reader.read().then(({ done, value }) => {
+            if (done) {
+                processLine(lastIncompleteLine);
+                isSending = false;
+                return;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            lastIncompleteLine += chunk;
+
+            // split on newline, leave last partial line in buffer
+            const lines = lastIncompleteLine.split('\n');
+            lastIncompleteLine = lines.pop();
+
+            lines.forEach(processLine);
+
+            read();
+        });
+    }
+
+    function processLine(line) {
+        line = line.trim();
+        if (!line.startsWith('data:')) return;
+
+        // We need to remove the event: part of the line to get the JSON string
+        const json = JSON.parse(line.substring(5).trim());
+
+        if (json.type === 'content_block_delta') {
+            messages[messages.length - 1].text += json.delta.text || '';
+        }
+    }
 </script>
 
-<div class="home-container" class:with-messages={hasMessages}>
-  {#if !hasMessages}
-    <GreetingCard />
-  {:else}
-    <div class="messages-list" bind:this={messagesListEl}>
-      {#each messages as message, i (i)}
-        <Message content={message.content} timestamp={message.timestamp} role={message.role} isThinking={isThinking} isStreaming={isStreaming} executingTools={executingTools} />
-      {/each}
-    </div>
-  {/if}
+<AppHead title="Home">
+</AppHead>
 
-  <MessageInput bind:input onkeydown={handleKeydown} onhandleSend={sendMessage} disabled={isThinking || isStreaming} />
+<div class="welcome-page">
+    {#each messages as message}
+        <h2>{message.role}</h2>
+        <p>{message.text}</p>
+        <br>
+    {/each}
+
+    <br>
+
+    <div class="prompt-inputs">
+        <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
+        <button onclick={submitPrompt} disabled={isSending}>submit</button>
+    </div>
 </div>
