@@ -22,6 +22,18 @@
         })
     }
 
+    function promptInput(event) {
+        // If it was the enter key, call the click function (unless shift is pressed)
+        event.stopPropagation();
+        event.preventDefault();
+
+        console.log(event.key);
+
+        if (event.key === 'Enter' && event.shiftKey) {
+            click();
+        }
+    }
+
     function read() {
         reader.read().then(({ done, value }) => {
             if (done) {
@@ -68,7 +80,7 @@
     <br>
 
     <div class="prompt-inputs">
-        <textarea placeholder="Type something..." bind:value={prompt}></textarea>
+        <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
         <button onclick={click}>submit</button>
     </div>
 </div>
