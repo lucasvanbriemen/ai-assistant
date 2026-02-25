@@ -14,13 +14,15 @@
     function submitPrompt() {
         isSending = true;
 
+        messages.push({ text: prompt, role: 'user' });
+
         fetch('/api/test', {
             method: 'POST',
             body: JSON.stringify({ prompt }),
             headers: {'Content-Type': 'application/json'},
         }).then((response) => {
             reader = response.body.getReader();
-            messages.push('');
+            messages.push({ text: '', role: 'assistant' });
             read();
         })
     }
@@ -63,9 +65,7 @@
         const json = JSON.parse(line.substring(5).trim());
 
         if (json.type === 'content_block_delta') {
-            messages[messages.length - 1] += json.delta.text || '';
-            console.log(json.delta.text);
-            console.log(messages);
+            messages[messages.length - 1].text += json.delta.text || '';
         }
     }
 </script>
@@ -75,7 +75,9 @@
 
 <div class="welcome-page">
     {#each messages as message}
-        <p>{message}</p>
+        <h2>{message.role}</h2>
+        <p>{message.text}</p>
+        <br>
     {/each}
 
     <br>
