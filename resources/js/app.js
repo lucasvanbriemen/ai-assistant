@@ -1,6 +1,8 @@
-import { createInertiaApp } from '@inertiajs/svelte';
+import '../scss/app.scss';
+
 import { hydrate, mount } from 'svelte';
-import '../css/app.css';
+
+import { createInertiaApp } from '@inertiajs/svelte';
 import theme from './lib/theme.js';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
