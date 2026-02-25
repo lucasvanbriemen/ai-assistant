@@ -49,6 +49,15 @@
   let orbits = [];
   let animationId;
   let rimMesh; // Reference to rim glow for dynamic opacity
+  let glassSphere; // Reference to glass sphere for displacement
+  let originalPositions = null; // Store original vertex positions
+  let currentDisplacementAmp = 0; // Current displacement amplitude (lerped)
+  let currentNucleusJitter = 0; // Current nucleus jitter amplitude (lerped)
+
+  const NORMAL_DISPLACEMENT_AMP = 0;
+  const THINKING_DISPLACEMENT_AMP = 0.15;
+  const NORMAL_NUCLEUS_JITTER = 0;
+  const THINKING_NUCLEUS_JITTER = 0.04;
 
   $effect(() => {
     // Only depend on container and animate — NOT thinking
@@ -73,6 +82,18 @@
       }
     };
   });
+
+  // 3-octave sine-based pseudo-noise for vertex displacement
+  function displacementNoise(x, y, z, t) {
+    let value = 0;
+    // Octave 1 — low frequency, large shape
+    value += Math.sin(x * 1.7 + t * 0.8) * Math.sin(y * 2.3 + t * 0.6) * Math.sin(z * 1.9 + t * 0.7);
+    // Octave 2 — medium frequency, medium detail
+    value += 0.5 * Math.sin(x * 3.1 + t * 1.3) * Math.sin(y * 4.7 + t * 1.1) * Math.sin(z * 3.7 + t * 0.9);
+    // Octave 3 — high frequency, fine bumps
+    value += 0.25 * Math.sin(x * 7.3 + t * 2.1) * Math.sin(y * 5.9 + t * 1.7) * Math.sin(z * 8.1 + t * 1.4);
+    return value;
+  }
 
   function initThreeJS() {
     // Scene
@@ -146,7 +167,11 @@
 
       // Add to group instead of scene
       nucleusGroup.add(nucleusParticle);
-      nucleusParticles.push({ mesh: nucleusParticle });
+      nucleusParticles.push({
+        mesh: nucleusParticle,
+        basePos: { x: pos.x, y: pos.y, z: pos.z },
+        phase: index * 1.7 // Different phase per particle for organic motion
+      });
     });
 
     // Create orbital paths and electrons from config
@@ -192,7 +217,7 @@
     });
 
     // Create outer glass sphere with visible reflections (no bloom, no jumping)
-    const glassGeometry = new THREE.SphereGeometry(3.5, 128, 128);
+    const glassGeometry = new THREE.SphereGeometry(3.5, 64, 64);
     const glassMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xe0e0e0,       // Darker tint for better reflection visibility
       transparent: true,
@@ -208,12 +233,15 @@
       side: THREE.DoubleSide,
       depthWrite: false
     });
-    const glassSphere = new THREE.Mesh(glassGeometry, glassMaterial);
+    glassSphere = new THREE.Mesh(glassGeometry, glassMaterial);
     glassSphere.renderOrder = 999;
     scene.add(glassSphere);
 
+    // Store original vertex positions for displacement
+    originalPositions = new Float32Array(glassGeometry.attributes.position.array);
+
     // Subtle rim glow on glass edge
-    const rimGeometry = new THREE.SphereGeometry(3.58, 64, 64);
+    const rimGeometry = new THREE.SphereGeometry(3.75, 64, 64);
     const rimMaterial = new THREE.MeshBasicMaterial({
       color: 0x8b5cf6,
       transparent: true,
@@ -244,6 +272,9 @@
     const targetElectronLightIntensity = thinking ? THINKING_ELECTRON_LIGHT_INTENSITY : NORMAL_ELECTRON_LIGHT_INTENSITY;
     const targetRimOpacity = thinking ? THINKING_RIM_OPACITY : NORMAL_RIM_OPACITY;
 
+    const targetDisplacementAmp = thinking ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
+    const targetNucleusJitter = thinking ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
+
     currentElectronSpeed = lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
     currentSceneSpeed = lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
     currentNucleusSpeed = lerp(currentNucleusSpeed, targetNucleusSpeed, lerpSpeed);
@@ -251,23 +282,82 @@
     currentEmissiveIntensity = lerp(currentEmissiveIntensity, targetEmissiveIntensity, lerpSpeed);
     currentElectronLightIntensity = lerp(currentElectronLightIntensity, targetElectronLightIntensity, lerpSpeed);
     currentRimOpacity = lerp(currentRimOpacity, targetRimOpacity, lerpSpeed);
+    currentDisplacementAmp = lerp(currentDisplacementAmp, targetDisplacementAmp, lerpSpeed);
+    currentNucleusJitter = lerp(currentNucleusJitter, targetNucleusJitter, lerpSpeed);
 
     // Rotate entire scene for 3D effect
     scene.rotation.y += 0.002 * currentSceneSpeed;
     scene.rotation.x += 0.001 * currentSceneSpeed;
+
+    // Glass sphere vertex displacement (wobbly unstable shape when thinking)
+    if (glassSphere && originalPositions) {
+      const positions = glassSphere.geometry.attributes.position;
+      const arr = positions.array;
+
+      if (currentDisplacementAmp > 0.001) {
+        const t = Date.now() * 0.001;
+        for (let i = 0; i < arr.length; i += 3) {
+          const ox = originalPositions[i];
+          const oy = originalPositions[i + 1];
+          const oz = originalPositions[i + 2];
+          // Radial direction (normalized)
+          const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+          const nx = ox / len;
+          const ny = oy / len;
+          const nz = oz / len;
+          // Displace along radial direction
+          const d = displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
+          arr[i] = ox + nx * d;
+          arr[i + 1] = oy + ny * d;
+          arr[i + 2] = oz + nz * d;
+        }
+        positions.needsUpdate = true;
+        glassSphere.geometry.computeVertexNormals();
+      } else if (currentDisplacementAmp <= 0.001 && currentDisplacementAmp > -0.001) {
+        // Restore original positions when idle (snap back)
+        let needsRestore = false;
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] !== originalPositions[i]) {
+            needsRestore = true;
+            break;
+          }
+        }
+        if (needsRestore) {
+          arr.set(originalPositions);
+          positions.needsUpdate = true;
+          glassSphere.geometry.computeVertexNormals();
+        }
+      }
+    }
 
     // Rotate the entire nucleus group so particles swap positions in 3D
     nucleusGroup.rotation.x += 0.008 * currentNucleusSpeed;
     nucleusGroup.rotation.y += 0.012 * currentNucleusSpeed;
     nucleusGroup.rotation.z += 0.006 * currentNucleusSpeed;
 
-    // Pulse for each nucleus particle (amplitude changes with thinking state)
+    // Pulse and jitter for each nucleus particle
     nucleusParticles.forEach((particle, index) => {
       const pulse = Math.sin(Date.now() * 0.002 + index) * currentPulseAmplitude + 1;
       particle.mesh.scale.set(pulse, pulse, pulse);
 
       // Update emissive intensity
       particle.mesh.material.emissiveIntensity = currentEmissiveIntensity;
+
+      // Smooth sine-based jitter when thinking
+      if (currentNucleusJitter > 0.001) {
+        const t = Date.now() * 0.003;
+        const p = particle.phase;
+        const jx = Math.sin(t * 1.3 + p) * Math.cos(t * 0.7 + p * 2.1) * currentNucleusJitter;
+        const jy = Math.sin(t * 1.7 + p * 1.4) * Math.cos(t * 0.9 + p) * currentNucleusJitter;
+        const jz = Math.sin(t * 1.1 + p * 0.8) * Math.cos(t * 1.5 + p * 1.7) * currentNucleusJitter;
+        particle.mesh.position.set(
+          particle.basePos.x + jx,
+          particle.basePos.y + jy,
+          particle.basePos.z + jz
+        );
+      } else {
+        particle.mesh.position.set(particle.basePos.x, particle.basePos.y, particle.basePos.z);
+      }
     });
 
     // Animate electrons along their orbits
@@ -288,9 +378,17 @@
       electron.mesh.children[0].intensity = currentElectronLightIntensity;
     });
 
-    // Slowly rotate orbits
+    // Slowly rotate orbits + opacity flicker when thinking
     orbits.forEach((orbit, index) => {
       orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
+
+      // Subtle opacity flicker when thinking
+      if (currentDisplacementAmp > 0.001) {
+        const flicker = Math.sin(Date.now() * 0.004 + index * 2.3) * 0.1 * (currentDisplacementAmp / THINKING_DISPLACEMENT_AMP);
+        orbit.material.opacity = 0.4 + flicker;
+      } else {
+        orbit.material.opacity = 0.4;
+      }
     });
 
     // Update rim glow opacity
