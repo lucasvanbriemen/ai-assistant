@@ -1,6 +1,28 @@
 .welcome-page {
   display: flex;
   flex-direction: column;
-  width: calc(min(80ch, 90%));
+  width: calc(min(100ch, 90%));
   margin: 0 auto;
+
+  .prompt-inputs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+
+    textarea {
+      flex: 1;
+      padding: 0.5rem;
+      background-color: var(--background-color-one);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem 0.5rem 0.5rem 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      border-radius: 1rem 3rem 3rem 1rem;
+      cursor: pointer;
+    }
+  }
 }

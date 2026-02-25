@@ -67,6 +67,8 @@
 
     <br>
 
-    <textarea placeholder="Type something..." bind:value={prompt}></textarea>
-    <button onclick={click}>submit</button>
+    <div class="prompt-inputs">
+        <textarea placeholder="Type something..." bind:value={prompt}></textarea>
+        <button onclick={click}>submit</button>
+    </div>
 </div>
