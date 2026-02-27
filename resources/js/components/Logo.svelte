@@ -86,7 +86,7 @@
   function init() {
     // Validate state
     if (!ALLOWED_STATES.includes(state)) {
-      state = "thinking";
+      state = "normal";
     }
 
     initThreeJS();
