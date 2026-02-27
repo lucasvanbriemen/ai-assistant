@@ -1,5 +1,6 @@
 <script>
   import * as THREE from 'three';
+  import logo from '@/lib/logo.js';
 
   import { untrack } from 'svelte';
 
@@ -16,8 +17,8 @@
 
   // Thinking state speeds
   const THINKING_ELECTRON_SPEED = 6.0;
-  const THINKING_SCENE_SPEED = 50.0;
-  const THINKING_NUCLEUS_SPEED = 12.0;
+  const THINKING_SCENE_SPEED = 100.0;
+  const THINKING_NUCLEUS_SPEED = 25.0;
   const THINKING_PULSE_AMPLITUDE = 0.15;
   const THINKING_EMISSIVE_INTENSITY = 0.8;
   const THINKING_ELECTRON_LIGHT_INTENSITY = 250.0;
@@ -32,7 +33,7 @@
   let currentElectronLightIntensity = NORMAL_ELECTRON_LIGHT_INTENSITY;
   let currentRimOpacity = NORMAL_RIM_OPACITY;
   const ORBIT_RADIUS = 3.2;
-  const ORBIT_TUBE_THICKNESS = 0.06;
+  const ORBIT_TUBE_THICKNESS = 0.05;
   const ORBIT_CONFIGS = [
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: 0, rotationY: 0, color: 0x8b5cf6, speed: 0.01 },
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (1 * Math.PI) / 4, rotationY: 0, color: 0x6366f1, speed: 0.012 },
@@ -87,17 +88,7 @@
     };
   });
 
-  // 3-octave sine-based pseudo-noise for vertex displacement
-  function displacementNoise(x, y, z, t) {
-    let value = 0;
-    // Octave 1 — low frequency, large shape
-    value += Math.sin(x * 1.7 + t * 0.8) * Math.sin(y * 2.3 + t * 0.6) * Math.sin(z * 1.9 + t * 0.7);
-    // Octave 2 — medium frequency, medium detail
-    value += 0.5 * Math.sin(x * 3.1 + t * 1.3) * Math.sin(y * 4.7 + t * 1.1) * Math.sin(z * 3.7 + t * 0.9);
-    // Octave 3 — high frequency, fine bumps
-    value += 0.25 * Math.sin(x * 7.3 + t * 2.1) * Math.sin(y * 5.9 + t * 1.7) * Math.sin(z * 8.1 + t * 1.4);
-    return value;
-  }
+  
 
   function initThreeJS() {
     // Scene
@@ -322,7 +313,7 @@
           const ny = oy / len;
           const nz = oz / len;
           // Displace along radial direction
-          const d = displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
+          const d = logo.displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
           arr[i] = ox + nx * d;
           arr[i + 1] = oy + ny * d;
           arr[i + 2] = oz + nz * d;
@@ -361,7 +352,7 @@
           const nx = ox / len;
           const ny = oy / len;
           const nz = oz / len;
-          const d = displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
+          const d = logo.displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
           rimArr[i] = ox + nx * d;
           rimArr[i + 1] = oy + ny * d;
           rimArr[i + 2] = oz + nz * d;
@@ -429,7 +420,7 @@
             const nx = ox / len;
             const ny = oy / len;
             const nz = oz / len;
-            const d = displacementNoise(ox, oy, oz, t) * currentNucleusDeformAmp;
+            const d = logo.displacementNoise(ox, oy, oz, t) * currentNucleusDeformAmp;
             nucArr[i] = ox + nx * d;
             nucArr[i + 1] = oy + ny * d;
             nucArr[i + 2] = oz + nz * d;
