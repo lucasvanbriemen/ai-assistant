@@ -7,6 +7,6 @@
 </script>
 
 <div class="status-card">
-  <Logo size={280} status="thinking" />
+  <Logo size={280} state="thinking" />
   <h1>{greeting}</h1>
 </div>

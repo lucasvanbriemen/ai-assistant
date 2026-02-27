@@ -2,9 +2,11 @@
   import * as THREE from 'three';
   import logo from '@/lib/logo.js';
 
-  import { untrack } from 'svelte';
+  import { untrack, onMount } from 'svelte';
 
   let { size = 280, state = "thinking" } = $props();
+
+  const ALLOWED_STATES = ["normal", "thinking"];
 
   // Normal state speeds
   const NORMAL_ELECTRON_SPEED = 2.0;
@@ -71,13 +73,6 @@
     // Only depend on container — NOT thinking
     const el = container;
 
-    if (el) {
-      untrack(() => {
-        initThreeJS();
-        animateScene();
-      });
-    }
-
     return () => {
       if (animationId) {
         cancelAnimationFrame(animationId);
@@ -88,8 +83,16 @@
     };
   });
 
-  
+  function init() {
+    // Validate state
+    if (!ALLOWED_STATES.includes(state)) {
+      state = "thinking";
+    }
 
+    initThreeJS();
+    animateScene();
+  }
+  
   function initThreeJS() {
     scene = new THREE.Scene();
 
@@ -481,6 +484,10 @@
 
     renderer.render(scene, camera);
   }
+
+  onMount(() => {
+    init();
+  });
 </script>
 
 <div class="atom-container" bind:this={container} style="width: {size}px; height: {size}px;"></div>
