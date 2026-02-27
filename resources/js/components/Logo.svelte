@@ -8,8 +8,9 @@
 
   const ALLOWED_STATES = ["normal", "thinking"];
 
+  const ELECTRON_SPEEDS = { normal: 2.0, thinking: 6.0 };
+
   // Normal state speeds
-  const NORMAL_ELECTRON_SPEED = 2.0;
   const NORMAL_SCENE_SPEED = 25.0;
   const NORMAL_NUCLEUS_SPEED = 5.0;
   const NORMAL_PULSE_AMPLITUDE = 0.06;
@@ -18,7 +19,6 @@
   const NORMAL_RIM_OPACITY = 0.1;
 
   // Thinking state speeds
-  const THINKING_ELECTRON_SPEED = 6.0;
   const THINKING_SCENE_SPEED = 100.0;
   const THINKING_NUCLEUS_SPEED = 25.0;
   const THINKING_PULSE_AMPLITUDE = 0.15;
@@ -27,7 +27,7 @@
   const THINKING_RIM_OPACITY = 0.25;
 
   // Interpolated values (smoothly transition between states)
-  let currentElectronSpeed = NORMAL_ELECTRON_SPEED;
+  let currentElectronSpeed = ELECTRON_SPEEDS[state];
   let currentSceneSpeed = NORMAL_SCENE_SPEED;
   let currentNucleusSpeed = NORMAL_NUCLEUS_SPEED;
   let currentPulseAmplitude = NORMAL_PULSE_AMPLITUDE;
@@ -255,7 +255,7 @@
 
     // Smoothly interpolate all values toward target state
     const lerpSpeed = 0.03;
-    const targetElectronSpeed = state == "thinking" ? THINKING_ELECTRON_SPEED : NORMAL_ELECTRON_SPEED;
+    const targetElectronSpeed = ELECTRON_SPEEDS[state];
     const targetSceneSpeed = state == "thinking" ? THINKING_SCENE_SPEED : NORMAL_SCENE_SPEED;
     const targetNucleusSpeed = state == "thinking" ? THINKING_NUCLEUS_SPEED : NORMAL_NUCLEUS_SPEED;
     const targetPulseAmplitude = state == "thinking" ? THINKING_PULSE_AMPLITUDE : NORMAL_PULSE_AMPLITUDE;
