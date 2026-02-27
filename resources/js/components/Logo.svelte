@@ -2,7 +2,7 @@
   import * as THREE from 'three';
   import logo from '@/lib/logo.js';
 
-  import { untrack, onMount } from 'svelte';
+  import { onMount } from 'svelte';
 
   let { size = 280, state = "thinking" } = $props();
 
@@ -68,20 +68,6 @@
   const THINKING_RIM_DISPLACEMENT_AMP = 0.2;
   const NORMAL_NUCLEUS_DEFORM_AMP = 0;
   const THINKING_NUCLEUS_DEFORM_AMP = 0.06;
-
-  $effect(() => {
-    // Only depend on container — NOT thinking
-    const el = container;
-
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-      if (renderer) {
-        renderer.dispose();
-      }
-    };
-  });
 
   function init() {
     // Validate state
