@@ -4,7 +4,7 @@
 
   import { untrack } from 'svelte';
 
-  let { size = 280, animate = true, thinking = false } = $props();
+  let { size = 280, thinking = false } = $props();
 
   // Normal state speeds
   const NORMAL_ELECTRON_SPEED = 2.0;
@@ -68,16 +68,13 @@
   const THINKING_NUCLEUS_DEFORM_AMP = 0.06;
 
   $effect(() => {
-    // Only depend on container and animate — NOT thinking
+    // Only depend on container — NOT thinking
     const el = container;
-    const shouldAnimate = animate;
 
     if (el) {
       untrack(() => {
         initThreeJS();
-        if (shouldAnimate) {
-          animateScene();
-        }
+        animateScene();
       });
     }
 
