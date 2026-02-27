@@ -4,7 +4,7 @@
 
   import { untrack } from 'svelte';
 
-  let { size = 280, thinking = false } = $props();
+  let { size = 280, state = "thinking" } = $props();
 
   // Normal state speeds
   const NORMAL_ELECTRON_SPEED = 2.0;
@@ -91,7 +91,6 @@
   
 
   function initThreeJS() {
-    // Scene
     scene = new THREE.Scene();
 
     // Camera (zoomed out to show full glass sphere)
@@ -267,18 +266,18 @@
 
     // Smoothly interpolate all values toward target state
     const lerpSpeed = 0.03;
-    const targetElectronSpeed = thinking ? THINKING_ELECTRON_SPEED : NORMAL_ELECTRON_SPEED;
-    const targetSceneSpeed = thinking ? THINKING_SCENE_SPEED : NORMAL_SCENE_SPEED;
-    const targetNucleusSpeed = thinking ? THINKING_NUCLEUS_SPEED : NORMAL_NUCLEUS_SPEED;
-    const targetPulseAmplitude = thinking ? THINKING_PULSE_AMPLITUDE : NORMAL_PULSE_AMPLITUDE;
-    const targetEmissiveIntensity = thinking ? THINKING_EMISSIVE_INTENSITY : NORMAL_EMISSIVE_INTENSITY;
-    const targetElectronLightIntensity = thinking ? THINKING_ELECTRON_LIGHT_INTENSITY : NORMAL_ELECTRON_LIGHT_INTENSITY;
-    const targetRimOpacity = thinking ? THINKING_RIM_OPACITY : NORMAL_RIM_OPACITY;
+    const targetElectronSpeed = state == "thinking" ? THINKING_ELECTRON_SPEED : NORMAL_ELECTRON_SPEED;
+    const targetSceneSpeed = state == "thinking" ? THINKING_SCENE_SPEED : NORMAL_SCENE_SPEED;
+    const targetNucleusSpeed = state == "thinking" ? THINKING_NUCLEUS_SPEED : NORMAL_NUCLEUS_SPEED;
+    const targetPulseAmplitude = state == "thinking" ? THINKING_PULSE_AMPLITUDE : NORMAL_PULSE_AMPLITUDE;
+    const targetEmissiveIntensity = state == "thinking" ? THINKING_EMISSIVE_INTENSITY : NORMAL_EMISSIVE_INTENSITY;
+    const targetElectronLightIntensity = state == "thinking" ? THINKING_ELECTRON_LIGHT_INTENSITY : NORMAL_ELECTRON_LIGHT_INTENSITY;
+    const targetRimOpacity = state == "thinking" ? THINKING_RIM_OPACITY : NORMAL_RIM_OPACITY;
 
-    const targetDisplacementAmp = thinking ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
-    const targetNucleusJitter = thinking ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
-    const targetRimDisplacementAmp = thinking ? THINKING_RIM_DISPLACEMENT_AMP : NORMAL_RIM_DISPLACEMENT_AMP;
-    const targetNucleusDeformAmp = thinking ? THINKING_NUCLEUS_DEFORM_AMP : NORMAL_NUCLEUS_DEFORM_AMP;
+    const targetDisplacementAmp = state == "thinking" ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
+    const targetNucleusJitter = state == "thinking" ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
+    const targetRimDisplacementAmp = state == "thinking" ? THINKING_RIM_DISPLACEMENT_AMP : NORMAL_RIM_DISPLACEMENT_AMP;
+    const targetNucleusDeformAmp = state == "thinking" ? THINKING_NUCLEUS_DEFORM_AMP : NORMAL_NUCLEUS_DEFORM_AMP;
 
     currentElectronSpeed = lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
     currentSceneSpeed = lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
