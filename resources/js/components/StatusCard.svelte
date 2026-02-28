@@ -9,7 +9,9 @@
  
 </script>
 
-<div class="status-card">
-  <Logo size={280} state={status} />
-  <h1>{greeting}</h1>
+<div class="status-card-wrapper">
+  <div class="status-card">
+    <Logo size={280} state={status} />
+    <h1>{greeting}</h1>
+  </div>
 </div>
