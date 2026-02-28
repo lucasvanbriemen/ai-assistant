@@ -251,8 +251,8 @@
     scene.rotation.y += 0.002 * currentSceneSpeed;
     scene.rotation.x += 0.001 * currentSceneSpeed;
 
-    applyNoise(glassSphere, 0.001, originalPositions);
-    applyNoise(rimMesh, 0.001 * 0.7, originalRimPositions);
+    applyNoise(glassSphere, Date.now() * 0.001, currentDisplacementAmp, originalPositions);
+    applyNoise(rimMesh, Date.now() * 0.001 * 0.7, currentDisplacementAmp, originalRimPositions);
 
     animateNucleus();
     animateOrbits();
@@ -321,46 +321,25 @@
 
       // Nucleus particle vertex deformation (organic protrusions/arms when thinking)
       if (originalNucleusPositions[index]) {
-        const nucPositions = particle.mesh.geometry.attributes.position;
-        const nucArr = nucPositions.array;
-        const origNuc = originalNucleusPositions[index];
-
-        const t = Date.now() * 0.001 + particle.phase; // Phase offset per particle
-        for (let i = 0; i < nucArr.length; i += 3) {
-          const ox = origNuc[i];
-          const oy = origNuc[i + 1];
-          const oz = origNuc[i + 2];
-          const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-          const nx = ox / len;
-          const ny = oy / len;
-          const nz = oz / len;
-          const d = logo.displacementNoise(ox, oy, oz, t) * currentNucleusDeformAmp;
-          nucArr[i] = ox + nx * d;
-          nucArr[i + 1] = oy + ny * d;
-          nucArr[i + 2] = oz + nz * d;
-        }
-        nucPositions.needsUpdate = true;
-        particle.mesh.geometry.computeVertexNormals();
+        const t = Date.now() * 0.001 + particle.phase;
+        applyNoise(particle.mesh, t, currentNucleusDeformAmp, originalNucleusPositions[index]);
       }
     });
   }
 
-  function applyNoise(mesh, amp, originalPositions) {
+  function applyNoise(mesh, t, displacementAmp, originalPositions) {
     const positions = mesh.geometry.attributes.position;
     const arr = positions.array;
 
-    let t = Date.now() * amp;
     for (let i = 0; i < arr.length; i += 3) {
       const ox = originalPositions[i];
       const oy = originalPositions[i + 1];
       const oz = originalPositions[i + 2];
-      // Radial direction (normalized)
       const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
       const nx = ox / len;
       const ny = oy / len;
       const nz = oz / len;
-      // Displace along radial direction
-      const d = logo.displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
+      const d = logo.displacementNoise(ox, oy, oz, t) * displacementAmp;
       arr[i] = ox + nx * d;
       arr[i + 1] = oy + ny * d;
       arr[i + 2] = oz + nz * d;
