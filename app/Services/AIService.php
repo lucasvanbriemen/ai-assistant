@@ -37,5 +37,4 @@ class AIService
             'temperature' => 0.7
         ]);
     }
-    
 }
