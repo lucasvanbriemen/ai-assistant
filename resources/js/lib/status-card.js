@@ -27,10 +27,10 @@ const INTRO_OPTIONS = [
 ];
 
 const POSSABLE_NAMES = [
-  "Lucas,",
-  "King,",
-  "Sir,",
-  "My lord,",
+  "Lucas",
+  "Kin,",
+  "Sir",
+  "My lord",
 ];
 
 export default {
@@ -50,15 +50,15 @@ export default {
     const rand = Math.random();
     // 30% - Time-based greeting with username
     if (rand < 0.3) {
-      return `${timeBaseGreeting} ${randomName} ${randomIntro} ${randomHelp}`;
+      return `${timeBaseGreeting} ${randomName}, ${randomIntro}. ${randomHelp}`;
     }
     // 20% - Simple greeting with username
     else if (rand < 0.5) {
-      return `${randomGreeting} ${randomName} ${randomIntro} ${randomHelp}`;
+      return `${randomGreeting} ${randomName}, ${randomIntro}. ${randomHelp}`;
     }
     // 15% - Time-based greeting only
     else if (rand < 0.65) {
-      return `${timeBaseGreeting} ${randomIntro} ${randomHelp}`;
+      return `${timeBaseGreeting}, ${randomIntro}. ${randomHelp}`;
     }
     // 35% - Just the help message (with Prime intro more likely here)
     else {
