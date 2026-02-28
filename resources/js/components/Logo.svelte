@@ -72,7 +72,10 @@
     initScene();
     initNucleusParticles();
     initOrbitsAndElectrons();
+    initGlassSphere();
+  }
 
+  function initGlassSphere() {
     // Create outer glass sphere with visible reflections (no bloom, no jumping)
     const glassGeometry = new THREE.SphereGeometry(3.5, 64, 64);
     const glassMaterial = new THREE.MeshPhysicalMaterial({
