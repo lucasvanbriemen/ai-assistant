@@ -16,10 +16,10 @@
   const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 250.0 };
   const OVERLAY_OPACITIES = { normal: 0.15, thinking: 0.25 };
 
-  const ORBIT_RADIUS = 3.2;
+  const ORBIT_RADIUS = 3.25;
   const ORBIT_TUBE_THICKNESS = 0.05;
   const ORBIT_CONFIGS = [
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x8b5cf6, speed: 0.01 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x8b5cf6, speed: 0.012 },
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x6366f1, speed: 0.012 },
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
