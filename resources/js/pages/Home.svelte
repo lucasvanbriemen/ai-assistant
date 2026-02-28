@@ -1,4 +1,5 @@
 <script>
+    import { tick } from 'svelte';
     import AppHead from '@/components/AppHead.svelte';
     import StatusCard from '@/components/StatusCard.svelte';
     import '../../scss/pages/home.scss';
@@ -8,14 +9,49 @@
 
     let messages = $state([]);
 
+    let statusCardWrapper;
+    let chatContainerEl;
+
     let decoder = new TextDecoder();
     let reader;
     let lastIncompleteLine = '';
 
-    function submitPrompt() {
-        isThinking = true;
+    async function submitPrompt() {
+        const isFirstMessage = messages.length === 0;
+        let startRect;
 
+        if (isFirstMessage) {
+            startRect = statusCardWrapper.getBoundingClientRect();
+        }
+
+        isThinking = true;
         messages.push({ text: prompt, role: 'user' });
+
+        if (isFirstMessage) {
+            await tick();
+
+            const endRect = statusCardWrapper.getBoundingClientRect();
+            const dx = startRect.left - endRect.left;
+            const dy = startRect.top - endRect.top;
+
+            statusCardWrapper.animate([
+                { transform: `translate(${dx}px, ${dy}px)` },
+                { transform: 'translate(0, 0)' }
+            ], {
+                duration: 600,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            });
+
+            chatContainerEl.animate([
+                { opacity: 0, transform: 'translateY(20px)' },
+                { opacity: 1, transform: 'translateY(0)' }
+            ], {
+                duration: 400,
+                delay: 200,
+                easing: 'ease-out',
+                fill: 'backwards',
+            });
+        }
 
         fetch('/api/test', {
             method: 'POST',
@@ -76,9 +112,11 @@
 
 <div class="home-page" class:no-messages={messages.length == 0}>
 
-    <StatusCard status={isThinking ? 'thinking' : 'normal'} />
-    
-    <div class="chat-container">
+    <div class="status-card-wrapper" bind:this={statusCardWrapper}>
+        <StatusCard status={isThinking ? 'thinking' : 'normal'} />
+    </div>
+
+    <div class="chat-container" bind:this={chatContainerEl}>
         {#each messages as message}
             <h2>{message.role}</h2>
             <p>{message.text}</p>
