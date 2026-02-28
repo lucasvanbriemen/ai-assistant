@@ -6,5 +6,5 @@
 </script>
 
 <h2>{role}</h2>
-  <Markdown md={text} plugins={[gfmPlugin]} />
-  <br>
+<Markdown md={text} plugins={[gfmPlugin]} />
+<br>
