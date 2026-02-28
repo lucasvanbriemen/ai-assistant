@@ -31,15 +31,15 @@
   };
 
   function showLoader() {
-    return isLast && role === 'assistant' && visibleCount < words.length;
+    return true// isLast && role === 'assistant' && visibleCount < words.length;
   }
 
 </script>
 
-<div class="message" class:user={role === 'user'} class:assistant={role === 'assistant'}>
+<div class="message" class:user={role === 'user'} class:assistant={role === 'assistant'} class:loading={showLoader()}>
   <Markdown md={visibleText} plugins={[gfmPlugin]} />
 
   {#if showLoader()}
-    <div class="skeleton-word"></div>
+    <span class="skeleton-word"></span>
   {/if}
 </div>
