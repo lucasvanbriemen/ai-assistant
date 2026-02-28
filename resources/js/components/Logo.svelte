@@ -15,6 +15,10 @@
   const EMISSIVE_INTENSITIES = { normal: 0, thinking: 0.8 };
   const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 250.0 };
   const OVERLAY_OPACITIES = { normal: 0.15, thinking: 0.25 };
+  const DISPLACEMENT_AMPS = { normal: 0, thinking: 0.15 };
+  const NUCLEUS_JITTERS = { normal: 0, thinking: 0.04 };
+  const RIM_DISPLACEMENT_AMPS = { normal: 0, thinking: 0.2 };
+  const NUCLEUS_DEFORM_AMPS = { normal: 0, thinking: 0.06 };
 
   const ORBIT_RADIUS = 3.25;
   const ORBIT_TUBE_THICKNESS = 0.05;
@@ -48,15 +52,6 @@
   let currentElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
   let currentOverlayOpacity = OVERLAY_OPACITIES[state];
 
-  const NORMAL_DISPLACEMENT_AMP = 0;
-  const THINKING_DISPLACEMENT_AMP = 0.15;
-  const NORMAL_NUCLEUS_JITTER = 0;
-  const THINKING_NUCLEUS_JITTER = 0.04;
-  const NORMAL_RIM_DISPLACEMENT_AMP = 0;
-  const THINKING_RIM_DISPLACEMENT_AMP = 0.2;
-  const NORMAL_NUCLEUS_DEFORM_AMP = 0;
-  const THINKING_NUCLEUS_DEFORM_AMP = 0.06;
-
   function init() {
     if (!ALLOWED_STATES.includes(state)) {
       return console.error(`Invalid state "${state}" for Logo component. Allowed states: ${ALLOWED_STATES.join(", ")}`);
@@ -68,8 +63,6 @@
   
   function initThreeJS() {
     initScene();
-
-    // No nucleus light or directional light - only electron lights should reflect on glass
 
     // Create a group to hold all nucleus particles (allows rotation around common center)
     nucleusGroup = new THREE.Group();
@@ -248,10 +241,10 @@
     const targetElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
     const targetOverlayOpacity = OVERLAY_OPACITIES[state];
 
-    const targetDisplacementAmp = state == "thinking" ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
-    const targetNucleusJitter = state == "thinking" ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
-    const targetRimDisplacementAmp = state == "thinking" ? THINKING_RIM_DISPLACEMENT_AMP : NORMAL_RIM_DISPLACEMENT_AMP;
-    const targetNucleusDeformAmp = state == "thinking" ? THINKING_NUCLEUS_DEFORM_AMP : NORMAL_NUCLEUS_DEFORM_AMP;
+    const targetDisplacementAmp = DISPLACEMENT_AMPS[state];
+    const targetNucleusJitter = NUCLEUS_JITTERS[state];
+    const targetRimDisplacementAmp = RIM_DISPLACEMENT_AMPS[state];
+    const targetNucleusDeformAmp = NUCLEUS_DEFORM_AMPS[state];
 
     currentElectronSpeed = lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
     currentSceneSpeed = lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
@@ -441,7 +434,7 @@
 
       // Subtle opacity flicker when thinking
       if (currentDisplacementAmp > 0.001) {
-        const flicker = Math.sin(Date.now() * 0.004 + index * 2.3) * 0.1 * (currentDisplacementAmp / THINKING_DISPLACEMENT_AMP);
+        const flicker = Math.sin(Date.now() * 0.004 + index * 2.3) * 0.1 * (currentDisplacementAmp / DISPLACEMENT_AMPS["thinking"]);
         orbit.material.opacity = 0.4 + flicker;
       } else {
         orbit.material.opacity = 0.4;
