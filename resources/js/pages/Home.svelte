@@ -2,6 +2,7 @@
     import { tick } from 'svelte';
     import AppHead from '@/components/AppHead.svelte';
     import StatusCard from '@/components/StatusCard.svelte';
+    import Message from '@/components/Message.svelte';
     import '../../scss/pages/home.scss';
     import Markdown from 'svelte-exmarkdown';
     import { gfmPlugin } from 'svelte-exmarkdown/gfm';
@@ -120,9 +121,7 @@
 
     <div class="chat-container" bind:this={chatContainerEl}>
         {#each messages as message}
-            <h2>{message.role}</h2>
-            <Markdown md={message.text} plugins={[gfmPlugin]} />
-            <br>
+            <Message role={message.role} text={message.text} />
         {/each}
 
         <br>
