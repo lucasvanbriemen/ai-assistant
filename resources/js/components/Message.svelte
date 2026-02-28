@@ -30,12 +30,16 @@
     }
   };
 
+  function showLoader() {
+    return isLast && role === 'assistant' && visibleCount < words.length;
+  }
+
 </script>
 
 <div class="message" class:user={role === 'user'} class:assistant={role === 'assistant'}>
   <Markdown md={visibleText} plugins={[gfmPlugin]} />
 
-  {#if isLast && role === "assistant"}
+  {#if showLoader()}
     <div class="skeleton-word"></div>
   {/if}
 </div>
