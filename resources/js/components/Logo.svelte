@@ -15,7 +15,7 @@
   const EMISSIVE_INTENSITIES = { normal: 0, thinking: 0.8 };
   const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 150.0 };
   const OVERLAY_OPACITIES = { normal: 0.15, thinking: 0.25 };
-  const DISPLACEMENT_AMPS = { normal: 0, thinking: 0.15 };
+  const DISPLACEMENT_AMPS = { normal: 0.025, thinking: 0.15 };
   const NUCLEUS_JITTERS = { normal: 0, thinking: 0.5 };
   const RIM_DISPLACEMENT_AMPS = { normal: 0, thinking: 0.2 };
   const NUCLEUS_DEFORM_AMPS = { normal: 0, thinking: 0.06 };
@@ -23,10 +23,10 @@
   const ORBIT_RADIUS = 3.25;
   const ORBIT_TUBE_THICKNESS = 0.05;
   const ORBIT_CONFIGS = [
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x8b5cf6, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x6366f1, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, color: 0x8b5cf6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, color: 0x6366f1, speed: 0.012 },
+    { radius: ORBIT_RADIUS, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, color: 0x3b82f6, speed: 0.012 },
   ];
 
   const NUCLEUS_CONFIG = [
@@ -87,9 +87,6 @@
       roughness: 0.0,        // Clear glass (not cloudy)
       metalness: 1.0,
       clearcoat: 0.0,        // No clearcoat to avoid jumping
-      clearcoatRoughness: 0.0,
-      ior: 1.5,              // Glass index of refraction
-      reflectivity: 0.6,     // Higher reflectivity for visible electron lights
       side: THREE.DoubleSide,
       depthWrite: false
     });
@@ -180,7 +177,7 @@
   // Create orbital paths and electrons from config
     ORBIT_CONFIGS.forEach((config, index) => {
       // Create orbital ring (torus)
-      const orbitGeometry = new THREE.TorusGeometry(config.radius, config.tubeRadius, 16, 100);
+      const orbitGeometry = new THREE.TorusGeometry(config.radius, ORBIT_TUBE_THICKNESS, 16, 100);
       const orbitMaterial = new THREE.MeshPhongMaterial({
         color: config.color,
         transparent: true,
