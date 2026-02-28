@@ -4,7 +4,7 @@
     import '../../scss/pages/home.scss';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
-    let isSending = $state(false);
+    let isThinking = $state(false);
 
     let messages = $state([]);
 
@@ -13,7 +13,7 @@
     let lastIncompleteLine = '';
 
     function submitPrompt() {
-        isSending = true;
+        isThinking = true;
 
         messages.push({ text: prompt, role: 'user' });
 
@@ -41,7 +41,7 @@
         reader.read().then(({ done, value }) => {
             if (done) {
                 processLine(lastIncompleteLine);
-                isSending = false;
+                isThinking = false;
                 return;
             }
 
@@ -76,7 +76,7 @@
 
 <div class="home-page" class:no-messages={messages.length == 0}>
 
-    <StatusCard />
+    <StatusCard status={isThinking ? 'thinking' : 'normal'} />
     
     <div class="chat-container">
         {#each messages as message}
@@ -89,7 +89,7 @@
 
         <div class="prompt-inputs">
             <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
-            <button onclick={submitPrompt} disabled={isSending}>submit</button>
+            <button onclick={submitPrompt} disabled={isThinking}>submit</button>
         </div>
     </div>
 </div>

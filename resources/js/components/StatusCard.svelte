@@ -4,12 +4,12 @@
   import '../../scss/components/status-card.scss';
 
   let greeting = $state(statusCard.getRandomGreeting());
-  let state = $state('normal');
+
+  let { status } = $props();
  
 </script>
 
 <div class="status-card">
-  <button onclick={() => {state = state == 'thinking' ? 'normal' : 'thinking'}}>{state}</button>
-  <Logo size={280} state={state} />
+  <Logo size={280} state={status} />
   <h1>{greeting}</h1>
 </div>
