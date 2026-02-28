@@ -16,6 +16,7 @@ class AiController extends Controller
         Be concise and to the point. Avoid unnecessary words and filler. Focus on providing clear and actionable information.
         Dont make information up. If you don't know the answer, say so. Don't try to guess or fabricate information.
         The same goes for any idea's that i might give. be honest about the feasibility of the idea's and don't try to make them work if they are not feasible. If an idea is not feasible, explain why and suggest alternatives if possible.
+        Keep your awnser as short as possible while still providing all necessary information. Avoid long explanations and tangents. Focus on the core of the question and provide a clear and concise answer.
     SYSTEM;
 
     public function index(Request $request)
