@@ -325,37 +325,22 @@
         const nucArr = nucPositions.array;
         const origNuc = originalNucleusPositions[index];
 
-        if (currentNucleusDeformAmp > 0.001) {
-          const t = Date.now() * 0.001 + particle.phase; // Phase offset per particle
-          for (let i = 0; i < nucArr.length; i += 3) {
-            const ox = origNuc[i];
-            const oy = origNuc[i + 1];
-            const oz = origNuc[i + 2];
-            const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-            const nx = ox / len;
-            const ny = oy / len;
-            const nz = oz / len;
-            const d = logo.displacementNoise(ox, oy, oz, t) * currentNucleusDeformAmp;
-            nucArr[i] = ox + nx * d;
-            nucArr[i + 1] = oy + ny * d;
-            nucArr[i + 2] = oz + nz * d;
-          }
-          nucPositions.needsUpdate = true;
-          particle.mesh.geometry.computeVertexNormals();
-        } else if (currentNucleusDeformAmp <= 0.001 && currentNucleusDeformAmp > -0.001) {
-          let needsRestore = false;
-          for (let i = 0; i < nucArr.length; i++) {
-            if (nucArr[i] !== origNuc[i]) {
-              needsRestore = true;
-              break;
-            }
-          }
-          if (needsRestore) {
-            nucArr.set(origNuc);
-            nucPositions.needsUpdate = true;
-            particle.mesh.geometry.computeVertexNormals();
-          }
+        const t = Date.now() * 0.001 + particle.phase; // Phase offset per particle
+        for (let i = 0; i < nucArr.length; i += 3) {
+          const ox = origNuc[i];
+          const oy = origNuc[i + 1];
+          const oz = origNuc[i + 2];
+          const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+          const nx = ox / len;
+          const ny = oy / len;
+          const nz = oz / len;
+          const d = logo.displacementNoise(ox, oy, oz, t) * currentNucleusDeformAmp;
+          nucArr[i] = ox + nx * d;
+          nucArr[i + 1] = oy + ny * d;
+          nucArr[i + 2] = oz + nz * d;
         }
+        nucPositions.needsUpdate = true;
+        particle.mesh.geometry.computeVertexNormals();
       }
     });
   }
