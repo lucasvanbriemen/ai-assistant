@@ -297,37 +297,23 @@
       const rimPositions = rimMesh.geometry.attributes.position;
       const rimArr = rimPositions.array;
 
-      if (currentRimDisplacementAmp > 0.001) {
-        const t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
-        for (let i = 0; i < rimArr.length; i += 3) {
-          const ox = originalRimPositions[i];
-          const oy = originalRimPositions[i + 1];
-          const oz = originalRimPositions[i + 2];
-          const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-          const nx = ox / len;
-          const ny = oy / len;
-          const nz = oz / len;
-          const d = logo.displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
-          rimArr[i] = ox + nx * d;
-          rimArr[i + 1] = oy + ny * d;
-          rimArr[i + 2] = oz + nz * d;
-        }
-        rimPositions.needsUpdate = true;
-        rimMesh.geometry.computeVertexNormals();
-      } else if (currentRimDisplacementAmp <= 0.001 && currentRimDisplacementAmp > -0.001) {
-        let needsRestore = false;
-        for (let i = 0; i < rimArr.length; i++) {
-          if (rimArr[i] !== originalRimPositions[i]) {
-            needsRestore = true;
-            break;
-          }
-        }
-        if (needsRestore) {
-          rimArr.set(originalRimPositions);
-          rimPositions.needsUpdate = true;
-          rimMesh.geometry.computeVertexNormals();
-        }
+      const t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
+      for (let i = 0; i < rimArr.length; i += 3) {
+        const ox = originalRimPositions[i];
+        const oy = originalRimPositions[i + 1];
+        const oz = originalRimPositions[i + 2];
+        const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+        const nx = ox / len;
+        const ny = oy / len;
+        const nz = oz / len;
+        const d = logo.displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
+        rimArr[i] = ox + nx * d;
+        rimArr[i + 1] = oy + ny * d;
+        rimArr[i + 2] = oz + nz * d;
       }
+      rimPositions.needsUpdate = true;
+      rimMesh.geometry.computeVertexNormals();
+      
     }
 
     // Rotate the entire nucleus group so particles swap positions in 3D
