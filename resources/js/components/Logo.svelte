@@ -239,17 +239,17 @@
     const targetRimDisplacementAmp = RIM_DISPLACEMENT_AMPS[state];
     const targetNucleusDeformAmp = NUCLEUS_DEFORM_AMPS[state];
 
-    currentElectronSpeed = lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
-    currentSceneSpeed = lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
-    currentNucleusSpeed = lerp(currentNucleusSpeed, targetNucleusSpeed, lerpSpeed);
-    currentPulseAmplitude = lerp(currentPulseAmplitude, targetPulseAmplitude, lerpSpeed);
-    currentEmissiveIntensity = lerp(currentEmissiveIntensity, targetEmissiveIntensity, lerpSpeed);
-    currentElectronLightIntensity = lerp(currentElectronLightIntensity, targetElectronLightIntensity, lerpSpeed);
-    currentOverlayOpacity = lerp(currentOverlayOpacity, targetOverlayOpacity, lerpSpeed);
-    currentDisplacementAmp = lerp(currentDisplacementAmp, targetDisplacementAmp, lerpSpeed);
-    currentNucleusJitter = lerp(currentNucleusJitter, targetNucleusJitter, lerpSpeed);
-    currentRimDisplacementAmp = lerp(currentRimDisplacementAmp, targetRimDisplacementAmp, lerpSpeed);
-    currentNucleusDeformAmp = lerp(currentNucleusDeformAmp, targetNucleusDeformAmp, lerpSpeed);
+    currentElectronSpeed = THREE.MathUtils.lerp(currentElectronSpeed, targetElectronSpeed, lerpSpeed);
+    currentSceneSpeed = THREE.MathUtils.lerp(currentSceneSpeed, targetSceneSpeed, lerpSpeed);
+    currentNucleusSpeed = THREE.MathUtils.lerp(currentNucleusSpeed, targetNucleusSpeed, lerpSpeed);
+    currentPulseAmplitude = THREE.MathUtils.lerp(currentPulseAmplitude, targetPulseAmplitude, lerpSpeed);
+    currentEmissiveIntensity = THREE.MathUtils.lerp(currentEmissiveIntensity, targetEmissiveIntensity, lerpSpeed);
+    currentElectronLightIntensity = THREE.MathUtils.lerp(currentElectronLightIntensity, targetElectronLightIntensity, lerpSpeed);
+    currentOverlayOpacity = THREE.MathUtils.lerp(currentOverlayOpacity, targetOverlayOpacity, lerpSpeed);
+    currentDisplacementAmp = THREE.MathUtils.lerp(currentDisplacementAmp, targetDisplacementAmp, lerpSpeed);
+    currentNucleusJitter = THREE.MathUtils.lerp(currentNucleusJitter, targetNucleusJitter, lerpSpeed);
+    currentRimDisplacementAmp = THREE.MathUtils.lerp(currentRimDisplacementAmp, targetRimDisplacementAmp, lerpSpeed);
+    currentNucleusDeformAmp = THREE.MathUtils.lerp(currentNucleusDeformAmp, targetNucleusDeformAmp, lerpSpeed);
 
     // Rotate entire scene for 3D effect
     scene.rotation.y += 0.002 * currentSceneSpeed;
