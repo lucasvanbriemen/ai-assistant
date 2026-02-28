@@ -252,51 +252,33 @@
     scene.rotation.x += 0.001 * currentSceneSpeed;
 
     // Glass sphere vertex displacement (wobbly unstable shape when thinking)
-    if (glassSphere && originalPositions) {
-      const positions = glassSphere.geometry.attributes.position;
-      const arr = positions.array;
+    const positions = glassSphere.geometry.attributes.position;
+    const arr = positions.array;
 
-      if (currentDisplacementAmp > 0.001) {
-        const t = Date.now() * 0.001;
-        for (let i = 0; i < arr.length; i += 3) {
-          const ox = originalPositions[i];
-          const oy = originalPositions[i + 1];
-          const oz = originalPositions[i + 2];
-          // Radial direction (normalized)
-          const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-          const nx = ox / len;
-          const ny = oy / len;
-          const nz = oz / len;
-          // Displace along radial direction
-          const d = logo.displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
-          arr[i] = ox + nx * d;
-          arr[i + 1] = oy + ny * d;
-          arr[i + 2] = oz + nz * d;
-        }
-        positions.needsUpdate = true;
-        glassSphere.geometry.computeVertexNormals();
-      } else if (currentDisplacementAmp <= 0.001 && currentDisplacementAmp > -0.001) {
-        // Restore original positions when idle (snap back)
-        let needsRestore = false;
-        for (let i = 0; i < arr.length; i++) {
-          if (arr[i] !== originalPositions[i]) {
-            needsRestore = true;
-            break;
-          }
-        }
-        if (needsRestore) {
-          arr.set(originalPositions);
-          positions.needsUpdate = true;
-          glassSphere.geometry.computeVertexNormals();
-        }
-      }
+    let t = Date.now() * 0.001;
+    for (let i = 0; i < arr.length; i += 3) {
+      const ox = originalPositions[i];
+      const oy = originalPositions[i + 1];
+      const oz = originalPositions[i + 2];
+      // Radial direction (normalized)
+      const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+      const nx = ox / len;
+      const ny = oy / len;
+      const nz = oz / len;
+      // Displace along radial direction
+      const d = logo.displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
+      arr[i] = ox + nx * d;
+      arr[i + 1] = oy + ny * d;
+      arr[i + 2] = oz + nz * d;
     }
+    positions.needsUpdate = true;
+    glassSphere.geometry.computeVertexNormals();
 
     // Rim sphere vertex displacement (wobbly container when thinking)
     const rimPositions = rimMesh.geometry.attributes.position;
     const rimArr = rimPositions.array;
 
-    const t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
+    t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
     for (let i = 0; i < rimArr.length; i += 3) {
       const ox = originalRimPositions[i];
       const oy = originalRimPositions[i + 1];
