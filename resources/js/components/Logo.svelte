@@ -19,10 +19,10 @@
   const ORBIT_RADIUS = 3.2;
   const ORBIT_TUBE_THICKNESS = 0.05;
   const ORBIT_CONFIGS = [
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: 0, color: 0x8b5cf6, speed: 0.01 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (1 * Math.PI) / 4, color: 0x6366f1, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (2 * Math.PI) / 4, color: 0x3b82f6, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (3 * Math.PI) / 4, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x8b5cf6, speed: 0.01 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x6366f1, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
   ];
 
   let container;
@@ -161,7 +161,7 @@
         emissiveIntensity: 0.3
       });
       const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
-      orbit.rotation.x = config.rotationX;
+      orbit.rotation.x = index * Math.PI / ORBIT_CONFIGS.length; // Rotate each orbit differently for 3D effect
       orbit.rotation.y = 0;
       scene.add(orbit);
 
@@ -183,7 +183,7 @@
         angle: (index * Math.PI * 2) / 3, // Spread electrons evenly
         radius: config.radius,
         speed: config.speed,
-        rotationX: config.rotationX,
+        rotationX: index * Math.PI / ORBIT_CONFIGS.length, // Match orbit rotation for consistent paths
         rotationY: 0
       });
 
