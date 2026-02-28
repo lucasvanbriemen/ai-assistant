@@ -14,4 +14,25 @@
     border: none;
     color: var(--text-color);
   }
+
+  &.assistant .skeleton-word {
+    display: inline-block;
+    height: 1.5rem;
+    background-color: var(--border-color);
+    border-radius: 0.5rem;
+    animation: skeleton-blink 1.5s infinite;
+    width: 10rem;
+  }
+}
+
+@keyframes skeleton-blink {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }

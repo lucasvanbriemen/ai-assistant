@@ -120,8 +120,8 @@
     </div>
 
     <div class="chat-container" bind:this={chatContainerEl}>
-        {#each messages as message}
-            <Message role={message.role} text={message.text} />
+        {#each messages as message, i (i)}
+            <Message role={message.role} text={message.text} isLast={i === messages.length - 1} />
         {/each}
 
         <br>
