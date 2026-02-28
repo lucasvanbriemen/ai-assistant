@@ -70,92 +70,8 @@
   
   function initThreeJS() {
     initScene();
-
-    // Create a group to hold all nucleus particles (allows rotation around common center)
-    nucleusGroup = new THREE.Group();
-    scene.add(nucleusGroup);
-
-    NUCLEUS_CONFIG.forEach((config, index) => {
-      // Create nucleus particle with highly reflective material
-      const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32); // Reduced segments (still smooth, fewer vertices to displace)
-      const nucleusMaterial = new THREE.MeshPhongMaterial({
-        color: config.color,
-        shininess: 300, // Extremely high shininess
-        transparent: true,
-        opacity: 0.95,
-        specular: 0xffffff,
-        reflectivity: 1.0
-      });
-      const nucleusParticle = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
-
-      // Position in 3D space
-      nucleusParticle.position.set(config.x, config.y, config.z);
-
-      // Add outer glow to each particle
-      const glowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-      const glowMaterial = new THREE.MeshBasicMaterial({
-        color: config.color,
-        transparent: true,
-        opacity: 0.4
-      });
-      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-      nucleusParticle.add(glow);
-
-      // Add to group instead of scene
-      nucleusGroup.add(nucleusParticle);
-
-      // Store original vertex positions for deformation
-      const origNucPos = new Float32Array(nucleusGeometry.attributes.position.array);
-      originalNucleusPositions.push(origNucPos);
-
-      nucleusParticles.push({
-        mesh: nucleusParticle,
-        basePos: { x: config.x, y: config.y, z: config.z },
-        phase: index * 1.7 // Different phase per particle for organic motion
-      });
-    });
-
-    // Create orbital paths and electrons from config
-    ORBIT_CONFIGS.forEach((config, index) => {
-      // Create orbital ring (torus)
-      const orbitGeometry = new THREE.TorusGeometry(config.radius, config.tubeRadius, 16, 100);
-      const orbitMaterial = new THREE.MeshPhongMaterial({
-        color: config.color,
-        transparent: true,
-        opacity: 0.4,
-        emissive: config.color,
-        emissiveIntensity: 0.3
-      });
-      const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
-      orbit.rotation.x = index * Math.PI / ORBIT_CONFIGS.length; // Rotate each orbit differently for 3D effect
-      orbit.rotation.y = 0;
-      scene.add(orbit);
-
-      // Create electron (completely static, solid sphere)
-      const electronGeometry = new THREE.SphereGeometry(0.18, 32, 32); // Slightly bigger
-      const electronMaterial = new THREE.MeshBasicMaterial({
-        color: config.color
-      });
-      const electron = new THREE.Mesh(electronGeometry, electronMaterial);
-
-      // Strong point light to create reflections on glass and nucleus
-      const electronLight = new THREE.PointLight(config.color, 125.0, 120); // Stronger for glass reflections
-      electronLight.decay = 0.8; // Lower decay for wider reach to glass
-      electron.add(electronLight);
-
-      // Store electron with its orbit config
-      electrons.push({
-        mesh: electron,
-        angle: (index * Math.PI * 2) / 3, // Spread electrons evenly
-        radius: config.radius,
-        speed: config.speed,
-        rotationX: index * Math.PI / ORBIT_CONFIGS.length, // Match orbit rotation for consistent paths
-        rotationY: 0
-      });
-
-      scene.add(electron);
-      orbits.push(orbit);
-    });
+    initNucleusParticles();
+    initOrbitsAndElectrons();
 
     // Create outer glass sphere with visible reflections (no bloom, no jumping)
     const glassGeometry = new THREE.SphereGeometry(3.5, 64, 64);
@@ -212,6 +128,95 @@
     container.appendChild(renderer.domElement);
 
     renderer.render(scene, camera);
+  }
+
+  function initNucleusParticles() {
+    nucleusGroup = new THREE.Group();
+    scene.add(nucleusGroup);
+
+    NUCLEUS_CONFIG.forEach((config, index) => {
+      // Create nucleus particle with highly reflective material
+      const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32); // Reduced segments (still smooth, fewer vertices to displace)
+      const nucleusMaterial = new THREE.MeshPhongMaterial({
+        color: config.color,
+        shininess: 300, // Extremely high shininess
+        transparent: true,
+        opacity: 0.95,
+        specular: 0xffffff,
+        reflectivity: 1.0
+      });
+      const nucleusParticle = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
+
+      // Position in 3D space
+      nucleusParticle.position.set(config.x, config.y, config.z);
+
+      // Add outer glow to each particle
+      const glowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: config.color,
+        transparent: true,
+        opacity: 0.4
+      });
+      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+      nucleusParticle.add(glow);
+
+      // Add to group instead of scene
+      nucleusGroup.add(nucleusParticle);
+
+      // Store original vertex positions for deformation
+      const origNucPos = new Float32Array(nucleusGeometry.attributes.position.array);
+      originalNucleusPositions.push(origNucPos);
+
+      nucleusParticles.push({
+        mesh: nucleusParticle,
+        basePos: { x: config.x, y: config.y, z: config.z },
+        phase: index * 1.7 // Different phase per particle for organic motion
+      });
+    });
+  }
+
+  function initOrbitsAndElectrons() {
+  // Create orbital paths and electrons from config
+    ORBIT_CONFIGS.forEach((config, index) => {
+      // Create orbital ring (torus)
+      const orbitGeometry = new THREE.TorusGeometry(config.radius, config.tubeRadius, 16, 100);
+      const orbitMaterial = new THREE.MeshPhongMaterial({
+        color: config.color,
+        transparent: true,
+        opacity: 0.4,
+        emissive: config.color,
+        emissiveIntensity: 0.3
+      });
+      const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+      orbit.rotation.x = index * Math.PI / ORBIT_CONFIGS.length; // Rotate each orbit differently for 3D effect
+      orbit.rotation.y = 0;
+      scene.add(orbit);
+
+      // Create electron (completely static, solid sphere)
+      const electronGeometry = new THREE.SphereGeometry(0.18, 32, 32); // Slightly bigger
+      const electronMaterial = new THREE.MeshBasicMaterial({
+        color: config.color
+      });
+      const electron = new THREE.Mesh(electronGeometry, electronMaterial);
+
+      // Strong point light to create reflections on glass and nucleus
+      const electronLight = new THREE.PointLight(config.color, 125.0, 120); // Stronger for glass reflections
+      electronLight.decay = 0.8; // Lower decay for wider reach to glass
+      electron.add(electronLight);
+
+      // Store electron with its orbit config
+      electrons.push({
+        mesh: electron,
+        angle: (index * Math.PI * 2) / 3, // Spread electrons evenly
+        radius: config.radius,
+        speed: config.speed,
+        rotationX: index * Math.PI / ORBIT_CONFIGS.length, // Match orbit rotation for consistent paths
+        rotationY: 0
+      });
+
+      scene.add(electron);
+      orbits.push(orbit);
+    });
   }
 
   function lerp(current, target, speed) {
