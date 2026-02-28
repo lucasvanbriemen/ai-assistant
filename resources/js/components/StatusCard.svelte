@@ -3,7 +3,7 @@
   import Logo from './Logo.svelte';
 
   let greeting = $state(statusCard.getRandomGreeting());
-  let state = $state('thinking');
+  let state = $state('normal');
  
 </script>
 

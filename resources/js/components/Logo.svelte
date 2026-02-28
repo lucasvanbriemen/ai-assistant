@@ -9,10 +9,10 @@
   const ALLOWED_STATES = ["normal", "thinking"];
 
   const ELECTRON_SPEEDS = { normal: 2.0, thinking: 6.0 };
-  const SCENE_SPEEDS = { normal: 25.0, thinking: 50.0 };
-  const NUCLEUS_SPEEDS = { normal: 5.0, thinking: 10.0 };
+  const SCENE_SPEEDS = { normal: 15.0, thinking: 50.0 };
+  const NUCLEUS_SPEEDS = { normal: 2.5, thinking: 10.0 };
   const PULSE_AMPLITUDES = { normal: 0.06, thinking: 0.15 };
-  const EMISSIVE_INTENSITIES = { normal: 0.4, thinking: 0.8 };
+  const EMISSIVE_INTENSITIES = { normal: 0, thinking: 0.8 };
   const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 250.0 };
   const OVERLAY_OPACITIES = { normal: 0.15, thinking: 0.25 };
 
@@ -81,10 +81,6 @@
     renderer.setSize(size, size);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
-
-    // Lighting - ambient only, no nucleus/directional lights to avoid unwanted glass reflections
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Ambient light for general visibility
-    scene.add(ambientLight);
 
     // No nucleus light or directional light - only electron lights should reflect on glass
 
