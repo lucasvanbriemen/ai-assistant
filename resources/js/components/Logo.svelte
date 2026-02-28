@@ -29,6 +29,13 @@
     { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, color: 0x3b82f6, speed: 0.012 },
   ];
 
+  const NUCLEUS_CONFIG = [
+    { color: 0x8b5cf6, emissive: 0x6366f1, x: 0.35, y: 0.35, z: 0.35 },
+    { color: 0x6366f1, emissive: 0x8b5cf6, x: -0.35, y: -0.35, z: 0.35 },
+    { color: 0x3b82f6, emissive: 0x6366f1, x: -0.35, y: 0.35, z: -0.35 },
+    { color: 0x8b5cf6, emissive: 0x3b82f6, x: 0.35, y: -0.35, z: -0.35 }
+  ]
+
   let container;
   let scene, camera, renderer;
   let nucleusGroup; // Group to hold all nucleus particles
@@ -68,27 +75,12 @@
     nucleusGroup = new THREE.Group();
     scene.add(nucleusGroup);
 
-    // Position nucleus particles in a 3D tetrahedral/pyramid arrangement
-    const nucleusPositions = [
-      { x: 0.35, y: 0.35, z: 0.35 },   // Top front right
-      { x: -0.35, y: -0.35, z: 0.35 }, // Bottom front left
-      { x: -0.35, y: 0.35, z: -0.35 }, // Top back left
-      { x: 0.35, y: -0.35, z: -0.35 }  // Bottom back right (4th particle - pyramid base)
-    ];
-
-    const nucleusColors = [
-      { color: 0x8b5cf6, emissive: 0x6366f1 },
-      { color: 0x6366f1, emissive: 0x8b5cf6 },
-      { color: 0x3b82f6, emissive: 0x6366f1 },
-      { color: 0x8b5cf6, emissive: 0x3b82f6 }
-    ];
-
-    nucleusPositions.forEach((pos, index) => {
+    NUCLEUS_CONFIG.forEach((config, index) => {
       // Create nucleus particle with highly reflective material
       const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32); // Reduced segments (still smooth, fewer vertices to displace)
       const nucleusMaterial = new THREE.MeshPhongMaterial({
-        color: nucleusColors[index].color,
-        emissive: nucleusColors[index].emissive,
+        color: config.color,
+        emissive: config.emissive,
         emissiveIntensity: 0.4, // Very low to see reflections better
         shininess: 300, // Extremely high shininess
         transparent: true,
@@ -99,12 +91,12 @@
       const nucleusParticle = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
 
       // Position in 3D space
-      nucleusParticle.position.set(pos.x, pos.y, pos.z);
+      nucleusParticle.position.set(config.x, config.y, config.z);
 
       // Add outer glow to each particle
       const glowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
       const glowMaterial = new THREE.MeshBasicMaterial({
-        color: nucleusColors[index].color,
+        color: config.color,
         transparent: true,
         opacity: 0.4
       });
@@ -120,7 +112,7 @@
 
       nucleusParticles.push({
         mesh: nucleusParticle,
-        basePos: { x: pos.x, y: pos.y, z: pos.z },
+        basePos: { x: config.x, y: config.y, z: config.z },
         phase: index * 1.7 // Different phase per particle for organic motion
       });
     });
