@@ -1,0 +1,17 @@
+.message {
+  background-color: var(--background-color-one);
+  border: 1px solid var(--border-color);
+  max-width: 90%;
+  padding: 1rem;
+  border-radius: 0 2rem 2rem 2rem;
+
+  color: var(--text-color-secondary);
+
+  &.user {
+    margin: 1rem 0 1rem auto;
+    border-radius: 2rem 0 2rem 2rem;
+    background-color: var(--primary-color);
+    border: none;
+    color: var(--text-color);
+  }
+}

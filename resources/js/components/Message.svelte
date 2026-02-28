@@ -1,10 +1,11 @@
 <script>
   import { gfmPlugin } from 'svelte-exmarkdown/gfm';
   import Markdown from 'svelte-exmarkdown';
+  import '../../scss/components/message.scss';
 
   let { role, text } = $props();
 </script>
 
-<h2>{role}</h2>
-<Markdown md={text} plugins={[gfmPlugin]} />
-<br>
+<div class="message" class:user={role === 'user'} class:assistant={role === 'assistant'}>
+  <Markdown md={text} plugins={[gfmPlugin]} />
+</div>
