@@ -254,7 +254,6 @@
   }
 
   function animateElectrons() {
-    // Animate electrons along their orbits
     electrons.forEach((electron) => {
       electron.angle += electron.speed * currentElectronSpeed;
 
