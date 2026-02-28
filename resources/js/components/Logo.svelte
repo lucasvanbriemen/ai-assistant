@@ -217,10 +217,6 @@
     });
   }
 
-  function lerp(current, target, speed) {
-    return current + (target - current) * speed;
-  }
-
   function animateScene() {
     requestAnimationFrame(animateScene);
 
