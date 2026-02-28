@@ -11,27 +11,19 @@
   const ELECTRON_SPEEDS = { normal: 2.0, thinking: 6.0 };
   const SCENE_SPEEDS = { normal: 25.0, thinking: 50.0 };
   const NUCLEUS_SPEEDS = { normal: 5.0, thinking: 25.0 };
-
-  // Normal state speeds
-  const NORMAL_PULSE_AMPLITUDE = 0.06;
-  const NORMAL_EMISSIVE_INTENSITY = 0.4;
-  const NORMAL_ELECTRON_LIGHT_INTENSITY = 125.0;
-  const NORMAL_RIM_OPACITY = 0.1;
-
-  // Thinking state speeds
-  const THINKING_PULSE_AMPLITUDE = 0.15;
-  const THINKING_EMISSIVE_INTENSITY = 0.8;
-  const THINKING_ELECTRON_LIGHT_INTENSITY = 250.0;
-  const THINKING_RIM_OPACITY = 0.25;
+  const PULSE_AMPLITUDES = { normal: 0.06, thinking: 0.15 };
+  const EMISSIVE_INTENSITIES = { normal: 0.4, thinking: 0.8 };
+  const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 250.0 };
+  const RIM_OPACITIES = { normal: 0.1, thinking: 0.25 };
 
   // Interpolated values (smoothly transition between states)
   let currentElectronSpeed = ELECTRON_SPEEDS[state];
   let currentSceneSpeed = SCENE_SPEEDS[state];
   let currentNucleusSpeed = NUCLEUS_SPEEDS[state];
-  let currentPulseAmplitude = NORMAL_PULSE_AMPLITUDE;
-  let currentEmissiveIntensity = NORMAL_EMISSIVE_INTENSITY;
-  let currentElectronLightIntensity = NORMAL_ELECTRON_LIGHT_INTENSITY;
-  let currentRimOpacity = NORMAL_RIM_OPACITY;
+  let currentPulseAmplitude = PULSE_AMPLITUDES[state];
+  let currentEmissiveIntensity = EMISSIVE_INTENSITIES[state];
+  let currentElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
+  let currentRimOpacity = RIM_OPACITIES[state];
   const ORBIT_RADIUS = 3.2;
   const ORBIT_TUBE_THICKNESS = 0.05;
   const ORBIT_CONFIGS = [
@@ -255,10 +247,10 @@
     const targetElectronSpeed = ELECTRON_SPEEDS[state];
     const targetSceneSpeed = SCENE_SPEEDS[state];
     const targetNucleusSpeed = NUCLEUS_SPEEDS[state];
-    const targetPulseAmplitude = state == "thinking" ? THINKING_PULSE_AMPLITUDE : NORMAL_PULSE_AMPLITUDE;
-    const targetEmissiveIntensity = state == "thinking" ? THINKING_EMISSIVE_INTENSITY : NORMAL_EMISSIVE_INTENSITY;
-    const targetElectronLightIntensity = state == "thinking" ? THINKING_ELECTRON_LIGHT_INTENSITY : NORMAL_ELECTRON_LIGHT_INTENSITY;
-    const targetRimOpacity = state == "thinking" ? THINKING_RIM_OPACITY : NORMAL_RIM_OPACITY;
+    const targetPulseAmplitude = PULSE_AMPLITUDES[state];
+    const targetEmissiveIntensity = EMISSIVE_INTENSITIES[state];
+    const targetElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
+    const targetRimOpacity = RIM_OPACITIES[state];
 
     const targetDisplacementAmp = state == "thinking" ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
     const targetNucleusJitter = state == "thinking" ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
