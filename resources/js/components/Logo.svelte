@@ -8,15 +8,15 @@
 
   const ALLOWED_STATES = ["normal", "thinking"];
 
-  const ELECTRON_SPEEDS = { normal: 2.0, thinking: 6.0 };
-  const SCENE_SPEEDS = { normal: 15.0, thinking: 50.0 };
-  const NUCLEUS_SPEEDS = { normal: 2.5, thinking: 10.0 };
+  const ELECTRON_SPEEDS = { normal: 2.0, thinking: 4.0 };
+  const SCENE_SPEEDS = { normal: 15.0, thinking: 35.0 };
+  const NUCLEUS_SPEEDS = { normal: 2.5, thinking: 5.0 };
   const PULSE_AMPLITUDES = { normal: 0.06, thinking: 0.15 };
   const EMISSIVE_INTENSITIES = { normal: 0, thinking: 0.8 };
-  const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 250.0 };
+  const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 150.0 };
   const OVERLAY_OPACITIES = { normal: 0.15, thinking: 0.25 };
   const DISPLACEMENT_AMPS = { normal: 0, thinking: 0.15 };
-  const NUCLEUS_JITTERS = { normal: 0, thinking: 0.04 };
+  const NUCLEUS_JITTERS = { normal: 0, thinking: 0.5 };
   const RIM_DISPLACEMENT_AMPS = { normal: 0, thinking: 0.2 };
   const NUCLEUS_DEFORM_AMPS = { normal: 0, thinking: 0.06 };
 
@@ -30,10 +30,10 @@
   ];
 
   const NUCLEUS_CONFIG = [
-    { color: 0x8b5cf6, emissive: 0x6366f1, x: 0.35, y: 0.35, z: 0.35 },
-    { color: 0x6366f1, emissive: 0x8b5cf6, x: -0.35, y: -0.35, z: 0.35 },
-    { color: 0x3b82f6, emissive: 0x6366f1, x: -0.35, y: 0.35, z: -0.35 },
-    { color: 0x8b5cf6, emissive: 0x3b82f6, x: 0.35, y: -0.35, z: -0.35 }
+    { color: 0x8b5cf6, x: 0.35, y: 0.35, z: 0.35 },
+    { color: 0x6366f1, x: -0.35, y: -0.35, z: 0.35 },
+    { color: 0x3b82f6, x: -0.35, y: 0.35, z: -0.35 },
+    { color: 0x8b5cf6, x: 0.35, y: -0.35, z: -0.35 }
   ]
 
   let container;
@@ -80,8 +80,6 @@
       const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32); // Reduced segments (still smooth, fewer vertices to displace)
       const nucleusMaterial = new THREE.MeshPhongMaterial({
         color: config.color,
-        emissive: config.emissive,
-        emissiveIntensity: 0.4, // Very low to see reflections better
         shininess: 300, // Extremely high shininess
         transparent: true,
         opacity: 0.95,
