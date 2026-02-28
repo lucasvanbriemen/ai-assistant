@@ -73,8 +73,8 @@
     }
 
     function promptInput(event) {
-        // If it was the enter key, call the click function (unless shift is pressed)
-        if (event.key === 'Enter' && event.shiftKey) {
+        // If it was control + enter, submit the prompt
+        if (event.key === 'Enter' && event.ctrlKey) {
             event.stopPropagation();
             event.preventDefault();
             submitPrompt();
