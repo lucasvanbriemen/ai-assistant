@@ -72,7 +72,7 @@
   function init() {
     // Validate state
     if (!ALLOWED_STATES.includes(state)) {
-      state = "normal";
+      return console.error(`Invalid state "${state}" for Logo component. Allowed states: ${ALLOWED_STATES.join(", ")}`);
     }
 
     initThreeJS();
