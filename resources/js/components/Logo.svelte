@@ -251,50 +251,9 @@
     scene.rotation.y += 0.002 * currentSceneSpeed;
     scene.rotation.x += 0.001 * currentSceneSpeed;
 
-    // Glass sphere vertex displacement (wobbly unstable shape when thinking)
-    const positions = glassSphere.geometry.attributes.position;
-    const arr = positions.array;
+    applyNoise(glassSphere, 0.001, originalPositions);
+    applyNoise(rimMesh, 0.001 * 0.7, originalRimPositions);
 
-    let t = Date.now() * 0.001;
-    for (let i = 0; i < arr.length; i += 3) {
-      const ox = originalPositions[i];
-      const oy = originalPositions[i + 1];
-      const oz = originalPositions[i + 2];
-      // Radial direction (normalized)
-      const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-      const nx = ox / len;
-      const ny = oy / len;
-      const nz = oz / len;
-      // Displace along radial direction
-      const d = logo.displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
-      arr[i] = ox + nx * d;
-      arr[i + 1] = oy + ny * d;
-      arr[i + 2] = oz + nz * d;
-    }
-    positions.needsUpdate = true;
-    glassSphere.geometry.computeVertexNormals();
-
-    // Rim sphere vertex displacement (wobbly container when thinking)
-    const rimPositions = rimMesh.geometry.attributes.position;
-    const rimArr = rimPositions.array;
-
-    t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
-    for (let i = 0; i < rimArr.length; i += 3) {
-      const ox = originalRimPositions[i];
-      const oy = originalRimPositions[i + 1];
-      const oz = originalRimPositions[i + 2];
-      const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-      const nx = ox / len;
-      const ny = oy / len;
-      const nz = oz / len;
-      const d = logo.displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
-      rimArr[i] = ox + nx * d;
-      rimArr[i + 1] = oy + ny * d;
-      rimArr[i + 2] = oz + nz * d;
-    }
-    rimPositions.needsUpdate = true;
-    rimMesh.geometry.computeVertexNormals();
-  
     animateNucleus();
     animateOrbits();
     animateElectrons();
@@ -399,6 +358,30 @@
         }
       }
     });
+  }
+
+  function applyNoise(mesh, amp, originalPositions) {
+    const positions = mesh.geometry.attributes.position;
+    const arr = positions.array;
+
+    let t = Date.now() * amp;
+    for (let i = 0; i < arr.length; i += 3) {
+      const ox = originalPositions[i];
+      const oy = originalPositions[i + 1];
+      const oz = originalPositions[i + 2];
+      // Radial direction (normalized)
+      const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+      const nx = ox / len;
+      const ny = oy / len;
+      const nz = oz / len;
+      // Displace along radial direction
+      const d = logo.displacementNoise(ox, oy, oz, t) * currentDisplacementAmp;
+      arr[i] = ox + nx * d;
+      arr[i + 1] = oy + ny * d;
+      arr[i + 2] = oz + nz * d;
+    }
+    positions.needsUpdate = true;
+    mesh.geometry.computeVertexNormals();
   }
 
   onMount(() => {
