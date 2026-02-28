@@ -293,29 +293,62 @@
     }
 
     // Rim sphere vertex displacement (wobbly container when thinking)
-    if (rimMesh && originalRimPositions) {
-      const rimPositions = rimMesh.geometry.attributes.position;
-      const rimArr = rimPositions.array;
+    const rimPositions = rimMesh.geometry.attributes.position;
+    const rimArr = rimPositions.array;
 
-      const t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
-      for (let i = 0; i < rimArr.length; i += 3) {
-        const ox = originalRimPositions[i];
-        const oy = originalRimPositions[i + 1];
-        const oz = originalRimPositions[i + 2];
-        const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
-        const nx = ox / len;
-        const ny = oy / len;
-        const nz = oz / len;
-        const d = logo.displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
-        rimArr[i] = ox + nx * d;
-        rimArr[i + 1] = oy + ny * d;
-        rimArr[i + 2] = oz + nz * d;
-      }
-      rimPositions.needsUpdate = true;
-      rimMesh.geometry.computeVertexNormals();
-      
+    const t = Date.now() * 0.001 * 0.7; // Slower rate than glass sphere to avoid lockstep
+    for (let i = 0; i < rimArr.length; i += 3) {
+      const ox = originalRimPositions[i];
+      const oy = originalRimPositions[i + 1];
+      const oz = originalRimPositions[i + 2];
+      const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
+      const nx = ox / len;
+      const ny = oy / len;
+      const nz = oz / len;
+      const d = logo.displacementNoise(ox, oy, oz, t) * currentRimDisplacementAmp;
+      rimArr[i] = ox + nx * d;
+      rimArr[i + 1] = oy + ny * d;
+      rimArr[i + 2] = oz + nz * d;
     }
+    rimPositions.needsUpdate = true;
+    rimMesh.geometry.computeVertexNormals();
+  
+    animateNucleus();
+    animateOrbits();
+    animateElectrons();
 
+    rimMesh.material.opacity = currentOverlayOpacity;
+
+    renderer.render(scene, camera);
+  }
+
+  function animateOrbits() {
+    orbits.forEach((orbit, index) => {
+      orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
+    });
+  }
+
+  function animateElectrons() {
+    // Animate electrons along their orbits
+    electrons.forEach((electron) => {
+      electron.angle += electron.speed * currentElectronSpeed;
+
+      // Calculate position on orbital path
+      const x = Math.cos(electron.angle) * electron.radius;
+      const y = Math.sin(electron.angle) * electron.radius;
+
+      // Apply orbital rotation to get 3D position
+      const position = new THREE.Vector3(x, y, 0);
+      position.applyEuler(new THREE.Euler(electron.rotationX, electron.rotationY, 0));
+
+      electron.mesh.position.copy(position);
+
+      // Update electron light intensity
+      electron.mesh.children[0].intensity = currentElectronLightIntensity;
+    });
+  }
+
+  function animateNucleus() {
     // Rotate the entire nucleus group so particles swap positions in 3D
     nucleusGroup.rotation.x += 0.008 * currentNucleusSpeed;
     nucleusGroup.rotation.y += 0.012 * currentNucleusSpeed;
@@ -383,39 +416,6 @@
           }
         }
       }
-    });
-
-    animateOrbits();
-    animateElectrons();
-
-    rimMesh.material.opacity = currentOverlayOpacity;
-
-    renderer.render(scene, camera);
-  }
-
-  function animateOrbits() {
-    orbits.forEach((orbit, index) => {
-      orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
-    });
-  }
-
-  function animateElectrons() {
-    // Animate electrons along their orbits
-    electrons.forEach((electron) => {
-      electron.angle += electron.speed * currentElectronSpeed;
-
-      // Calculate position on orbital path
-      const x = Math.cos(electron.angle) * electron.radius;
-      const y = Math.sin(electron.angle) * electron.radius;
-
-      // Apply orbital rotation to get 3D position
-      const position = new THREE.Vector3(x, y, 0);
-      position.applyEuler(new THREE.Euler(electron.rotationX, electron.rotationY, 0));
-
-      electron.mesh.position.copy(position);
-
-      // Update electron light intensity
-      electron.mesh.children[0].intensity = currentElectronLightIntensity;
     });
   }
 
