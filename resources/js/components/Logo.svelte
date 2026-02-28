@@ -320,10 +320,8 @@
       }
 
       // Nucleus particle vertex deformation (organic protrusions/arms when thinking)
-      if (originalNucleusPositions[index]) {
-        const t = Date.now() * 0.001 + particle.phase;
-        applyNoise(particle.mesh, t, currentNucleusDeformAmp, originalNucleusPositions[index]);
-      }
+      const t = Date.now() * 0.001 + particle.phase;
+      applyNoise(particle.mesh, t, currentNucleusDeformAmp, originalNucleusPositions[index]);
     });
   }
 
