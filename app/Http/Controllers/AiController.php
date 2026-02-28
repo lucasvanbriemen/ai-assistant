@@ -36,26 +36,6 @@ class AiController extends Controller
         ]);
     }
 
-    private function getTools()
-    {
-        return [
-            [
-                'name' => 'get_weather',
-                'description' => 'Get the current weather for a given location.',
-                'input_schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'location' => [
-                            'type' => 'string',
-                            'description' => 'The location to get the weather for.',
-                        ],
-                    ],
-                    'required' => ['location'],
-                ],
-            ]
-        ];
-    }
-
     private function callClaude($messages) {
         return Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -70,8 +50,7 @@ class AiController extends Controller
             'stream' => true,
             'system' => self::SYSTEM_PROMPT,
             'messages' => $messages,
-            'temperature' => 0.7,
-            'tools' => $this->getTools(),
+            'temperature' => 0.7
         ]);
     }
 
