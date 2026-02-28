@@ -399,6 +399,21 @@
       }
     });
 
+    animateOrbits();
+    animateElectrons();
+
+    rimMesh.material.opacity = currentOverlayOpacity;
+
+    renderer.render(scene, camera);
+  }
+
+  function animateOrbits() {
+    orbits.forEach((orbit, index) => {
+      orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
+    });
+  }
+
+  function animateElectrons() {
     // Animate electrons along their orbits
     electrons.forEach((electron) => {
       electron.angle += electron.speed * currentElectronSpeed;
@@ -416,18 +431,6 @@
       // Update electron light intensity
       electron.mesh.children[0].intensity = currentElectronLightIntensity;
     });
-
-    // Slowly rotate orbits + opacity flicker when thinking
-    orbits.forEach((orbit, index) => {
-      orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
-      
-      const flicker = Math.sin(Date.now() * 0.004 + index * 2.3) * 0.1 * (currentDisplacementAmp / DISPLACEMENT_AMPS[state]);
-      orbit.material.opacity = 0.4 + flicker;
-    });
-
-    rimMesh.material.opacity = currentOverlayOpacity;
-
-    renderer.render(scene, camera);
   }
 
   onMount(() => {
