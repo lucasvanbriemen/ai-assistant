@@ -21,9 +21,43 @@ class AiController extends Controller
 
     public function index(Request $request)
     {
-        $history = $this->formatMessages($request->input('history', []));
+        $messages = $this->formatMessages($request->input('history', []));
+        $response = $this->callClaude($messages);
 
-        $response = Http::withHeaders([
+        $body = $response->toPsrResponse()->getBody();
+
+        return response()->stream(function () use ($body) {
+            while (! $body->eof()) {
+                yield $body->read(1024);
+            }
+        }, 200, [
+            'X-Accel-Buffering' => 'no',
+            'Cache-Control' => 'no-cache',
+        ]);
+    }
+
+    private function getTools()
+    {
+        return [
+            [
+                'name' => 'get_weather',
+                'description' => 'Get the current weather for a given location.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'location' => [
+                            'type' => 'string',
+                            'description' => 'The location to get the weather for.',
+                        ],
+                    ],
+                    'required' => ['location'],
+                ],
+            ]
+        ];
+    }
+
+    private function callClaude($messages) {
+        return Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . env('TOKEN'),
             'anthropic-version' => '2023-06-01',
@@ -35,19 +69,9 @@ class AiController extends Controller
             'max_tokens' => 1024,
             'stream' => true,
             'system' => self::SYSTEM_PROMPT,
-            'messages' => $history,
+            'messages' => $messages,
             'temperature' => 0.7,
-        ]);
-
-        $body = $response->toPsrResponse()->getBody();
-
-        return response()->stream(function () use ($body) {
-            while (! $body->eof()) {
-                yield $body->read(1024);
-            }
-        }, 200, [
-            'X-Accel-Buffering' => 'no',
-            'Cache-Control' => 'no-cache',
+            'tools' => $this->getTools(),
         ]);
     }
 
