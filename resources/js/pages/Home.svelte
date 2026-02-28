@@ -4,8 +4,6 @@
     import StatusCard from '@/components/StatusCard.svelte';
     import Message from '@/components/Message.svelte';
     import '../../scss/pages/home.scss';
-    import Markdown from 'svelte-exmarkdown';
-    import { gfmPlugin } from 'svelte-exmarkdown/gfm';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
     let isThinking = $state(false);
