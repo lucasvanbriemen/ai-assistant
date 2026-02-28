@@ -82,10 +82,10 @@
       color: 0xe0e0e0,       // Darker tint for better reflection visibility
       transparent: true,
       opacity: 0.28,         // Darker container for visible reflections
-      transmission: 0.75,    // Less transparent - darker surface
-      thickness: 0.4,        // Moderate glass thickness
+      transmission: 0.1,    // Less transparent - darker surface
+      thickness: 1.4,        // Moderate glass thickness
       roughness: 0.0,        // Clear glass (not cloudy)
-      metalness: 0.0,
+      metalness: 1.0,
       clearcoat: 0.0,        // No clearcoat to avoid jumping
       clearcoatRoughness: 0.0,
       ior: 1.5,              // Glass index of refraction
@@ -113,8 +113,6 @@
 
     // Store original rim vertex positions for displacement
     originalRimPositions = new Float32Array(rimGeometry.attributes.position.array);
-
-    // Initial render
   }
 
   function initScene() {
