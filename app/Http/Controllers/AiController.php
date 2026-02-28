@@ -36,6 +36,7 @@ class AiController extends Controller
             'stream' => true,
             'system' => self::SYSTEM_PROMPT,
             'messages' => $history,
+            'temperature' => 0.7,
         ]);
 
         $body = $response->toPsrResponse()->getBody();
