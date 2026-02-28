@@ -9,18 +9,16 @@
   const ALLOWED_STATES = ["normal", "thinking"];
 
   const ELECTRON_SPEEDS = { normal: 2.0, thinking: 6.0 };
+  const SCENE_SPEEDS = { normal: 25.0, thinking: 50.0 };
+  const NUCLEUS_SPEEDS = { normal: 5.0, thinking: 25.0 };
 
   // Normal state speeds
-  const NORMAL_SCENE_SPEED = 25.0;
-  const NORMAL_NUCLEUS_SPEED = 5.0;
   const NORMAL_PULSE_AMPLITUDE = 0.06;
   const NORMAL_EMISSIVE_INTENSITY = 0.4;
   const NORMAL_ELECTRON_LIGHT_INTENSITY = 125.0;
   const NORMAL_RIM_OPACITY = 0.1;
 
   // Thinking state speeds
-  const THINKING_SCENE_SPEED = 100.0;
-  const THINKING_NUCLEUS_SPEED = 25.0;
   const THINKING_PULSE_AMPLITUDE = 0.15;
   const THINKING_EMISSIVE_INTENSITY = 0.8;
   const THINKING_ELECTRON_LIGHT_INTENSITY = 250.0;
@@ -28,8 +26,8 @@
 
   // Interpolated values (smoothly transition between states)
   let currentElectronSpeed = ELECTRON_SPEEDS[state];
-  let currentSceneSpeed = NORMAL_SCENE_SPEED;
-  let currentNucleusSpeed = NORMAL_NUCLEUS_SPEED;
+  let currentSceneSpeed = SCENE_SPEEDS[state];
+  let currentNucleusSpeed = NUCLEUS_SPEEDS[state];
   let currentPulseAmplitude = NORMAL_PULSE_AMPLITUDE;
   let currentEmissiveIntensity = NORMAL_EMISSIVE_INTENSITY;
   let currentElectronLightIntensity = NORMAL_ELECTRON_LIGHT_INTENSITY;
@@ -255,8 +253,8 @@
     // Smoothly interpolate all values toward target state
     const lerpSpeed = 0.03;
     const targetElectronSpeed = ELECTRON_SPEEDS[state];
-    const targetSceneSpeed = state == "thinking" ? THINKING_SCENE_SPEED : NORMAL_SCENE_SPEED;
-    const targetNucleusSpeed = state == "thinking" ? THINKING_NUCLEUS_SPEED : NORMAL_NUCLEUS_SPEED;
+    const targetSceneSpeed = SCENE_SPEEDS[state];
+    const targetNucleusSpeed = NUCLEUS_SPEEDS[state];
     const targetPulseAmplitude = state == "thinking" ? THINKING_PULSE_AMPLITUDE : NORMAL_PULSE_AMPLITUDE;
     const targetEmissiveIntensity = state == "thinking" ? THINKING_EMISSIVE_INTENSITY : NORMAL_EMISSIVE_INTENSITY;
     const targetElectronLightIntensity = state == "thinking" ? THINKING_ELECTRON_LIGHT_INTENSITY : NORMAL_ELECTRON_LIGHT_INTENSITY;
