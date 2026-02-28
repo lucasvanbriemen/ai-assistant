@@ -243,7 +243,7 @@
     animationId = requestAnimationFrame(animateScene);
 
     // Smoothly interpolate all values toward target state
-    const lerpSpeed = 1;
+    const lerpSpeed = 0.03;
     const targetElectronSpeed = ELECTRON_SPEEDS[state];
     const targetSceneSpeed = SCENE_SPEEDS[state];
     const targetNucleusSpeed = NUCLEUS_SPEEDS[state];
