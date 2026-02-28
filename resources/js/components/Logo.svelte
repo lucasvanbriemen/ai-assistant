@@ -420,20 +420,12 @@
     // Slowly rotate orbits + opacity flicker when thinking
     orbits.forEach((orbit, index) => {
       orbit.rotation.z += 0.001 * (index + 1) * currentSceneSpeed;
-
-      // Subtle opacity flicker when thinking
-      if (currentDisplacementAmp > 0.001) {
-        const flicker = Math.sin(Date.now() * 0.004 + index * 2.3) * 0.1 * (currentDisplacementAmp / DISPLACEMENT_AMPS["thinking"]);
-        orbit.material.opacity = 0.4 + flicker;
-      } else {
-        orbit.material.opacity = 0.4;
-      }
+      
+      const flicker = Math.sin(Date.now() * 0.004 + index * 2.3) * 0.1 * (currentDisplacementAmp / DISPLACEMENT_AMPS[state]);
+      orbit.material.opacity = 0.4 + flicker;
     });
 
-    // Update rim glow opacity
-    if (rimMesh) {
-      rimMesh.material.opacity = currentOverlayOpacity;
-    }
+    rimMesh.material.opacity = currentOverlayOpacity;
 
     renderer.render(scene, camera);
   }
