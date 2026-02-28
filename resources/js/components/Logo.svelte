@@ -76,17 +76,14 @@
   }
 
   function initGlassSphere() {
-    // Create outer glass sphere with visible reflections (no bloom, no jumping)
     const glassGeometry = new THREE.SphereGeometry(3.5, 64, 64);
     const glassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xe0e0e0,       // Darker tint for better reflection visibility
       transparent: true,
-      opacity: 0.28,         // Darker container for visible reflections
-      transmission: 0.1,    // Less transparent - darker surface
-      thickness: 1.4,        // Moderate glass thickness
-      roughness: 0.0,        // Clear glass (not cloudy)
+      opacity: 0.28,
+      transmission: 0.1,
+      thickness: 1.25,
+      roughness: 0.0,
       metalness: 1.0,
-      clearcoat: 0.0,        // No clearcoat to avoid jumping
       side: THREE.DoubleSide,
       depthWrite: false
     });
@@ -94,7 +91,6 @@
     glassSphere.renderOrder = 999;
     scene.add(glassSphere);
 
-    // Store original vertex positions for displacement
     originalPositions = new Float32Array(glassGeometry.attributes.position.array);
 
     // Subtle rim glow on glass edge
@@ -108,18 +104,15 @@
     rimMesh = new THREE.Mesh(rimGeometry, rimMaterial);
     scene.add(rimMesh);
 
-    // Store original rim vertex positions for displacement
     originalRimPositions = new Float32Array(rimGeometry.attributes.position.array);
   }
 
   function initScene() {
     scene = new THREE.Scene();
 
-    // Camera (zoomed out to show full glass sphere)
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
     camera.position.z = 12;
 
-    // Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(size, size);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -133,11 +126,10 @@
     scene.add(nucleusGroup);
 
     NUCLEUS_CONFIG.forEach((config, index) => {
-      // Create nucleus particle with highly reflective material
-      const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32); // Reduced segments (still smooth, fewer vertices to displace)
+      const nucleusGeometry = new THREE.SphereGeometry(0.35, 32, 32);
       const nucleusMaterial = new THREE.MeshPhongMaterial({
         color: config.color,
-        shininess: 300, // Extremely high shininess
+        shininess: 100,
         transparent: true,
         opacity: 0.95,
         specular: 0xffffff,
@@ -145,7 +137,6 @@
       });
       const nucleusParticle = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
 
-      // Position in 3D space
       nucleusParticle.position.set(config.x, config.y, config.z);
 
       // Add outer glow to each particle
@@ -158,23 +149,20 @@
       const glow = new THREE.Mesh(glowGeometry, glowMaterial);
       nucleusParticle.add(glow);
 
-      // Add to group instead of scene
       nucleusGroup.add(nucleusParticle);
 
-      // Store original vertex positions for deformation
       const origNucPos = new Float32Array(nucleusGeometry.attributes.position.array);
       originalNucleusPositions.push(origNucPos);
 
       nucleusParticles.push({
         mesh: nucleusParticle,
         basePos: { x: config.x, y: config.y, z: config.z },
-        phase: index * 1.7 // Different phase per particle for organic motion
+        phase: index * 1.7
       });
     });
   }
 
   function initOrbitsAndElectrons() {
-  // Create orbital paths and electrons from config
     ORBIT_CONFIGS.forEach((config, index) => {
       // Create orbital ring (torus)
       const orbitGeometry = new THREE.TorusGeometry(config.radius, ORBIT_TUBE_THICKNESS, 16, 100);
@@ -186,29 +174,25 @@
         emissiveIntensity: 0.3
       });
       const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
-      orbit.rotation.x = index * Math.PI / ORBIT_CONFIGS.length; // Rotate each orbit differently for 3D effect
+      orbit.rotation.x = index * Math.PI / ORBIT_CONFIGS.length;
       orbit.rotation.y = 0;
       scene.add(orbit);
 
       // Create electron (completely static, solid sphere)
-      const electronGeometry = new THREE.SphereGeometry(0.18, 32, 32); // Slightly bigger
-      const electronMaterial = new THREE.MeshBasicMaterial({
-        color: config.color
-      });
+      const electronGeometry = new THREE.SphereGeometry(ORBIT_TUBE_THICKNESS + 0.15, 132, 132);
+      const electronMaterial = new THREE.MeshBasicMaterial({ color: config.color });
       const electron = new THREE.Mesh(electronGeometry, electronMaterial);
 
-      // Strong point light to create reflections on glass and nucleus
-      const electronLight = new THREE.PointLight(config.color, 125.0, 120); // Stronger for glass reflections
-      electronLight.decay = 0.8; // Lower decay for wider reach to glass
+      const electronLight = new THREE.PointLight(config.color, 125.0, 120);
+      electronLight.decay = 0.8;
       electron.add(electronLight);
 
-      // Store electron with its orbit config
       electrons.push({
         mesh: electron,
-        angle: (index * Math.PI * 2) / 3, // Spread electrons evenly
+        angle: (index * Math.PI * 2) / ORBIT_CONFIGS.length,
         radius: config.radius,
         speed: config.speed,
-        rotationX: index * Math.PI / ORBIT_CONFIGS.length, // Match orbit rotation for consistent paths
+        rotationX: index * Math.PI / ORBIT_CONFIGS.length,
         rotationY: 0
       });
 
@@ -249,7 +233,7 @@
 
     // Rotate entire scene for 3D effect
     scene.rotation.y += 0.002 * currentSceneSpeed;
-    scene.rotation.x += 0.001 * currentSceneSpeed;
+    scene.rotation.x += 0.002 * currentSceneSpeed / 2;  // We need to slow 1 axis rotation to prevent excessive spinning when thinking in 8's
 
     applyNoise(glassSphere, Date.now() * 0.001, currentDisplacementAmp, originalPositions);
     applyNoise(rimMesh, Date.now() * 0.001 * 0.7, currentDisplacementAmp, originalRimPositions);
@@ -299,28 +283,21 @@
     nucleusParticles.forEach((particle, index) => {
       const pulse = Math.sin(Date.now() * 0.002 + index) * currentPulseAmplitude + 1;
       particle.mesh.scale.set(pulse, pulse, pulse);
-
-      // Update emissive intensity
       particle.mesh.material.emissiveIntensity = currentEmissiveIntensity;
 
-      // Smooth sine-based jitter when thinking
-      if (currentNucleusJitter > 0.001) {
-        const t = Date.now() * 0.003;
-        const p = particle.phase;
-        const jx = Math.sin(t * 1.3 + p) * Math.cos(t * 0.7 + p * 2.1) * currentNucleusJitter;
-        const jy = Math.sin(t * 1.7 + p * 1.4) * Math.cos(t * 0.9 + p) * currentNucleusJitter;
-        const jz = Math.sin(t * 1.1 + p * 0.8) * Math.cos(t * 1.5 + p * 1.7) * currentNucleusJitter;
-        particle.mesh.position.set(
-          particle.basePos.x + jx,
-          particle.basePos.y + jy,
-          particle.basePos.z + jz
-        );
-      } else {
-        particle.mesh.position.set(particle.basePos.x, particle.basePos.y, particle.basePos.z);
-      }
-
+      let t = Date.now() * 0.003;
+      const p = particle.phase;
+      const jx = Math.sin(t * 1.3 + p) * Math.cos(t * 0.7 + p * 2.1) * currentNucleusJitter;
+      const jy = Math.sin(t * 1.7 + p * 1.4) * Math.cos(t * 0.9 + p) * currentNucleusJitter;
+      const jz = Math.sin(t * 1.1 + p * 0.8) * Math.cos(t * 1.5 + p * 1.7) * currentNucleusJitter;
+      particle.mesh.position.set(
+        particle.basePos.x + jx,
+        particle.basePos.y + jy,
+        particle.basePos.z + jz
+      );
+    
       // Nucleus particle vertex deformation (organic protrusions/arms when thinking)
-      const t = Date.now() * 0.001 + particle.phase;
+      t = Date.now() * 0.001 + particle.phase;
       applyNoise(particle.mesh, t, currentNucleusDeformAmp, originalNucleusPositions[index]);
     });
   }
