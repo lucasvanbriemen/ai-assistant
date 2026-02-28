@@ -67,20 +67,7 @@
   }
   
   function initThreeJS() {
-    scene = new THREE.Scene();
-
-    // Camera (zoomed out to show full glass sphere)
-    camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-    camera.position.z = 12;
-
-    // Renderer
-    renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true
-    });
-    renderer.setSize(size, size);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
+    initScene();
 
     // No nucleus light or directional light - only electron lights should reflect on glass
 
@@ -226,6 +213,21 @@
     originalRimPositions = new Float32Array(rimGeometry.attributes.position.array);
 
     // Initial render
+  }
+
+  function initScene() {
+    scene = new THREE.Scene();
+
+    // Camera (zoomed out to show full glass sphere)
+    camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    camera.position.z = 12;
+
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(size, size);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
     renderer.render(scene, camera);
   }
 
