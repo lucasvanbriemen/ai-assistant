@@ -10,27 +10,19 @@
 
   const ELECTRON_SPEEDS = { normal: 2.0, thinking: 6.0 };
   const SCENE_SPEEDS = { normal: 25.0, thinking: 50.0 };
-  const NUCLEUS_SPEEDS = { normal: 5.0, thinking: 25.0 };
+  const NUCLEUS_SPEEDS = { normal: 5.0, thinking: 10.0 };
   const PULSE_AMPLITUDES = { normal: 0.06, thinking: 0.15 };
   const EMISSIVE_INTENSITIES = { normal: 0.4, thinking: 0.8 };
   const ELECTRON_LIGHT_INTENSITIES = { normal: 125.0, thinking: 250.0 };
-  const RIM_OPACITIES = { normal: 0.1, thinking: 0.25 };
+  const OVERLAY_OPACITIES = { normal: 0.15, thinking: 0.25 };
 
-  // Interpolated values (smoothly transition between states)
-  let currentElectronSpeed = ELECTRON_SPEEDS[state];
-  let currentSceneSpeed = SCENE_SPEEDS[state];
-  let currentNucleusSpeed = NUCLEUS_SPEEDS[state];
-  let currentPulseAmplitude = PULSE_AMPLITUDES[state];
-  let currentEmissiveIntensity = EMISSIVE_INTENSITIES[state];
-  let currentElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
-  let currentRimOpacity = RIM_OPACITIES[state];
   const ORBIT_RADIUS = 3.2;
   const ORBIT_TUBE_THICKNESS = 0.05;
   const ORBIT_CONFIGS = [
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: 0, rotationY: 0, color: 0x8b5cf6, speed: 0.01 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (1 * Math.PI) / 4, rotationY: 0, color: 0x6366f1, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (2 * Math.PI) / 4, rotationY: 0, color: 0x3b82f6, speed: 0.012 },
-    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (3 * Math.PI) / 4, rotationY: 0, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: 0, color: 0x8b5cf6, speed: 0.01 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (1 * Math.PI) / 4, color: 0x6366f1, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (2 * Math.PI) / 4, color: 0x3b82f6, speed: 0.012 },
+    { radius: ORBIT_RADIUS, tubeRadius: ORBIT_TUBE_THICKNESS, rotationX: (3 * Math.PI) / 4, color: 0x3b82f6, speed: 0.012 },
   ];
 
   let container;
@@ -48,6 +40,13 @@
   let currentNucleusJitter = 0; // Current nucleus jitter amplitude (lerped)
   let currentRimDisplacementAmp = 0; // Current rim displacement amplitude (lerped)
   let currentNucleusDeformAmp = 0; // Current nucleus deform amplitude (lerped)
+  let currentElectronSpeed = ELECTRON_SPEEDS[state];
+  let currentSceneSpeed = SCENE_SPEEDS[state];
+  let currentNucleusSpeed = NUCLEUS_SPEEDS[state];
+  let currentPulseAmplitude = PULSE_AMPLITUDES[state];
+  let currentEmissiveIntensity = EMISSIVE_INTENSITIES[state];
+  let currentElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
+  let currentOverlayOpacity = OVERLAY_OPACITIES[state];
 
   const NORMAL_DISPLACEMENT_AMP = 0;
   const THINKING_DISPLACEMENT_AMP = 0.15;
@@ -163,7 +162,7 @@
       });
       const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
       orbit.rotation.x = config.rotationX;
-      orbit.rotation.y = config.rotationY;
+      orbit.rotation.y = 0;
       scene.add(orbit);
 
       // Create electron (completely static, solid sphere)
@@ -185,7 +184,7 @@
         radius: config.radius,
         speed: config.speed,
         rotationX: config.rotationX,
-        rotationY: config.rotationY
+        rotationY: 0
       });
 
       scene.add(electron);
@@ -221,7 +220,7 @@
     const rimMaterial = new THREE.MeshBasicMaterial({
       color: 0x8b5cf6,
       transparent: true,
-      opacity: currentRimOpacity,
+      opacity: currentOverlayOpacity,
       side: THREE.BackSide
     });
     rimMesh = new THREE.Mesh(rimGeometry, rimMaterial);
@@ -249,7 +248,7 @@
     const targetPulseAmplitude = PULSE_AMPLITUDES[state];
     const targetEmissiveIntensity = EMISSIVE_INTENSITIES[state];
     const targetElectronLightIntensity = ELECTRON_LIGHT_INTENSITIES[state];
-    const targetRimOpacity = RIM_OPACITIES[state];
+    const targetOverlayOpacity = OVERLAY_OPACITIES[state];
 
     const targetDisplacementAmp = state == "thinking" ? THINKING_DISPLACEMENT_AMP : NORMAL_DISPLACEMENT_AMP;
     const targetNucleusJitter = state == "thinking" ? THINKING_NUCLEUS_JITTER : NORMAL_NUCLEUS_JITTER;
@@ -262,7 +261,7 @@
     currentPulseAmplitude = lerp(currentPulseAmplitude, targetPulseAmplitude, lerpSpeed);
     currentEmissiveIntensity = lerp(currentEmissiveIntensity, targetEmissiveIntensity, lerpSpeed);
     currentElectronLightIntensity = lerp(currentElectronLightIntensity, targetElectronLightIntensity, lerpSpeed);
-    currentRimOpacity = lerp(currentRimOpacity, targetRimOpacity, lerpSpeed);
+    currentOverlayOpacity = lerp(currentOverlayOpacity, targetOverlayOpacity, lerpSpeed);
     currentDisplacementAmp = lerp(currentDisplacementAmp, targetDisplacementAmp, lerpSpeed);
     currentNucleusJitter = lerp(currentNucleusJitter, targetNucleusJitter, lerpSpeed);
     currentRimDisplacementAmp = lerp(currentRimDisplacementAmp, targetRimDisplacementAmp, lerpSpeed);
@@ -453,7 +452,7 @@
 
     // Update rim glow opacity
     if (rimMesh) {
-      rimMesh.material.opacity = currentRimOpacity;
+      rimMesh.material.opacity = currentOverlayOpacity;
     }
 
     renderer.render(scene, camera);
