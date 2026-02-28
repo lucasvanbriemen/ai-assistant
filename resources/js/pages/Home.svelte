@@ -3,6 +3,8 @@
     import AppHead from '@/components/AppHead.svelte';
     import StatusCard from '@/components/StatusCard.svelte';
     import '../../scss/pages/home.scss';
+    import Markdown from 'svelte-exmarkdown';
+    import { gfmPlugin } from 'svelte-exmarkdown/gfm';
 
     let prompt = $state('Explain the theory of relativity in 1 paragraph.');
     let isThinking = $state(false);
@@ -119,7 +121,7 @@
     <div class="chat-container" bind:this={chatContainerEl}>
         {#each messages as message}
             <h2>{message.role}</h2>
-            <p>{message.text}</p>
+            <Markdown md={message.text} plugins={[gfmPlugin]} />
             <br>
         {/each}
 
