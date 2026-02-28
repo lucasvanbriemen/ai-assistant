@@ -70,7 +70,6 @@
   const THINKING_NUCLEUS_DEFORM_AMP = 0.06;
 
   function init() {
-    // Validate state
     if (!ALLOWED_STATES.includes(state)) {
       return console.error(`Invalid state "${state}" for Logo component. Allowed states: ${ALLOWED_STATES.join(", ")}`);
     }
