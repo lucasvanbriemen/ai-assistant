@@ -19,6 +19,11 @@
     let reader;
     let lastIncompleteLine = '';
 
+    async function scrollToBottom() {
+        await tick();
+        chatContainerEl.scrollTo({ top: chatContainerEl.scrollHeight, behavior: 'smooth' });
+    }
+
     async function submitPrompt() {
         const isFirstMessage = messages.length === 0;
         let startRect;
@@ -29,6 +34,7 @@
 
         isThinking = true;
         messages.push({ text: prompt, role: 'user' });
+        scrollToBottom();
 
         if (isFirstMessage) {
             await tick();
@@ -63,6 +69,7 @@
         }).then((response) => {
             reader = response.body.getReader();
             messages.push({ text: '', role: 'assistant' });
+            scrollToBottom();
             read();
         })
     }
@@ -106,6 +113,7 @@
 
         if (json.type === 'content_block_delta') {
             messages[messages.length - 1].text += json.delta.text || '';
+            scrollToBottom();
         }
     }
 </script>
@@ -120,11 +128,11 @@
     </div>
 
     <div class="chat-container" bind:this={chatContainerEl}>
-        {#each messages as message, i (i)}
-            <Message role={message.role} text={message.text} isLast={i === messages.length - 1} />
-        {/each}
-
-        <br>
+        <div class="messages-wrapper">
+            {#each messages as message, i (i)}
+                <Message role={message.role} text={message.text} isLast={i === messages.length - 1} />
+            {/each}
+        </div>
 
         <div class="prompt-inputs">
             <textarea placeholder="Type something..." bind:value={prompt} autofocus onkeydown={promptInput}></textarea>
