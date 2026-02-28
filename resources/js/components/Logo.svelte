@@ -39,7 +39,6 @@
   let nucleusParticles = []; // Multiple nucleus particles
   let electrons = [];
   let orbits = [];
-  let animationId;
   let rimMesh; // Reference to rim glow for dynamic opacity
   let glassSphere; // Reference to glass sphere for displacement
   let originalPositions = null; // Store original vertex positions
@@ -240,7 +239,7 @@
   }
 
   function animateScene() {
-    animationId = requestAnimationFrame(animateScene);
+    requestAnimationFrame(animateScene);
 
     // Smoothly interpolate all values toward target state
     const lerpSpeed = 0.03;
