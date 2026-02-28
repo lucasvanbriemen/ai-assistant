@@ -1,37 +1,32 @@
 <script>
   import { gfmPlugin } from 'svelte-exmarkdown/gfm';
   import Markdown from 'svelte-exmarkdown';
-  import { untrack, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import '../../scss/components/message.scss';
 
   let { role, text, isLast = false } = $props();
 
-  let visibleCount = $state(0);
+  let visibleCharCount = $state(0);
   let visibleText = $state('');
 
-  let words = [];
-
-  $effect(() => {
-    words = text.split(/\s+/);
-  });
-
   onMount(() => {
-    setInterval(updateVisibleText, 50);
+    const interval = setInterval(updateVisibleText, 20);
     updateVisibleText();
+    return () => clearInterval(interval);
   });
 
   function updateVisibleText() {
-    if (visibleCount < words.length && isLast && role === 'assistant') {
-      visibleCount++;
-      visibleText = words.slice(0, visibleCount).join(' ');
+    if (visibleCharCount < text.length && isLast && role === 'assistant') {
+      visibleCharCount = Math.min(visibleCharCount + 2, text.length);
+      visibleText = text.slice(0, visibleCharCount);
     } else {
-      visibleCount = words.length;
+      visibleCharCount = text.length;
       visibleText = text;
     }
-  };
+  }
 
   function showLoader() {
-    return true// isLast && role === 'assistant' && visibleCount < words.length;
+    return isLast && role === 'assistant' && visibleCharCount < text.length;
   }
 
 </script>
