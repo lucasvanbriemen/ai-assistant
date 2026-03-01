@@ -20,12 +20,32 @@ class EmailService
             'input_schema' => [
                 'type' => 'object',
                 'properties' => [
-                    'location' => [
+                    'keyword' => [
                         'type' => 'string',
-                        'description' => 'The location to get the weather for. This should be a city or country name.',
+                        'description' => 'Search keyword to find in subject or body, (e.g. "project update")',
+                    ],
+                    'sender' => [
+                        'type' => 'string',
+                        'description' => 'Filter by sender email address (e.g. alice@example.com)',
+                    ],
+                    'from_date' => [
+                        'type' => 'string',
+                        'description' => 'Filter emails from this date (YYYY-MM-DD), any emails before this date will not be included',
+                    ],
+                    'to_date' => [
+                        'type' => 'string',
+                        'description' => 'Filter emails until this date (YYYY-MM-DD), any emails after this date will not be included',
+                    ],
+                    'unread_only' => [
+                        'type' => 'boolean',
+                        'description' => 'Only return emails that have not been opened yet and are unread',
+                    ],
+                    'limit' => [
+                        'type' => 'integer',
+                        'description' => 'Maximum number of emails to return (default: 50, max: 100)',
                     ],
                 ],
-                'required' => ['location'],
+                'required' => [],
             ],
         ],
         [
