@@ -4,11 +4,21 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use App\Services\MemoryService;
+use App\Services\ReminderService;
+use App\Services\CalendarService;
+use App\Services\EmailService;
+use App\Services\SlackService;
+use App\Services\GithubService;
 
 class AIService
 {
     private const PLUGINS = [
         MemoryService::class,
+        ReminderService::class,
+        CalendarService::class,
+        EmailService::class,
+        SlackService::class,
+        GithubService::class,
     ];
 
     public const BASE_URL = 'https://api.anthropic.com/v1/messages';
