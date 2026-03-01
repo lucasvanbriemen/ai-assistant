@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\AIService;
-use Illuminate\Support\Facades\Http;
 
 class AiController extends Controller
 {
     public function index(Request $request)
     {
         $messages = $this->formatMessages($request->input('history', []));
-        $response = AIService::callClaude($messages);
+        $response = AIService::call($messages);
 
         $body = $response->toPsrResponse()->getBody();
 

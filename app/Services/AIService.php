@@ -19,7 +19,7 @@ class AIService
         Keep your awnser as short as possible while still providing all necessary information. Avoid long explanations and tangents. Focus on the core of the question and provide a clear and concise answer.
     SYSTEM;
 
-    public static function callClaude($messages)
+    public static function call($messages)
     {
         return Http::withHeaders([
             'Content-Type' => 'application/json',
