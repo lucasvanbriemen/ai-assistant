@@ -163,20 +163,6 @@ class AIService
     {
         return [
             [
-                'name' => 'search_web',
-                'description' => 'Search the web for information.',
-                'input_schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'query' => [
-                            'type' => 'string',
-                            'description' => 'The search query.',
-                        ],
-                    ],
-                    'required' => ['query'],
-                ],
-            ],
-            [
                 'name' => 'get_weather',
                 'description' => 'Get the current weather for a location.',
                 'input_schema' => [
@@ -195,33 +181,7 @@ class AIService
 
     private static function executeTool($toolName, $input)
     {
-        switch ($toolName) {
-            case 'search_web':
-                return self::searchWeb($input['query']);
-            case 'get_weather':
-                return self::getWeather($input['location']);
-            default:
-                throw new \Exception("Unknown tool: $toolName");
-        }
-    }
-
-    public static function searchWeb($query)
-    {
-        return json_encode([
-            'query' => $query,
-            'results' => [
-                [
-                    'title' => 'Example Result 1',
-                    'url' => 'https://example.com/result1',
-                    'snippet' => 'This is an example search result.',
-                ],
-                [
-                    'title' => 'Example Result 2',
-                    'url' => 'https://example.com/result2',
-                    'snippet' => 'This is another example search result.',
-                ],
-            ],
-        ]);
+        return self::getWeather($input['location']);
     }
 
     public static function getWeather($location)
