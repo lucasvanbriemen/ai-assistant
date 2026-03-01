@@ -34,7 +34,40 @@ class AIService
             'stream' => true,
             'system' => self::SYSTEM_PROMPT,
             'messages' => $messages,
-            'temperature' => 0.7
+            'temperature' => 0.7,
+            'tools' => self::tools(),
         ]);
+    }
+
+    private static function tools()
+    {
+        return [
+            [
+                'name' => 'search_web',
+                'description' => 'Search the web for information.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'query' => [
+                            'type' => 'string',
+                            'description' => 'The search query.',
+                        ],
+                    ],
+                    'required' => ['query'],
+                ],
+            ],
+            [
+                'name' => 'get_weather',
+                'description' => 'Get the current weather for a location.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'location' => [
+                        'type' => 'string',
+                        'description' => 'The location to get the weather for.',
+                    ],
+                    'required' => ['location'],
+                ],
+            ],
+        ];
     }
 }
