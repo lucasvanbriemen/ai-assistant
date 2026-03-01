@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'tool_agent_token' => env('AGENT_TOKEN'),
+
+    'email' => [
+        'base_url' => env('EMAIL_API_BASE_URL'),
+    ],
+
 ];
