@@ -21,6 +21,16 @@ class AIService
 
     public static function call($messages)
     {
+        return response()->stream(function () use ($messages) {
+            self::callClaude($messages);
+        }, 200, [
+            'X-Accel-Buffering' => 'no',
+            'Cache-Control' => 'no-cache',
+        ]);
+    }
+
+    private static function callClaude($messages)
+    {
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . env('TOKEN'),
@@ -39,15 +49,99 @@ class AIService
         ]);
 
         $body = $response->toPsrResponse()->getBody();
+        $buffer = '';
+        $blocks = [];
+        $stopReason = null;
 
-        return response()->stream(function () use ($body) {
-            while (! $body->eof()) {
-                yield $body->read(1024);
+        while (! $body->eof()) {
+            $buffer .= $body->read(1024);
+
+            // Process all complete events in the buffer (separated by \n\n)
+            while (($pos = strpos($buffer, "\n\n")) !== false) {
+                $chunk = substr($buffer, 0, $pos);
+                $buffer = substr($buffer, $pos + 2);
+
+                // Parse the data: line from the SSE event
+                $dataLine = null;
+                foreach (explode("\n", $chunk) as $line) {
+                    if (str_starts_with($line, 'data: ')) {
+                        $dataLine = $line;
+                    }
+                }
+
+                $data = json_decode(substr($dataLine, 6), true);
+
+                switch ($data['type']) {
+                    case 'content_block_start':
+                        $index = $data['index'];
+                        $block = $data['content_block'];
+                        $blocks[$index] = $block;
+                        if ($block['type'] === 'tool_use') {
+                            $blocks[$index]['input_json'] = '';
+                        }
+                        break;
+
+                    case 'content_block_delta':
+                        $index = $data['index'];
+                        $delta = $data['delta'];
+                        if ($delta['type'] === 'text_delta') {
+                            $blocks[$index]['text'] = ($blocks[$index]['text'] ?? '') . $delta['text'];
+                            // Forward text deltas to the client
+                            echo $dataLine . "\n";
+                            ob_flush();
+                            flush();
+                        } elseif ($delta['type'] === 'input_json_delta') {
+                            $blocks[$index]['input_json'] .= $delta['partial_json'];
+                        }
+                        break;
+
+                    case 'content_block_stop':
+                        $index = $data['index'];
+                        if (isset($blocks[$index]['input_json'])) {
+                            $blocks[$index]['input'] = json_decode($blocks[$index]['input_json'], true) ?? [];
+                            unset($blocks[$index]['input_json']);
+                        }
+                        break;
+
+                    case 'message_delta':
+                        if (isset($data['delta']['stop_reason'])) {
+                            $stopReason = $data['delta']['stop_reason'];
+                        }
+                        break;
+                }
             }
-        }, 200, [
-            'X-Accel-Buffering' => 'no',
-            'Cache-Control' => 'no-cache',
-        ]);
+        }
+
+        // If Claude wants to use tools, execute them and send results back
+        if ($stopReason === 'tool_use') {
+            $assistantContent = [];
+            $toolResults = [];
+
+            foreach ($blocks as $block) {
+                if ($block['type'] === 'text') {
+                    $assistantContent[] = ['type' => 'text', 'text' => $block['text'] ?? ''];
+                } elseif ($block['type'] === 'tool_use') {
+                    $assistantContent[] = [
+                        'type' => 'tool_use',
+                        'id' => $block['id'],
+                        'name' => $block['name'],
+                        'input' => $block['input'],
+                    ];
+
+                    $toolResults[] = [
+                        'type' => 'tool_result',
+                        'tool_use_id' => $block['id'],
+                        'content' => self::executeTool($block['name'], $block['input']),
+                    ];
+                }
+            }
+
+            // Append the assistant's tool_use response and our tool results, then continue
+            $messages[] = ['role' => 'assistant', 'content' => $assistantContent];
+            $messages[] = ['role' => 'user', 'content' => $toolResults];
+
+            self::callClaude($messages);
+        }
     }
 
     private static function tools()
@@ -72,9 +166,11 @@ class AIService
                 'description' => 'Get the current weather for a location.',
                 'input_schema' => [
                     'type' => 'object',
-                    'location' => [
-                        'type' => 'string',
-                        'description' => 'The location to get the weather for.',
+                    'properties' => [
+                        'location' => [
+                            'type' => 'string',
+                            'description' => 'The location to get the weather for.',
+                        ],
                     ],
                     'required' => ['location'],
                 ],
@@ -82,7 +178,7 @@ class AIService
         ];
     }
 
-    private static function excuteTool($toolName, $input)
+    private static function executeTool($toolName, $input)
     {
         switch ($toolName) {
             case 'search_web':
@@ -115,7 +211,6 @@ class AIService
 
     public static function getWeather($location)
     {
-        // Implement your weather fetching logic here, e.g., using an external API
         return json_encode([
             'location' => $location,
             'temperature' => '20°C',
