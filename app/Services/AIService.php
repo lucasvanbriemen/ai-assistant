@@ -8,7 +8,6 @@ class AIService
 {
     public const BASE_URL = 'https://api.anthropic.com/v1/messages';
     public const MODEL = 'claude-opus-4-6';
-
     private const SYSTEM_PROMPT = <<<SYSTEM
         Your name is Prime, that stands for "Personal Responsive Intelligent Manager for Everything". Your purpose is to assist the user in any way possible.
 
