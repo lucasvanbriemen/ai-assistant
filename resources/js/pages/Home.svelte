@@ -104,15 +104,13 @@
 
     function processLine(line) {
         line = line.trim();
-        if (!line.startsWith('data:')) return;
+        // If the line doesn't start with "{data:", skip it}
+        if (!line.startsWith('{"data":')) return;
 
-        // We need to remove the event: part of the line to get the JSON string
-        const json = JSON.parse(line.substring(5).trim());
-
-        if (json.type === 'content_block_delta') {
-            messages[messages.length - 1].text += json.delta.text || '';
-            scrollToBottom();
-        }
+        const json = JSON.parse(line);
+        console.log('Received chunk:', json);
+        messages[messages.length - 1].text += json.data.text_chunk || '';
+        scrollToBottom();
     }
 </script>
 
