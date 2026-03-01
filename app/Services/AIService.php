@@ -21,15 +21,17 @@ class AIService
 
     public static function call($messages)
     {
+        $usedTools = [];
+
         return response()->stream(function () use ($messages) {
-            self::callClaude($messages);
+            self::callClaude($messages, $usedTools);
         }, 200, [
             'X-Accel-Buffering' => 'no',
             'Cache-Control' => 'no-cache',
         ]);
     }
 
-    private static function callClaude($messages)
+    private static function callClaude($messages, &$usedTools = [])
     {
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -52,7 +54,6 @@ class AIService
         $buffer = '';
         $blocks = [];
         $stopReason = null;
-        $usedTools = [];
 
         while (! $body->eof()) {
             $buffer .= $body->read(1024);
@@ -144,7 +145,7 @@ class AIService
             $messages[] = ['role' => 'assistant', 'content' => $assistantContent];
             $messages[] = ['role' => 'user', 'content' => $toolResults];
 
-            self::callClaude($messages);
+            self::callClaude($messages, $usedTools);
         }
     }
 
