@@ -52,6 +52,8 @@ class AIService
         $buffer = '';
         $blocks = [];
         $stopReason = null;
+        $usedTools = [];
+        $fullText = '';
 
         while (! $body->eof()) {
             $buffer .= $body->read(1024);
@@ -86,8 +88,10 @@ class AIService
                         $delta = $data['delta'];
                         if ($delta['type'] === 'text_delta') {
                             $blocks[$index]['text'] = ($blocks[$index]['text'] ?? '') . $delta['text'];
-                            // Forward text deltas to the client
-                            echo $dataLine . "\n";
+                            $fullText .= $delta['text'];
+
+                            echo self::formatOutput($delta['text'], $fullText, $usedTools);
+
                             ob_flush();
                             flush();
                         } elseif ($delta['type'] === 'input_json_delta') {
@@ -128,6 +132,8 @@ class AIService
                         'input' => $block['input'],
                     ];
 
+                    $usedTools[] = $block['name'];
+
                     $toolResults[] = [
                         'type' => 'tool_result',
                         'tool_use_id' => $block['id'],
@@ -142,6 +148,17 @@ class AIService
 
             self::callClaude($messages);
         }
+    }
+
+    private static function formatOutput($textChunk, $fullText, $usedTools = [])
+    {
+        return json_encode([
+            'data' => [
+                'text_chunk' => $textChunk,
+                'full_text' => $fullText,
+                'used_tools' => $usedTools,
+            ],
+        ]) . "\n";
     }
 
     private static function tools()
