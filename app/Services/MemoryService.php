@@ -4,8 +4,7 @@ namespace App\Services;
 
 class MemoryService
 {
-    public static function listTools()
-    {
+    public const TOOLS = [
         // Ideas:
         // - Store and retrieve memories based on user input and interactions vector based
         //  Example:
@@ -16,8 +15,5 @@ class MemoryService
         //  If unclear about what to store, ask the user for clarification:
         //  User: appretnly Al who loves hiking and cooking
         //  Is al a nick name for Alice? If so, should I link this new information to the existing memory about Alice?
-        return [
-
-        ];
-    }
+    ];
 }

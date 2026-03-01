@@ -196,7 +196,7 @@ class AIService
     private static function findToolClass($toolName)
     {
         foreach (self::PLUGINS as $plugin) {
-            $tools = $plugin::listTools();
+            $tools = $plugin::TOOLS;
             foreach ($tools as $tool) {
                 if ($tool['name'] === $toolName) {
                     return $plugin;
