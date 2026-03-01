@@ -3,9 +3,14 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use App\Services\MemoryService;
 
 class AIService
 {
+    private const PLUGINS = [
+        MemoryService::class,
+    ];
+
     public const BASE_URL = 'https://api.anthropic.com/v1/messages';
     public const MODEL = 'claude-opus-4-6';
     private const SYSTEM_PROMPT = <<<SYSTEM
@@ -160,22 +165,28 @@ class AIService
 
     private static function tools()
     {
-        return [
-            [
-                'name' => 'get_weather',
-                'description' => 'Retrive the current temperature and condiction for a given location. The location should be a city or country name.',
-                'input_schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'location' => [
-                            'type' => 'string',
-                            'description' => 'The location to get the weather for. This should be a city or country name.',
-                        ],
+        $tools = [];
+
+        foreach (self::PLUGINS as $plugin) {
+            $tools = array_merge($tools, $plugin::listTools());
+        }
+
+        $tools[] = [
+            'name' => 'get_weather',
+            'description' => 'Retrive the current temperature and condiction for a given location. The location should be a city or country name.',
+            'input_schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'location' => [
+                        'type' => 'string',
+                        'description' => 'The location to get the weather for. This should be a city or country name.',
                     ],
-                    'required' => ['location'],
                 ],
+                'required' => ['location'],
             ],
         ];
+
+        return $tools;
     }
 
     private static function executeTool($toolName, $input)
