@@ -70,4 +70,45 @@ class AIService
             ],
         ];
     }
+
+    private static function excuteTool($toolName, $input)
+    {
+        switch ($toolName) {
+            case 'search_web':
+                return self::searchWeb($input['query']);
+            case 'get_weather':
+                return self::getWeather($input['location']);
+            default:
+                throw new \Exception("Unknown tool: $toolName");
+        }
+    }
+
+    public static function searchWeb($query)
+    {
+        return json_encode([
+            'query' => $query,
+            'results' => [
+                [
+                    'title' => 'Example Result 1',
+                    'url' => 'https://example.com/result1',
+                    'snippet' => 'This is an example search result.',
+                ],
+                [
+                    'title' => 'Example Result 2',
+                    'url' => 'https://example.com/result2',
+                    'snippet' => 'This is another example search result.',
+                ],
+            ],
+        ]);
+    }
+
+    public static function getWeather($location)
+    {
+        // Implement your weather fetching logic here, e.g., using an external API
+        return json_encode([
+            'location' => $location,
+            'temperature' => '20°C',
+            'condition' => 'Sunny',
+        ]);
+    }
 }
