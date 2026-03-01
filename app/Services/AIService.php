@@ -9,6 +9,7 @@ use App\Services\CalendarService;
 use App\Services\EmailService;
 use App\Services\SlackService;
 use App\Services\GithubService;
+use App\Services\WebService;
 
 class AIService
 {
@@ -19,6 +20,7 @@ class AIService
         EmailService::class,
         SlackService::class,
         GithubService::class,
+        WebService::class,
     ];
 
     public const BASE_URL = 'https://api.anthropic.com/v1/messages';
