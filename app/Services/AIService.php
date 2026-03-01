@@ -53,7 +53,6 @@ class AIService
         $blocks = [];
         $stopReason = null;
         $usedTools = [];
-        $fullText = '';
 
         while (! $body->eof()) {
             $buffer .= $body->read(1024);
@@ -88,9 +87,8 @@ class AIService
                         $delta = $data['delta'];
                         if ($delta['type'] === 'text_delta') {
                             $blocks[$index]['text'] = ($blocks[$index]['text'] ?? '') . $delta['text'];
-                            $fullText .= $delta['text'];
 
-                            echo self::formatOutput($delta['text'], $fullText, $usedTools);
+                            echo self::formatOutput($delta['text'], $usedTools);
 
                             ob_flush();
                             flush();
@@ -150,12 +148,11 @@ class AIService
         }
     }
 
-    private static function formatOutput($textChunk, $fullText, $usedTools = [])
+    private static function formatOutput($textChunk, $usedTools = [])
     {
         return json_encode([
             'data' => [
                 'text_chunk' => $textChunk,
-                'full_text' => $fullText,
                 'used_tools' => $usedTools,
             ],
         ]) . "\n";
