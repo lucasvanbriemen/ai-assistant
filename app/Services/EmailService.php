@@ -14,4 +14,6 @@ class EmailService
         // Gets email from Alice (from memory)
         // gets all email contents from api and summarizes them to show in UI
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }

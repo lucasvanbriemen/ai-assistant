@@ -189,8 +189,8 @@ class AIService
     private static function executeTool($toolName, $input)
     {
         $plugin = self::findToolClass($toolName);
-
-        return $plugin::executeTool($toolName, $input);
+        $toolFunction = $plugin::TOOL_FUNCTION_MAP[$toolName];
+        return $plugin::$toolFunction($input);
     }
 
     private static function findToolClass($toolName)

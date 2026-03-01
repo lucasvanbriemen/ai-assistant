@@ -11,4 +11,6 @@ class WebService
         // Give me nice holiday destinations based on my preferences and book a hotel for me
         // Order a pizza for me
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }

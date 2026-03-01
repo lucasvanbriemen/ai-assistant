@@ -15,4 +15,6 @@ class CalendarService
         // Stores it to my calendar
         // I cancel it and it deletes it from my calendar
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }

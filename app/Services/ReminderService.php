@@ -15,4 +15,6 @@ class ReminderService
         // Then we have a cron job that checks for upcoming reminders and sends them to the user at the appropriate time.
         // We could also have a tool that lists all upcoming reminders when the user asks.
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }

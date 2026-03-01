@@ -16,4 +16,6 @@ class MemoryService
         //  User: appretnly Al who loves hiking and cooking
         //  Is al a nick name for Alice? If so, should I link this new information to the existing memory about Alice?
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }

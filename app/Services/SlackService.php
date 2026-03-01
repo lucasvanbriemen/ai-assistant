@@ -10,4 +10,7 @@ class SlackService
         // Use case:
         // Atomaticly signoff at the end of the day based on github activity and summarize what others did
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }
+

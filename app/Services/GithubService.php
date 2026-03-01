@@ -10,4 +10,6 @@ class GithubService
         // Example:
         // User: "What are issues and prs that i can work on (in webinargeek) right now"
     ];
+
+    public const TOOL_FUNCTION_MAP = [];
 }
