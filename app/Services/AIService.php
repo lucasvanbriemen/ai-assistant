@@ -188,6 +188,22 @@ class AIService
 
     private static function executeTool($toolName, $input)
     {
+        $plugin = self::findToolClass($toolName);
+
+        return $plugin::executeTool($toolName, $input);
     }
 
+    private static function findToolClass($toolName)
+    {
+        foreach (self::PLUGINS as $plugin) {
+            $tools = $plugin::listTools();
+            foreach ($tools as $tool) {
+                if ($tool['name'] === $toolName) {
+                    return $plugin;
+                }
+            }
+        }
+
+        return null;
+    }
 }
