@@ -10,18 +10,7 @@ class AiController extends Controller
     public function index(Request $request)
     {
         $messages = $this->formatMessages($request->input('history', []));
-        $response = AIService::call($messages);
-
-        $body = $response->toPsrResponse()->getBody();
-
-        return response()->stream(function () use ($body) {
-            while (! $body->eof()) {
-                yield $body->read(1024);
-            }
-        }, 200, [
-            'X-Accel-Buffering' => 'no',
-            'Cache-Control' => 'no-cache',
-        ]);
+        return AIService::call($messages);
     }
 
     private function formatMessages($history)

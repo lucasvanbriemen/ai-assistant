@@ -21,7 +21,7 @@ class AIService
 
     public static function call($messages)
     {
-        return Http::withHeaders([
+        $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . env('TOKEN'),
             'anthropic-version' => '2023-06-01',
@@ -36,6 +36,17 @@ class AIService
             'messages' => $messages,
             'temperature' => 0.7,
             'tools' => self::tools(),
+        ]);
+
+        $body = $response->toPsrResponse()->getBody();
+
+        return response()->stream(function () use ($body) {
+            while (! $body->eof()) {
+                yield $body->read(1024);
+            }
+        }, 200, [
+            'X-Accel-Buffering' => 'no',
+            'Cache-Control' => 'no-cache',
         ]);
     }
 
