@@ -28,7 +28,7 @@ const INTRO_OPTIONS = [
 
 const POSSABLE_NAMES = [
   "Lucas",
-  "Kin,",
+  "King",
   "Sir",
   "My lord",
 ];
