@@ -164,13 +164,13 @@ class AIService
         return [
             [
                 'name' => 'get_weather',
-                'description' => 'Get the current weather for a location.',
+                'description' => 'Retrive the current temperature and condiction for a given location. The location should be a city or country name.',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
                         'location' => [
                             'type' => 'string',
-                            'description' => 'The location to get the weather for.',
+                            'description' => 'The location to get the weather for. This should be a city or country name.',
                         ],
                     ],
                     'required' => ['location'],
