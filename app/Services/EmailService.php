@@ -2,10 +2,18 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+
 class EmailService
 {
-    private const BASE_URL = config('services.email.base_url');
-    private const TOKEN = config('services.tool_agent_token');
+    private static string $BASE_URL;
+    private static string $TOKEN;
+
+    public static function boot(): void
+    {
+        self::$BASE_URL = rtrim(config('services.email.base_url'), '/');
+        self::$TOKEN = config('services.tool_agent_token');
+    }
 
     public const TOOLS = [
         // Ideas:
@@ -45,7 +53,7 @@ class EmailService
                         'description' => 'Maximum number of emails to return (default: 50, max: 100)',
                     ],
                 ],
-                'required' => [],
+                'required' => ['limit'],
             ],
         ],
         [
@@ -68,4 +76,20 @@ class EmailService
         'search_emails' => 'searchEmails',
         'read_email' => 'readEmail',
     ];
+
+    public static function searchEmails($input)
+    {
+        self::boot();
+        $response = Http::withToken(self::$TOKEN)->accept('application/json')->get(self::$BASE_URL . '/api/emails/search', $input);
+
+        return $response->json();
+    }
+
+    public static function readEmail($input)
+    {
+        self::boot();
+        $response = Http::withToken(self::$TOKEN)->accept('application/json')->get(self::$BASE_URL . '/api/emails/' . $input['email_id']);
+
+        return $response->json();
+    }
 }

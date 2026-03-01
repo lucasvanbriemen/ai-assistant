@@ -180,7 +180,7 @@ class AIService
         $tools = [];
 
         foreach (self::PLUGINS as $plugin) {
-            $tools = array_merge($tools, $plugin::listTools());
+            $tools = array_merge($tools, $plugin::TOOLS);
         }
 
         return $tools;
