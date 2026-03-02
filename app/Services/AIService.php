@@ -39,7 +39,7 @@ class AIService
     {
         $usedTools = [];
 
-        return response()->stream(function () use ($messages) {
+        return response()->stream(function () use ($messages, $usedTools) {
             self::callClaude($messages, $usedTools);
         }, 200, [
             'X-Accel-Buffering' => 'no',
@@ -149,10 +149,12 @@ class AIService
 
                     $usedTools[] = $block['name'];
 
+                    $result = self::executeTool($block['name'], $block['input']);
+
                     $toolResults[] = [
                         'type' => 'tool_result',
                         'tool_use_id' => $block['id'],
-                        'content' => self::executeTool($block['name'], $block['input']),
+                        'content' => is_string($result) ? $result : json_encode($result),
                     ];
                 }
             }
