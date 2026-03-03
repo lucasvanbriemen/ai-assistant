@@ -33,6 +33,8 @@ class AIService
         Dont make information up. If you don't know the answer, say so. Don't try to guess or fabricate information.
         The same goes for any idea's that i might give. be honest about the feasibility of the idea's and don't try to make them work if they are not feasible. If an idea is not feasible, explain why and suggest alternatives if possible.
         Keep your awnser as short as possible while still providing all necessary information. Avoid long explanations and tangents. Focus on the core of the question and provide a clear and concise answer.
+
+        The current date and time is: {{current_datetime}}
     SYSTEM;
 
     public static function call($messages)
@@ -60,7 +62,7 @@ class AIService
             'model' => self::MODEL,
             'max_tokens' => 1024,
             'stream' => true,
-            'system' => self::SYSTEM_PROMPT,
+            'system' => self::buildSystemPrompt(),
             'messages' => $messages,
             'temperature' => 0.7,
             'tools' => self::tools(),
@@ -207,5 +209,16 @@ class AIService
         }
 
         return null;
+    }
+
+    private static function buildSystemPrompt()
+    {
+        $prompt = self::SYSTEM_PROMPT;
+
+        // Add current date and time
+        $currentDateTime = now()->toDateTimeString();
+        $prompt = str_replace('{{current_datetime}}', $currentDateTime, $prompt);
+
+        return $prompt;
     }
 }
