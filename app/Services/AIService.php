@@ -215,7 +215,6 @@ class AIService
     {
         $prompt = self::SYSTEM_PROMPT;
 
-        // Add current date and time
         $currentDateTime = now()->toDateTimeString();
         $prompt = str_replace('{{current_datetime}}', $currentDateTime, $prompt);
 
