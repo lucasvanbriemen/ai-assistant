@@ -27,5 +27,4 @@ class AiController extends Controller
             ];
         }, $history);
     }
-
 }
