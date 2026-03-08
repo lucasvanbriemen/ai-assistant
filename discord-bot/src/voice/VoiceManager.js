@@ -1,12 +1,4 @@
-import {
-    AudioPlayerStatus,
-    StreamType,
-    VoiceConnectionStatus,
-    createAudioPlayer,
-    createAudioResource,
-    entersState,
-    joinVoiceChannel,
-} from '@discordjs/voice';
+import { AudioPlayerStatus, StreamType, VoiceConnectionStatus, createAudioPlayer, createAudioResource, entersState, joinVoiceChannel } from '@discordjs/voice';
 
 export class VoiceManager {
     constructor(voiceChannel) {
@@ -27,35 +19,21 @@ export class VoiceManager {
             selfMute: false,
         });
 
-        // Log all state changes for debugging
-        this.connection.on('stateChange', (oldState, newState) => {
-        });
-
         // Only handle disconnects after initial connection succeeds
         this.connection.on(VoiceConnectionStatus.Disconnected, async () => {
             if (!this.isReady) return; // Don't interfere with initial connection
-            try {
-                await Promise.race([
-                    entersState(this.connection, VoiceConnectionStatus.Signalling, 5_000),
-                    entersState(this.connection, VoiceConnectionStatus.Connecting, 5_000),
-                ]);
-            } catch {
-                this.connection.destroy();
-                await this.join();
-            }
+            await Promise.race([
+                entersState(this.connection, VoiceConnectionStatus.Signalling, 5_000),
+                entersState(this.connection, VoiceConnectionStatus.Connecting, 5_000),
+            ]);
         });
 
         this.connection.on(VoiceConnectionStatus.Destroyed, () => {
             this.isReady = false;
         });
 
-        try {
-            await entersState(this.connection, VoiceConnectionStatus.Ready, 30_000);
-            this.isReady = true;
-        } catch (err) {
-            this.connection.destroy();
-            throw new Error(`Failed to join voice channel: ${err.message}`);
-        }
+        await entersState(this.connection, VoiceConnectionStatus.Ready, 30_000);
+        this.isReady = true;
 
         this.connection.subscribe(this.player);
 
