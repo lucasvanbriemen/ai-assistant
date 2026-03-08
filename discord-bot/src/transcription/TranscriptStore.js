@@ -101,10 +101,10 @@ export class TranscriptStore {
 
     // --- Public methods ---
 
-    async createSession(id, guildId, channelId) {
+    async createSession(id) {
         await this._run(
-            `INSERT INTO voice_sessions (id, guild_id, channel_id, started_at) VALUES (?, ?, ?, ${this._now()})`,
-            [id, guildId, channelId],
+            `INSERT INTO voice_sessions (id, started_at) VALUES (?, ${this._now()})`,
+            [id],
         );
     }
 
@@ -112,19 +112,19 @@ export class TranscriptStore {
         await this._run(`UPDATE voice_sessions SET ended_at = ${this._now()} WHERE id = ?`, [id]);
     }
 
-    async addTranscript({ guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId }) {
+    async addTranscript({ text, language, confidence, audioDurationMs, startedAt, sessionId }) {
         await this._run(
-            `INSERT INTO voice_transcripts (guild_id, channel_id, speaker, text, language, confidence, audio_duration_ms, started_at, session_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId],
+            `INSERT INTO voice_transcripts (text, language, confidence, audio_duration_ms, started_at, session_id)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [text, language, confidence, audioDurationMs, startedAt, sessionId],
         );
     }
 
-    async addCommand({ sessionId, triggerType, triggerText, contextText, requestedBy }) {
+    async addCommand({ sessionId, triggerType, triggerText, contextText }) {
         await this._run(
-            `INSERT INTO voice_commands (session_id, trigger_type, trigger_text, context_text, requested_by, status)
-             VALUES (?, ?, ?, ?, ?, 'pending')`,
-            [sessionId, triggerType, triggerText, contextText, requestedBy],
+            `INSERT INTO voice_commands (session_id, trigger_type, trigger_text, context_text, status)
+             VALUES (?, ?, ?, ?, 'pending')`,
+            [sessionId, triggerType, triggerText, contextText],
         );
     }
 
@@ -147,10 +147,9 @@ export class TranscriptStore {
         }
     }
 
-    async getRecentTranscripts(channelId, minutes = 10) {
+    async getRecentTranscripts(minutes = 10) {
         return this._query(
-            `SELECT * FROM voice_transcripts WHERE channel_id = ? AND started_at >= ${this._minutesAgo(minutes)} ORDER BY started_at ASC`,
-            [channelId],
+            `SELECT * FROM voice_transcripts WHERE started_at >= ${this._minutesAgo(minutes)} ORDER BY started_at ASC`,
         );
     }
 

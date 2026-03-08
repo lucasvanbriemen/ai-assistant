@@ -75,7 +75,7 @@ client.once(Events.ClientReady, async (readyClient) => {
     await transcriptStore.ready();
 
     currentSessionId = `session-${Date.now()}`;
-    await transcriptStore.createSession(currentSessionId, config.discord.guildId, config.discord.voiceChannelId);
+    await transcriptStore.createSession(currentSessionId);
 
     audioReceiver = new AudioReceiver(connection);
     const audioBuffer = new AudioBuffer(config.audio);
@@ -104,9 +104,6 @@ async function handleAudioSegment(wavBuffer, durationMs) {
 
         // Store in DB and in-memory buffer
         await transcriptStore.addTranscript({
-            guildId: config.discord.guildId,
-            channelId: config.discord.voiceChannelId,
-            speaker: 'room',
             text,
             language,
             confidence: result.confidence || null,
@@ -155,7 +152,6 @@ async function handleCommand(detection, fullText) {
                 triggerType: context.type,
                 triggerText: fullText,
                 contextText: context.contextText || null,
-                requestedBy: 'room',
             });
         }
 
