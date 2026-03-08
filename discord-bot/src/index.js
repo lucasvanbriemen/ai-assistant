@@ -1,24 +1,25 @@
+import { Client, Events, GatewayIntentBits } from 'discord.js';
+
+import { AudioBuffer } from './voice/AudioBuffer.js';
+import { AudioReceiver } from './voice/AudioReceiver.js';
+import { CommandParser } from './ai/CommandParser.js';
+import { DiscordResponder } from './response/DiscordResponder.js';
+import { PrimeClient } from './ai/PrimeClient.js';
+import { TTSEngine } from './response/TTSEngine.js';
+import { ThinkingIndicator } from './response/ThinkingIndicator.js';
+import { TranscriptBuffer } from './transcription/TranscriptBuffer.js';
+import { TranscriptStore } from './transcription/TranscriptStore.js';
+import { VoiceManager } from './voice/VoiceManager.js';
+import { WakeWordDetector } from './detection/WakeWordDetector.js';
+import { WhisperClient } from './transcription/WhisperClient.js';
+import config from './config.js';
+import { createLogger } from './logger.js';
 // Load libsodium before @discordjs/voice discovers encryption libs
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const sodium = require('libsodium-wrappers');
 await sodium.ready;
 
-import { Client, GatewayIntentBits, Events } from 'discord.js';
-import config from './config.js';
-import { createLogger } from './logger.js';
-import { VoiceManager } from './voice/VoiceManager.js';
-import { AudioReceiver } from './voice/AudioReceiver.js';
-import { AudioBuffer } from './voice/AudioBuffer.js';
-import { WhisperClient } from './transcription/WhisperClient.js';
-import { TranscriptStore } from './transcription/TranscriptStore.js';
-import { TranscriptBuffer } from './transcription/TranscriptBuffer.js';
-import { WakeWordDetector } from './detection/WakeWordDetector.js';
-import { CommandParser } from './ai/CommandParser.js';
-import { PrimeClient } from './ai/PrimeClient.js';
-import { TTSEngine } from './response/TTSEngine.js';
-import { DiscordResponder } from './response/DiscordResponder.js';
-import { ThinkingIndicator } from './response/ThinkingIndicator.js';
 
 const log = createLogger('main');
 
