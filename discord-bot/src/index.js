@@ -71,9 +71,6 @@ client.once(Events.ClientReady, async (readyClient) => {
     voiceManager = new VoiceManager(voiceChannel);
     const connection = await voiceManager.join();
 
-    // Wait for async SQLite init
-    await transcriptStore.ready();
-
     currentSessionId = `session-${Date.now()}`;
     await transcriptStore.createSession(currentSessionId);
 

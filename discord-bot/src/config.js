@@ -35,15 +35,6 @@ const config = {
         apiUrl: process.env.LARAVEL_API_URL || 'http://localhost:8000',
         agentToken: process.env.LARAVEL_AGENT_TOKEN || '',
     },
-    database: {
-        connection: process.env.DB_CONNECTION || 'sqlite',
-        host: process.env.DB_HOST || '127.0.0.1',
-        port: parseInt(process.env.DB_PORT || '3306', 10),
-        database: process.env.DB_DATABASE || 'database.sqlite',
-        username: process.env.DB_USERNAME || 'root',
-        password: process.env.DB_PASSWORD || '',
-        laravelRoot,
-    },
     audio: {
         silenceThresholdMs: parseInt(process.env.SILENCE_THRESHOLD_MS || '1500', 10),
         maxSegmentMs: parseInt(process.env.MAX_SEGMENT_MS || '30000', 10),
