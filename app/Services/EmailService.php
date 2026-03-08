@@ -16,12 +16,6 @@ class EmailService
     }
 
     public const TOOLS = [
-        // Ideas:
-        // - list emails based on filters with a preview
-        // User: "Show me all emails from Alice"
-        // Gets email from Alice (from memory)
-        // gets all email contents from api and summarizes them to show in UI
-
         [
             'name' => 'search_emails',
             'description' => 'Search for emails based on filters and provide a summary.',
