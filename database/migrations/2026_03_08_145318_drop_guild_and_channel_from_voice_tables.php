@@ -8,10 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::drop('voice_transcripts');
-        Schema::drop('voice_commands');
-        Schema::drop('voice_sessions');
-
         Schema::create('voice_sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->datetime('started_at');
