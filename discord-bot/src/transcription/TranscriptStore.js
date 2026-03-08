@@ -1,10 +1,7 @@
-import initSqlJs from 'sql.js';
-import fs from 'fs';
-import path from 'path';
-import { createLogger } from '../logger.js';
 import config from '../config.js';
-
-const log = createLogger('transcript-store');
+import fs from 'fs';
+import initSqlJs from 'sql.js';
+import path from 'path';
 
 export class TranscriptStore {
     constructor() {
@@ -39,7 +36,6 @@ export class TranscriptStore {
         }
 
         this._dbPath = dbPath;
-        log.info(`SQLite database opened at ${dbPath}`);
     }
 
     async _initMysql() {
@@ -53,7 +49,6 @@ export class TranscriptStore {
             waitForConnections: true,
             connectionLimit: 5,
         });
-        log.info(`MySQL connected to ${config.database.host}:${config.database.port}/${config.database.database}`);
     }
 
     async ready() {
@@ -111,12 +106,10 @@ export class TranscriptStore {
             `INSERT INTO voice_sessions (id, guild_id, channel_id, started_at) VALUES (?, ?, ?, ${this._now()})`,
             [id, guildId, channelId],
         );
-        log.info(`Session created: ${id}`);
     }
 
     async endSession(id) {
         await this._run(`UPDATE voice_sessions SET ended_at = ${this._now()} WHERE id = ?`, [id]);
-        log.info(`Session ended: ${id}`);
     }
 
     async addTranscript({ guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId }) {

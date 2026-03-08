@@ -1,10 +1,8 @@
-import { Readable } from 'stream';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { createLogger } from '../logger.js';
 
-const log = createLogger('thinking');
+import { Readable } from 'stream';
+import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,9 +14,7 @@ function getChimeBuffer() {
     if (!chimeBuffer) {
         try {
             chimeBuffer = readFileSync(CHIME_PATH);
-            log.debug(`Loaded thinking chime: ${chimeBuffer.length} bytes`);
         } catch (err) {
-            log.warn('Could not load thinking chime:', err.message);
         }
     }
     return chimeBuffer;
@@ -69,9 +65,7 @@ export class ThinkingIndicator {
         try {
             const stream = Readable.from(buf);
             await this.voiceManager.playAudio(stream);
-            log.debug('Thinking chime played');
         } catch (err) {
-            log.warn('Failed to play thinking chime:', err.message);
         }
     }
 }

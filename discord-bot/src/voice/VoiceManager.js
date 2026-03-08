@@ -1,15 +1,12 @@
 import {
-    joinVoiceChannel,
-    VoiceConnectionStatus,
-    entersState,
-    createAudioPlayer,
-    createAudioResource,
     AudioPlayerStatus,
     StreamType,
+    VoiceConnectionStatus,
+    createAudioPlayer,
+    createAudioResource,
+    entersState,
+    joinVoiceChannel,
 } from '@discordjs/voice';
-import { createLogger } from '../logger.js';
-
-const log = createLogger('voice-manager');
 
 export class VoiceManager {
     constructor(voiceChannel) {
@@ -32,36 +29,30 @@ export class VoiceManager {
 
         // Log all state changes for debugging
         this.connection.on('stateChange', (oldState, newState) => {
-            log.info(`Voice connection: ${oldState.status} -> ${newState.status}`);
         });
 
         // Only handle disconnects after initial connection succeeds
         this.connection.on(VoiceConnectionStatus.Disconnected, async () => {
             if (!this.isReady) return; // Don't interfere with initial connection
             try {
-                log.warn('Voice connection disconnected, attempting reconnect...');
                 await Promise.race([
                     entersState(this.connection, VoiceConnectionStatus.Signalling, 5_000),
                     entersState(this.connection, VoiceConnectionStatus.Connecting, 5_000),
                 ]);
             } catch {
-                log.warn('Reconnect failed, destroying and rejoining...');
                 this.connection.destroy();
                 await this.join();
             }
         });
 
         this.connection.on(VoiceConnectionStatus.Destroyed, () => {
-            log.info('Voice connection destroyed');
             this.isReady = false;
         });
 
         try {
             await entersState(this.connection, VoiceConnectionStatus.Ready, 30_000);
             this.isReady = true;
-            log.info(`Joined voice channel: ${this.voiceChannel.name}`);
         } catch (err) {
-            log.error(`Voice join failed. Destroying connection.`);
             this.connection.destroy();
             throw new Error(`Failed to join voice channel: ${err.message}`);
         }
@@ -88,7 +79,6 @@ export class VoiceManager {
         if (this.connection) {
             this.connection.destroy();
             this.connection = null;
-            log.info('Left voice channel');
         }
     }
 }

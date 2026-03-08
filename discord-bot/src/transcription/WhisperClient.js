@@ -1,7 +1,4 @@
 import OpenAI from 'openai';
-import { createLogger } from '../logger.js';
-
-const log = createLogger('whisper');
 
 const MAX_CONCURRENT = 5;
 const MAX_RETRIES = 3;
@@ -79,7 +76,6 @@ export class WhisperClient {
             task.resolve(result);
         } catch (err) {
             if (err.code && NON_RETRYABLE_CODES.includes(err.code)) {
-                log.debug(`Whisper: ${err.code}, skipping segment`);
                 task.resolve(null);
                 return;
             }
@@ -87,12 +83,10 @@ export class WhisperClient {
             if (task.retries < MAX_RETRIES) {
                 task.retries++;
                 const delay = BASE_DELAY_MS * Math.pow(2, task.retries - 1);
-                log.warn(`Whisper request failed, retrying in ${delay}ms (attempt ${task.retries}/${MAX_RETRIES})`);
                 await new Promise((r) => setTimeout(r, delay));
                 this.queue.unshift(task);
                 this._processQueue();
             } else {
-                log.error('Whisper request failed after max retries:', err.message);
                 task.resolve(null);
             }
         }
@@ -116,7 +110,6 @@ export class WhisperClient {
 
         // Filter hallucinations and prompt echoes
         if (this._isHallucination(text) || isPromptEcho(text)) {
-            log.debug(`Filtered hallucination: "${text.substring(0, 50)}"`);
             return null;
         }
 
@@ -125,7 +118,6 @@ export class WhisperClient {
         if (segments.length > 0) {
             const avgNoSpeech = segments.reduce((sum, s) => sum + (s.no_speech_prob || 0), 0) / segments.length;
             if (avgNoSpeech > NO_SPEECH_THRESHOLD) {
-                log.debug(`Filtered low-confidence speech (no_speech_prob=${avgNoSpeech.toFixed(2)}): "${text.substring(0, 50)}"`);
                 return null;
             }
         }

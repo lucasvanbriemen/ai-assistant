@@ -13,15 +13,13 @@ import { VoiceManager } from './voice/VoiceManager.js';
 import { WakeWordDetector } from './detection/WakeWordDetector.js';
 import { WhisperClient } from './transcription/WhisperClient.js';
 import config from './config.js';
-import { createLogger } from './logger.js';
 // Load libsodium before @discordjs/voice discovers encryption libs
 import { createRequire } from 'module';
+
 const require = createRequire(import.meta.url);
 const sodium = require('libsodium-wrappers');
 await sodium.ready;
 
-
-const log = createLogger('main');
 
 const client = new Client({
     intents: [
@@ -53,23 +51,19 @@ let conversationTimer = null;
 let conversationHistory = []; // Maintain multi-turn history during conversation
 
 client.once(Events.ClientReady, async (readyClient) => {
-    log.info(`Logged in as ${readyClient.user.tag}`);
 
     const guild = readyClient.guilds.cache.get(config.discord.guildId);
     if (!guild) {
-        log.error(`Guild ${config.discord.guildId} not found`);
         process.exit(1);
     }
 
     const voiceChannel = guild.channels.cache.get(config.discord.voiceChannelId);
     if (!voiceChannel) {
-        log.error(`Voice channel ${config.discord.voiceChannelId} not found`);
         process.exit(1);
     }
 
     const textChannel = guild.channels.cache.get(config.discord.textChannelId);
     if (!textChannel) {
-        log.error(`Text channel ${config.discord.textChannelId} not found`);
         process.exit(1);
     }
 
@@ -96,7 +90,6 @@ client.once(Events.ClientReady, async (readyClient) => {
     });
 
     audioReceiver.start();
-    log.info('Audio pipeline active — listening for speech');
 });
 
 async function handleAudioSegment(wavBuffer, durationMs) {
@@ -108,8 +101,6 @@ async function handleAudioSegment(wavBuffer, durationMs) {
 
         const text = result.text.trim();
         const language = result.language || null;
-
-        log.info(`Transcribed (${language}): "${text}"`);
 
         // Store in DB and in-memory buffer
         await transcriptStore.addTranscript({
@@ -129,16 +120,13 @@ async function handleAudioSegment(wavBuffer, durationMs) {
         // Check for wake word
         const detection = wakeWordDetector.detect(text);
         if (detection) {
-            log.info(`Wake word detected: type=${detection.type}, command="${detection.command}"`);
             await handleCommand(detection, text);
         } else if (conversationActive) {
             // In conversation mode — treat any speech as a follow-up command
-            log.info(`Conversation follow-up: "${text}"`);
             const followUp = { type: 'inline', command: text, fullMatch: text };
             await handleCommand(followUp, text);
         }
     } catch (err) {
-        log.error('Error processing audio segment:', err);
     }
 }
 
@@ -171,18 +159,14 @@ async function handleCommand(detection, fullText) {
             });
         }
 
-        log.info(`Sending to Prime (conversation=${conversationActive})`);
         const result = await primeClient.chat(history);
 
         // Stop thinking indicator before responding
         thinking.stop();
 
         if (!result || !result.response) {
-            log.warn('Empty response from Prime');
             return;
         }
-
-        log.info(`Prime response: "${result.response.substring(0, 100)}..."`);
 
         // Update conversation history for multi-turn
         conversationHistory = [
@@ -200,7 +184,6 @@ async function handleCommand(detection, fullText) {
         startConversationMode();
     } catch (err) {
         thinking.stop();
-        log.error('Error handling command:', err);
     }
 }
 
@@ -210,7 +193,6 @@ function startConversationMode() {
         clearTimeout(conversationTimer);
     }
     conversationTimer = setTimeout(() => {
-        log.info('Conversation mode ended (timeout)');
         conversationActive = false;
         conversationHistory = [];
         conversationTimer = null;
@@ -219,7 +201,6 @@ function startConversationMode() {
 
 // Graceful shutdown
 async function shutdown() {
-    log.info('Shutting down...');
     if (currentSessionId) {
         await transcriptStore.endSession(currentSessionId);
     }
@@ -233,7 +214,6 @@ async function shutdown() {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('unhandledRejection', (err) => {
-    log.error('Unhandled rejection:', err);
 });
 
 client.login(config.discord.token);

@@ -1,9 +1,6 @@
 import { EventEmitter } from 'events';
-import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
-import { createLogger } from '../logger.js';
-
-const log = createLogger('audio-buffer');
+import { spawn } from 'child_process';
 
 // Silence detection: an Opus frame of ~3 bytes or less is silence
 const SILENCE_FRAME_THRESHOLD = 3;
@@ -41,7 +38,6 @@ export class AudioBuffer extends EventEmitter {
 
             const segmentDuration = now - this.segmentStartTime;
             if (segmentDuration >= this.maxSegmentMs) {
-                log.debug('Max segment duration reached, flushing');
                 this._flush();
             }
         } else if (this.hasSpeech) {
@@ -75,7 +71,6 @@ export class AudioBuffer extends EventEmitter {
         const durationMs = this.segmentStartTime ? Date.now() - this.segmentStartTime : 0;
 
         if (durationMs < this.minSegmentMs) {
-            log.debug(`Segment too short (${durationMs}ms), discarding`);
             this._reset();
             return;
         }
@@ -83,15 +78,12 @@ export class AudioBuffer extends EventEmitter {
         const packets = this.opusPackets;
         this._reset();
 
-        log.info(`Segment: ${durationMs}ms, ${packets.length} opus packets`);
-
         // Convert raw Opus packets → WAV using ffmpeg with Opus decoding
         this._opusToWav(packets).then((wavBuffer) => {
             if (wavBuffer && wavBuffer.length > 44) {
                 this.emit('segment', wavBuffer, durationMs);
             }
         }).catch((err) => {
-            log.error('Opus to WAV conversion failed:', err);
         });
     }
 

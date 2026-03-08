@@ -1,7 +1,3 @@
-import { createLogger } from '../logger.js';
-
-const log = createLogger('wake-word');
-
 // Wake word patterns
 const STRONG_PATTERN = /\bh[ea]+[iy]?\s+prime\b/i;       // "hey prime", "hee prime" (Dutch)
 const SENTENCE_START_PATTERN = /^prime[\s,]/i;             // "Prime, ..." at start of sentence

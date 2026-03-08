@@ -1,7 +1,3 @@
-import { createLogger } from '../logger.js';
-
-const log = createLogger('command-parser');
-
 // Extract minute count from deferred commands like "last 5 minutes"
 const MINUTES_PATTERN = /(?:last|laatste)\s+(\d+)\s+min/i;
 

@@ -1,7 +1,3 @@
-import { createLogger } from '../logger.js';
-
-const log = createLogger('transcript-buffer');
-
 export class TranscriptBuffer {
     constructor(bufferMinutes = 10) {
         this.bufferMinutes = bufferMinutes;

@@ -1,7 +1,4 @@
 import { Readable } from 'stream';
-import { createLogger } from '../logger.js';
-
-const log = createLogger('responder');
 
 export class DiscordResponder {
     constructor(textChannel) {
@@ -25,7 +22,6 @@ export class DiscordResponder {
             try {
                 await this._sendResponse(text, ttsEngine, voiceManager);
             } catch (err) {
-                log.error('Failed to send response:', err);
             }
         }
 
@@ -41,7 +37,6 @@ export class DiscordResponder {
 
         for (const result of results) {
             if (result.status === 'rejected') {
-                log.error('Response delivery failed:', result.reason);
             }
         }
     }
@@ -60,27 +55,20 @@ export class DiscordResponder {
                     await this.textChannel.send(chunk);
                 }
             }
-            log.info('Text message sent to Discord channel');
         } catch (err) {
-            log.error('Failed to send text message:', err.message);
         }
     }
 
     async _playTTS(text, ttsEngine, voiceManager) {
         try {
-            log.info('Generating TTS audio...');
             const audioBuffer = await ttsEngine.synthesize(text);
             if (!audioBuffer) {
-                log.warn('TTS returned no audio');
                 return;
             }
 
-            log.info(`TTS audio generated (${audioBuffer.length} bytes), playing in voice channel...`);
             const stream = Readable.from(audioBuffer);
             await voiceManager.playAudio(stream);
-            log.info('TTS audio playback complete');
         } catch (err) {
-            log.error('Failed to play TTS:', err.message);
         }
     }
 }

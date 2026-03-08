@@ -1,7 +1,3 @@
-import { createLogger } from '../logger.js';
-
-const log = createLogger('prime-client');
-
 const REQUEST_TIMEOUT_MS = 120_000;
 
 export class PrimeClient {
@@ -11,8 +7,6 @@ export class PrimeClient {
     }
 
     async chat(history) {
-        log.debug(`Sending ${history.length} messages to Prime API`);
-
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -34,7 +28,6 @@ export class PrimeClient {
             }
 
             const data = await response.json();
-            log.debug(`Prime response received, used tools: ${data.used_tools?.join(', ') || 'none'}`);
 
             return data;
         } catch (err) {
