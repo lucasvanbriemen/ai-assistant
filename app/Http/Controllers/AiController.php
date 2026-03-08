@@ -10,7 +10,8 @@ class AiController extends Controller
     public function index(Request $request)
     {
         $messages = $this->formatMessages($request->input('history', []));
-        return AIService::call($messages);
+        $mode = $request->input('mode', 'text');
+        return AIService::call($messages, $mode);
     }
 
     private function formatMessages($history)
