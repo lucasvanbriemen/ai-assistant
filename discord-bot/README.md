@@ -38,13 +38,7 @@ npm install --legacy-peer-deps
 
 ## Configuration
 
-Copy the example env file and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
+The bot reads from the main project `.env` file (the Laravel `.env` in the repo root). Add these variables there:
 
 ```env
 DISCORD_TOKEN=your-bot-token
@@ -55,6 +49,8 @@ OPENAI_API_KEY=sk-your-openai-key
 LARAVEL_API_URL=http://127.0.0.1:8000
 LARAVEL_AGENT_TOKEN=13November.2006
 ```
+
+The bot also uses the `DB_*` variables from the same `.env` to connect to the shared database.
 
 ## Running
 

@@ -1,4 +1,11 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+// Load from the main project .env (single source of truth)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const laravelRoot = path.resolve(__dirname, '../..');
+dotenv.config({ path: path.resolve(laravelRoot, '.env') });
 
 const required = [
     'DISCORD_TOKEN',
@@ -27,6 +34,15 @@ const config = {
     laravel: {
         apiUrl: process.env.LARAVEL_API_URL || 'http://localhost:8000',
         agentToken: process.env.LARAVEL_AGENT_TOKEN || '',
+    },
+    database: {
+        connection: process.env.DB_CONNECTION || 'sqlite',
+        host: process.env.DB_HOST || '127.0.0.1',
+        port: parseInt(process.env.DB_PORT || '3306', 10),
+        database: process.env.DB_DATABASE || 'database.sqlite',
+        username: process.env.DB_USERNAME || 'root',
+        password: process.env.DB_PASSWORD || '',
+        laravelRoot,
     },
     audio: {
         silenceThresholdMs: parseInt(process.env.SILENCE_THRESHOLD_MS || '1500', 10),

@@ -1,156 +1,172 @@
 import initSqlJs from 'sql.js';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import path from 'path';
 import { createLogger } from '../logger.js';
+import config from '../config.js';
 
 const log = createLogger('transcript-store');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '../../data/transcripts.sqlite');
-
 export class TranscriptStore {
-    constructor(dbPath = DB_PATH) {
-        this.dbPath = dbPath;
+    constructor() {
         this.db = null;
-        this._ready = this._init(dbPath);
+        this.driver = config.database.connection;
+        this.pool = null;
+        this._ready = this._init();
     }
 
-    async _init(dbPath) {
+    async _init() {
+        if (this.driver === 'sqlite') {
+            await this._initSqlite();
+        } else {
+            await this._initMysql();
+        }
+    }
+
+    async _initSqlite() {
+        // For SQLite, DB_DATABASE is the path relative to Laravel root, or we use the default
+        const dbName = config.database.database;
+        const dbPath = path.isAbsolute(dbName)
+            ? dbName
+            : path.resolve(config.database.laravelRoot, 'database', dbName === 'laravel' ? 'database.sqlite' : dbName);
+
         const SQL = await initSqlJs();
 
-        // Load existing DB or create new
         if (fs.existsSync(dbPath)) {
             const fileBuffer = fs.readFileSync(dbPath);
             this.db = new SQL.Database(fileBuffer);
         } else {
-            this.db = new SQL.Database();
+            throw new Error(`Laravel database not found at ${dbPath}. Run "php artisan migrate" first.`);
         }
 
-        this._migrate();
-        log.info(`Database opened at ${dbPath}`);
+        this._dbPath = dbPath;
+        log.info(`SQLite database opened at ${dbPath}`);
+    }
+
+    async _initMysql() {
+        const mysql = await import('mysql2/promise');
+        this.pool = mysql.createPool({
+            host: config.database.host,
+            port: config.database.port,
+            database: config.database.database,
+            user: config.database.username,
+            password: config.database.password,
+            waitForConnections: true,
+            connectionLimit: 5,
+        });
+        log.info(`MySQL connected to ${config.database.host}:${config.database.port}/${config.database.database}`);
     }
 
     async ready() {
         await this._ready;
     }
 
-    _migrate() {
-        this.db.run(`
-            CREATE TABLE IF NOT EXISTS sessions (
-                id TEXT PRIMARY KEY,
-                guild_id TEXT NOT NULL,
-                channel_id TEXT NOT NULL,
-                started_at TEXT NOT NULL,
-                ended_at TEXT,
-                participant_ids TEXT
-            )
-        `);
+    // --- Query helpers ---
 
-        this.db.run(`
-            CREATE TABLE IF NOT EXISTS transcripts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                guild_id TEXT NOT NULL,
-                channel_id TEXT NOT NULL,
-                speaker TEXT NOT NULL DEFAULT 'room',
-                text TEXT NOT NULL,
-                language TEXT,
-                confidence REAL,
-                audio_duration_ms INTEGER,
-                started_at TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT (datetime('now')),
-                session_id TEXT NOT NULL
-            )
-        `);
-
-        this.db.run(`
-            CREATE TABLE IF NOT EXISTS commands (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                session_id TEXT NOT NULL,
-                trigger_type TEXT NOT NULL,
-                trigger_text TEXT NOT NULL,
-                context_text TEXT,
-                response_text TEXT,
-                requested_by TEXT NOT NULL DEFAULT 'room',
-                created_at TEXT NOT NULL DEFAULT (datetime('now')),
-                status TEXT DEFAULT 'pending'
-            )
-        `);
-
-        this.db.run(`CREATE INDEX IF NOT EXISTS idx_transcripts_channel_time ON transcripts(channel_id, started_at)`);
-        this.db.run(`CREATE INDEX IF NOT EXISTS idx_transcripts_session ON transcripts(session_id)`);
-    }
-
-    _save() {
-        const data = this.db.export();
-        const buffer = Buffer.from(data);
-        fs.writeFileSync(this.dbPath, buffer);
-    }
-
-    createSession(id, guildId, channelId) {
-        this.db.run(
-            `INSERT INTO sessions (id, guild_id, channel_id, started_at) VALUES (?, ?, ?, datetime('now'))`,
-            [id, guildId, channelId],
-        );
-        this._save();
-        log.info(`Session created: ${id}`);
-    }
-
-    endSession(id) {
-        this.db.run(`UPDATE sessions SET ended_at = datetime('now') WHERE id = ?`, [id]);
-        this._save();
-        log.info(`Session ended: ${id}`);
-    }
-
-    addTranscript({ guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId }) {
-        this.db.run(
-            `INSERT INTO transcripts (guild_id, channel_id, speaker, text, language, confidence, audio_duration_ms, started_at, session_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId],
-        );
-        this._save();
-    }
-
-    addCommand({ sessionId, triggerType, triggerText, contextText, requestedBy }) {
-        this.db.run(
-            `INSERT INTO commands (session_id, trigger_type, trigger_text, context_text, requested_by, status)
-             VALUES (?, ?, ?, ?, ?, 'pending')`,
-            [sessionId, triggerType, triggerText, contextText, requestedBy],
-        );
-        this._save();
-    }
-
-    updateCommandResponse(triggerText, responseText) {
-        // sql.js doesn't support ORDER BY in UPDATE, so find the row first
-        const rows = this.db.exec(
-            `SELECT id FROM commands WHERE trigger_text = ? AND status = 'pending' ORDER BY id DESC LIMIT 1`,
-            [triggerText],
-        );
-        if (rows.length > 0 && rows[0].values.length > 0) {
-            const id = rows[0].values[0][0];
-            this.db.run(`UPDATE commands SET response_text = ?, status = 'completed' WHERE id = ?`, [responseText, id]);
+    async _run(sql, params = []) {
+        if (this.driver === 'sqlite') {
+            this.db.run(sql, params);
             this._save();
+        } else {
+            await this.pool.execute(sql, params);
         }
     }
 
-    getRecentTranscripts(channelId, minutes = 10) {
-        const results = this.db.exec(
-            `SELECT * FROM transcripts WHERE channel_id = ? AND started_at >= datetime('now', ?) ORDER BY started_at ASC`,
-            [channelId, `-${minutes} minutes`],
+    async _query(sql, params = []) {
+        if (this.driver === 'sqlite') {
+            const results = this.db.exec(sql, params);
+            if (results.length === 0) return [];
+            const columns = results[0].columns;
+            return results[0].values.map((row) => {
+                const obj = {};
+                columns.forEach((col, i) => { obj[col] = row[i]; });
+                return obj;
+            });
+        } else {
+            const [rows] = await this.pool.execute(sql, params);
+            return rows;
+        }
+    }
+
+    _now() {
+        return this.driver === 'sqlite' ? "datetime('now')" : 'NOW()';
+    }
+
+    _minutesAgo(minutes) {
+        return this.driver === 'sqlite'
+            ? `datetime('now', '-${minutes} minutes')`
+            : `DATE_SUB(NOW(), INTERVAL ${minutes} MINUTE)`;
+    }
+
+    _save() {
+        if (this.driver === 'sqlite' && this.db) {
+            const data = this.db.export();
+            fs.writeFileSync(this._dbPath, Buffer.from(data));
+        }
+    }
+
+    // --- Public methods ---
+
+    async createSession(id, guildId, channelId) {
+        await this._run(
+            `INSERT INTO voice_sessions (id, guild_id, channel_id, started_at) VALUES (?, ?, ?, ${this._now()})`,
+            [id, guildId, channelId],
         );
-        if (results.length === 0) return [];
-        const columns = results[0].columns;
-        return results[0].values.map((row) => {
-            const obj = {};
-            columns.forEach((col, i) => { obj[col] = row[i]; });
-            return obj;
-        });
+        log.info(`Session created: ${id}`);
+    }
+
+    async endSession(id) {
+        await this._run(`UPDATE voice_sessions SET ended_at = ${this._now()} WHERE id = ?`, [id]);
+        log.info(`Session ended: ${id}`);
+    }
+
+    async addTranscript({ guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId }) {
+        await this._run(
+            `INSERT INTO voice_transcripts (guild_id, channel_id, speaker, text, language, confidence, audio_duration_ms, started_at, session_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [guildId, channelId, speaker, text, language, confidence, audioDurationMs, startedAt, sessionId],
+        );
+    }
+
+    async addCommand({ sessionId, triggerType, triggerText, contextText, requestedBy }) {
+        await this._run(
+            `INSERT INTO voice_commands (session_id, trigger_type, trigger_text, context_text, requested_by, status)
+             VALUES (?, ?, ?, ?, ?, 'pending')`,
+            [sessionId, triggerType, triggerText, contextText, requestedBy],
+        );
+    }
+
+    async updateCommandResponse(triggerText, responseText) {
+        if (this.driver === 'sqlite') {
+            const rows = this.db.exec(
+                `SELECT id FROM voice_commands WHERE trigger_text = ? AND status = 'pending' ORDER BY id DESC LIMIT 1`,
+                [triggerText],
+            );
+            if (rows.length > 0 && rows[0].values.length > 0) {
+                const id = rows[0].values[0][0];
+                this.db.run(`UPDATE voice_commands SET response_text = ?, status = 'completed' WHERE id = ?`, [responseText, id]);
+                this._save();
+            }
+        } else {
+            await this.pool.execute(
+                `UPDATE voice_commands SET response_text = ?, status = 'completed' WHERE trigger_text = ? AND status = 'pending' ORDER BY id DESC LIMIT 1`,
+                [responseText, triggerText],
+            );
+        }
+    }
+
+    async getRecentTranscripts(channelId, minutes = 10) {
+        return this._query(
+            `SELECT * FROM voice_transcripts WHERE channel_id = ? AND started_at >= ${this._minutesAgo(minutes)} ORDER BY started_at ASC`,
+            [channelId],
+        );
     }
 
     close() {
-        if (this.db) {
+        if (this.driver === 'sqlite' && this.db) {
             this._save();
             this.db.close();
+        } else if (this.pool) {
+            this.pool.end();
         }
     }
 }

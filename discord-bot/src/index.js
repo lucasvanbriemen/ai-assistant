@@ -80,7 +80,7 @@ client.once(Events.ClientReady, async (readyClient) => {
     await transcriptStore.ready();
 
     currentSessionId = `session-${Date.now()}`;
-    transcriptStore.createSession(currentSessionId, config.discord.guildId, config.discord.voiceChannelId);
+    await transcriptStore.createSession(currentSessionId, config.discord.guildId, config.discord.voiceChannelId);
 
     audioReceiver = new AudioReceiver(connection);
     const audioBuffer = new AudioBuffer(config.audio);
@@ -111,7 +111,7 @@ async function handleAudioSegment(wavBuffer, durationMs) {
         log.info(`Transcribed (${language}): "${text}"`);
 
         // Store in DB and in-memory buffer
-        transcriptStore.addTranscript({
+        await transcriptStore.addTranscript({
             guildId: config.discord.guildId,
             channelId: config.discord.voiceChannelId,
             speaker: 'room',
@@ -161,7 +161,7 @@ async function handleCommand(detection, fullText) {
             const context = commandParser.assemble(detection, fullText);
             history = context.history;
 
-            transcriptStore.addCommand({
+            await transcriptStore.addCommand({
                 sessionId: currentSessionId,
                 triggerType: context.type,
                 triggerText: fullText,
@@ -190,7 +190,7 @@ async function handleCommand(detection, fullText) {
         ];
 
         // Update command status
-        transcriptStore.updateCommandResponse(fullText, result.response);
+        await transcriptStore.updateCommandResponse(fullText, result.response);
 
         // Respond via TTS + text channel — wait for it to finish before starting conversation timer
         await responder.respond(result.response, ttsEngine, voiceManager);
@@ -217,10 +217,10 @@ function startConversationMode() {
 }
 
 // Graceful shutdown
-function shutdown() {
+async function shutdown() {
     log.info('Shutting down...');
     if (currentSessionId) {
-        transcriptStore.endSession(currentSessionId);
+        await transcriptStore.endSession(currentSessionId);
     }
     if (voiceManager) {
         voiceManager.leave();
