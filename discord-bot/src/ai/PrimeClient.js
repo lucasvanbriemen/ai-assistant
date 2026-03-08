@@ -6,7 +6,7 @@ const REQUEST_TIMEOUT_MS = 120_000;
 
 export class PrimeClient {
     constructor(apiUrl, agentToken) {
-        this.endpoint = `${apiUrl}/api/prime/chat`;
+        this.endpoint = `${apiUrl}/api/prime/call`;
         this.agentToken = agentToken;
     }
 
