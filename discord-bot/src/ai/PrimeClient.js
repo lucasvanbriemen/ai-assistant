@@ -2,7 +2,7 @@ const REQUEST_TIMEOUT_MS = 120_000;
 
 export class PrimeClient {
     constructor(apiUrl, agentToken) {
-        this.endpoint = `${apiUrl}/api/prime/call`;
+        this.endpoint = `${apiUrl}/api/test`;
         this.agentToken = agentToken;
     }
 
@@ -27,9 +27,39 @@ export class PrimeClient {
                 throw new Error(`Prime API error ${response.status}: ${body}`);
             }
 
-            const data = await response.json();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullText = '';
+            let usedTools = [];
 
-            return data;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n').filter(line => line.trim());
+
+                for (const line of lines) {
+                    try {
+                        const parsed = JSON.parse(line);
+                        if (parsed.data) {
+                            if (parsed.data.text_chunk) {
+                                fullText += parsed.data.text_chunk;
+                            }
+                            if (parsed.data.used_tools?.length) {
+                                usedTools = parsed.data.used_tools;
+                            }
+                        }
+                    } catch {
+                        // Skip malformed lines
+                    }
+                }
+            }
+
+            return {
+                response: fullText,
+                used_tools: usedTools,
+            };
         } catch (err) {
             if (err.name === 'AbortError') {
                 throw new Error('Prime API request timed out');

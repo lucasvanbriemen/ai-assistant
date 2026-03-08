@@ -28,17 +28,4 @@ class AiController extends Controller
         }, $history);
     }
 
-    public function call(Request $request)
-    {
-        $token = $request->bearerToken();
-
-        if ($token !== env('AGENT_TOKEN')) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $messages = $this->formatMessages($request->input('history', []));
-        $result = AIService::callSync($messages);
-
-        return response()->json($result);
-    }
 }

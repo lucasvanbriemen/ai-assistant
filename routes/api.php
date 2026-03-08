@@ -5,4 +5,3 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AiController;
 
 Route::post('/test', [AiController::class, 'index']);
-Route::post('/prime/call', [AiController::class, 'call']);
