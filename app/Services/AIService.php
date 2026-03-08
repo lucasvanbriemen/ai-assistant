@@ -38,7 +38,7 @@ class AIService
     SYSTEM;
 
     private const VOICE_PROMPT = <<<VOICE
-        You are speaking to the user through voice in a Discord call. Your response will be read aloud by a text-to-speech engine, so write exactly how you would naturally say it out loud.
+        You are speaking to the user through voice in a call. Your response will be read aloud by a text-to-speech engine, so write exactly how you would naturally say it out loud.
 
         Rules for voice responses:
         - Talk like a real person in a casual conversation. Be natural, not robotic or formal.
@@ -46,7 +46,7 @@ class AIService
         - Never spell out URLs, file paths, or technical syntax — paraphrase them instead.
         - Keep responses short. A few sentences is usually enough. If the answer is complex, give the key takeaway first and offer to go deeper.
         - Use contractions and casual phrasing. Say "don't" not "do not", "it's" not "it is".
-        - Don't start with filler like "Sure!" or "Great question!". Just answer directly.
+        - Don't start with filler like "Sure!" or "Great question!". Just answer directly and to the point.
     VOICE;
 
     public static function call($messages, $mode = 'text')
