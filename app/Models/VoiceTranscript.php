@@ -14,7 +14,6 @@ class VoiceTranscript extends Model
         'confidence',
         'audio_duration_ms',
         'started_at',
-        'session_id',
     ];
 
     protected function casts(): array
@@ -25,10 +24,5 @@ class VoiceTranscript extends Model
             'started_at' => 'datetime',
             'created_at' => 'datetime',
         ];
-    }
-
-    public function session()
-    {
-        return $this->belongsTo(VoiceSession::class, 'session_id');
     }
 }

@@ -8,15 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('voice_sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->datetime('started_at');
-            $table->datetime('ended_at')->nullable();
-        });
-
         Schema::create('voice_transcripts', function (Blueprint $table) {
             $table->id();
-            $table->string('session_id');
             $table->text('text');
             $table->string('language')->nullable();
             $table->float('confidence')->nullable();
@@ -28,7 +21,6 @@ return new class extends Migration
 
         Schema::create('voice_commands', function (Blueprint $table) {
             $table->id();
-            $table->string('session_id');
             $table->string('trigger_type');
             $table->text('trigger_text');
             $table->text('context_text')->nullable();

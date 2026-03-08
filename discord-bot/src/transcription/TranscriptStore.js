@@ -44,28 +44,18 @@ export class TranscriptStore {
         return res.json();
     }
 
-    async createSession(id) {
-        await this._post('/sessions', { id });
-    }
-
-    async endSession(id) {
-        await this._put(`/sessions/${id}/end`);
-    }
-
-    async addTranscript({ text, language, confidence, audioDurationMs, startedAt, sessionId }) {
+    async addTranscript({ text, language, confidence, audioDurationMs, startedAt }) {
         await this._post('/transcripts', {
             text,
             language,
             confidence,
             audio_duration_ms: audioDurationMs,
             started_at: startedAt,
-            session_id: sessionId,
         });
     }
 
-    async addCommand({ sessionId, triggerType, triggerText, contextText }) {
+    async addCommand({ triggerType, triggerText, contextText }) {
         await this._post('/commands', {
-            session_id: sessionId,
             trigger_type: triggerType,
             trigger_text: triggerText,
             context_text: contextText,

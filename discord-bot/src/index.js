@@ -42,7 +42,6 @@ const ttsEngine = new TTSEngine(config.openai.apiKey, config.tts.voice);
 let voiceManager = null;
 let audioReceiver = null;
 let responder = null;
-let currentSessionId = null;
 
 // Conversation mode: after a wake word, keep listening for follow-ups without requiring wake word
 const CONVERSATION_TIMEOUT_MS = 30_000; // 30 seconds of follow-up window
@@ -70,9 +69,6 @@ client.once(Events.ClientReady, async (readyClient) => {
     responder = new DiscordResponder(textChannel);
     voiceManager = new VoiceManager(voiceChannel);
     const connection = await voiceManager.join();
-
-    currentSessionId = `session-${Date.now()}`;
-    await transcriptStore.createSession(currentSessionId);
 
     audioReceiver = new AudioReceiver(connection);
     const audioBuffer = new AudioBuffer(config.audio);
@@ -108,7 +104,6 @@ async function handleAudioSegment(wavBuffer, durationMs) {
             confidence: result.confidence || null,
             audioDurationMs: durationMs,
             startedAt: new Date().toISOString(),
-            sessionId: currentSessionId,
         });
 
         transcriptBuffer.add(text, language);
@@ -149,7 +144,6 @@ async function handleCommand(detection, fullText) {
             history = context.history;
 
             await transcriptStore.addCommand({
-                sessionId: currentSessionId,
                 triggerType: context.type,
                 triggerText: fullText,
                 contextText: context.contextText || null,
@@ -203,9 +197,6 @@ function startConversationMode() {
 
 // Graceful shutdown
 async function shutdown() {
-    if (currentSessionId) {
-        await transcriptStore.endSession(currentSessionId);
-    }
     if (voiceManager) {
         voiceManager.leave();
     }

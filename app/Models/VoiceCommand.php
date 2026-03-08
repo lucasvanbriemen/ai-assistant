@@ -9,7 +9,6 @@ class VoiceCommand extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'session_id',
         'trigger_type',
         'trigger_text',
         'context_text',
@@ -24,8 +23,4 @@ class VoiceCommand extends Model
         ];
     }
 
-    public function session()
-    {
-        return $this->belongsTo(VoiceSession::class, 'session_id');
-    }
 }
