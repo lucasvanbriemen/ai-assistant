@@ -18,9 +18,11 @@ export class PrimeClient {
                     'Authorization': `Bearer ${this.agentToken}`,
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ history }),
+                body: JSON.stringify({ history, mode: 'voice' }),
                 signal: controller.signal,
             });
+
+            console.log(`[PrimeClient] response status: ${response.status}`);
 
             if (!response.ok) {
                 const body = await response.text();
@@ -31,12 +33,14 @@ export class PrimeClient {
             const decoder = new TextDecoder();
             let fullText = '';
             let usedTools = [];
+            let chunkCount = 0;
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
+                chunkCount++;
                 const lines = chunk.split('\n').filter(line => line.trim());
 
                 for (const line of lines) {
@@ -51,10 +55,12 @@ export class PrimeClient {
                             }
                         }
                     } catch {
-                        // Skip malformed lines
+                        console.warn(`[PrimeClient] unparseable line: ${line.substring(0, 200)}`);
                     }
                 }
             }
+
+            console.log(`[PrimeClient] stream done: ${chunkCount} chunks, ${fullText.length} chars`);
 
             return {
                 response: fullText,

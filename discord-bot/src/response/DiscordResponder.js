@@ -59,9 +59,27 @@ export class DiscordResponder {
         }
     }
 
+    _sanitizeForSpeech(text) {
+        return text
+            .replace(/```[\s\S]*?```/g, '')       // Remove code blocks
+            .replace(/`([^`]+)`/g, '$1')           // Unwrap inline code
+            .replace(/\*\*([^*]+)\*\*/g, '$1')     // Remove bold
+            .replace(/\*([^*]+)\*/g, '$1')         // Remove italic
+            .replace(/__([^_]+)__/g, '$1')         // Remove underline bold
+            .replace(/_([^_]+)_/g, '$1')           // Remove underline italic
+            .replace(/~~([^~]+)~~/g, '$1')         // Remove strikethrough
+            .replace(/^#{1,6}\s+/gm, '')           // Remove heading markers
+            .replace(/^[-*+]\s+/gm, '')            // Remove list markers
+            .replace(/^\d+\.\s+/gm, '')            // Remove numbered list markers
+            .replace(/!?\[([^\]]*)\]\([^)]+\)/g, '$1') // Remove links/images, keep label
+            .replace(/\n{2,}/g, '\n')              // Collapse multiple newlines
+            .trim();
+    }
+
     async _playTTS(text, ttsEngine, voiceManager) {
         try {
-            const audioBuffer = await ttsEngine.synthesize(text);
+            const speechText = this._sanitizeForSpeech(text);
+            const audioBuffer = await ttsEngine.synthesize(speechText);
             if (!audioBuffer) {
                 return;
             }

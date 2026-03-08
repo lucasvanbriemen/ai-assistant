@@ -37,19 +37,31 @@ class AIService
         The current date and time is: {{current_datetime}}
     SYSTEM;
 
-    public static function call($messages)
+    private const VOICE_PROMPT = <<<VOICE
+        You are speaking to the user through voice in a Discord call. Your response will be read aloud by a text-to-speech engine, so write exactly how you would naturally say it out loud.
+
+        Rules for voice responses:
+        - Talk like a real person in a casual conversation. Be natural, not robotic or formal.
+        - Never use markdown, bullet points, numbered lists, headings, bold, italic, code blocks, or any formatting.
+        - Never spell out URLs, file paths, or technical syntax — paraphrase them instead.
+        - Keep responses short. A few sentences is usually enough. If the answer is complex, give the key takeaway first and offer to go deeper.
+        - Use contractions and casual phrasing. Say "don't" not "do not", "it's" not "it is".
+        - Don't start with filler like "Sure!" or "Great question!". Just answer directly.
+    VOICE;
+
+    public static function call($messages, $mode = 'text')
     {
         $usedTools = [];
 
-        return response()->stream(function () use ($messages, $usedTools) {
-            self::callClaude($messages, $usedTools);
+        return response()->stream(function () use ($messages, $usedTools, $mode) {
+            self::callClaude($messages, $usedTools, $mode);
         }, 200, [
             'X-Accel-Buffering' => 'no',
             'Cache-Control' => 'no-cache',
         ]);
     }
 
-    private static function callClaude($messages, &$usedTools = [])
+    private static function callClaude($messages, &$usedTools = [], $mode = 'text')
     {
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -62,7 +74,7 @@ class AIService
             'model' => self::MODEL,
             'max_tokens' => 1024,
             'stream' => true,
-            'system' => self::buildSystemPrompt(),
+            'system' => self::buildSystemPrompt($mode),
             'messages' => $messages,
             'temperature' => 0.7,
             'tools' => self::tools(),
@@ -165,7 +177,7 @@ class AIService
             $messages[] = ['role' => 'assistant', 'content' => $assistantContent];
             $messages[] = ['role' => 'user', 'content' => $toolResults];
 
-            self::callClaude($messages, $usedTools);
+            self::callClaude($messages, $usedTools, $mode);
         }
     }
 
@@ -211,12 +223,16 @@ class AIService
         return null;
     }
 
-    private static function buildSystemPrompt()
+    private static function buildSystemPrompt($mode = 'text')
     {
         $prompt = self::SYSTEM_PROMPT;
 
         $currentDateTime = now()->toDateTimeString();
         $prompt = str_replace('{{current_datetime}}', $currentDateTime, $prompt);
+
+        if ($mode === 'voice') {
+            $prompt .= "\n\n" . self::VOICE_PROMPT;
+        }
 
         return $prompt;
     }

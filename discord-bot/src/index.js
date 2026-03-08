@@ -99,6 +99,8 @@ async function handleAudioSegment(wavBuffer, durationMs) {
         const text = result.text.trim();
         const language = result.language || null;
 
+        console.log(`[transcribe] "${text}" (lang=${language})`);
+
         // Store in DB and in-memory buffer
         await transcriptStore.addTranscript({
             text,
@@ -114,13 +116,15 @@ async function handleAudioSegment(wavBuffer, durationMs) {
         // Check for wake word
         const detection = wakeWordDetector.detect(text);
         if (detection) {
+            console.log(`[wake-word] detected: type=${detection.type}, command="${detection.command}"`);
             await handleCommand(detection, text);
         } else if (conversationActive) {
-            // In conversation mode — treat any speech as a follow-up command
+            console.log(`[conversation] follow-up: "${text}"`);
             const followUp = { type: 'inline', command: text, fullMatch: text };
             await handleCommand(followUp, text);
         }
     } catch (err) {
+        console.error('[handleAudioSegment] error:', err);
     }
 }
 
@@ -152,12 +156,16 @@ async function handleCommand(detection, fullText) {
             });
         }
 
+        console.log(`[handleCommand] calling Prime API with ${history.length} messages`);
         const result = await primeClient.chat(history);
 
         // Stop thinking indicator before responding
         thinking.stop();
 
+        console.log(`[handleCommand] result: response=${result?.response?.length ?? 0} chars, tools=${result?.used_tools?.join(', ') || 'none'}`);
+
         if (!result || !result.response) {
+            console.warn('[handleCommand] empty response from Prime API');
             return;
         }
 
@@ -176,6 +184,7 @@ async function handleCommand(detection, fullText) {
         // Start/reset conversation mode AFTER TTS finishes, so the user has 30s from hearing the response
         startConversationMode();
     } catch (err) {
+        console.error('[handleCommand] error:', err);
         thinking.stop();
     }
 }
@@ -207,6 +216,7 @@ async function shutdown() {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('unhandledRejection', (err) => {
+    console.error('[unhandledRejection]', err);
 });
 
 client.login(config.discord.token);

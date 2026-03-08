@@ -15,7 +15,7 @@ export class TTSEngine {
         const input = text.length > 4000 ? text.substring(0, 4000) + '...' : text;
 
         const response = await this.openai.audio.speech.create({
-            model: 'tts-1',
+            model: 'tts-1-hd',
             voice: this.voice,
             input,
             response_format: 'opus', // Native Discord format — no transcoding needed
