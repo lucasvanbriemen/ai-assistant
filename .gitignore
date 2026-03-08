@@ -25,3 +25,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Discord bot
+discord-bot/node_modules
+discord-bot/.env
+discord-bot/data/*.sqlite
+discord-bot/data/*.log
